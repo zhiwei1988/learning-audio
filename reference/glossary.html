@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>术语表 · 网络摄像机音频</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>术语表 · 网络摄像机音频</h1>
+      <p class="lede">本课与后续课程共用的词表。产品讨论里请优先使用这些英文缩写，避免「听不清」「有回音」这种不可验收描述。</p>
+    </header>
+
+    <dl>
+      <div class="glossary-item">
+        <dt>拾音 / Capture · 放音 / Playback</dt>
+        <dd>摄像机麦克风采集环境声（上行）；喇叭播出远端语音/告警（下行）。双向对讲 = 同时或交替使用两者。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>SPL · Sound Pressure Level</dt>
+        <dd>声压级，单位 dB SPL。0 dB SPL ≈ 人耳听阈；正常对话约 60–70 dB SPL（1 m）；94 dB SPL = 1 Pa，是麦克风灵敏度测试的标准参考声压。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>SNR · Signal-to-Noise Ratio</dt>
+        <dd>麦克风：参考 94 dB SPL 输入相对自身噪声的比值（常 A 计权）。更高 SNR → 安静环境/远场更干净。不是「灵敏度越高越好」。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>AOP · Acoustic Overload Point</dt>
+        <dd>声过载点：失真达到阈值（常 10% THD）时的声压级。门铃/门口大喊、关门声需要高 AOP，否则爆音失真。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>Sensitivity · 灵敏度</dt>
+        <dd>单位声压产生的输出大小。模拟麦：dBV；数字麦：dBFS。灵敏度高不代表音质好；远场可能需要更高有效增益，近场高灵敏度易削波。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>Dynamic Range · 动态范围</dt>
+        <dd>可线性再现的最强声与最弱声之差。麦克风上常 ≈ AOP − 噪声底。系统动态范围由最弱一环（麦/ADC/算法/编码）决定。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>EIN · Equivalent Input Noise</dt>
+        <dd>等效输入噪声，单位 dB SPL。麦克风自噪声折算回声学输入。常用近似：EIN ≈ 94 − SNR。远场轻声能否浮出底噪，先看它。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>THD · Total Harmonic Distortion</dt>
+        <dd>总谐波失真。AOP 常定义为 THD 达到 10%（有的规格用 1%）时的声压。看 AOP 时务必核对 THD 判据。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>PDM / I²S</dt>
+        <dd>数字麦常见接口。PDM：脉冲密度调制，需时钟与抽滤；I²S：更接近 PCM 采样流。影响布线、抗扰与 SoC 对接，不直接等于音质优劣。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>AEC · Acoustic Echo Cancellation</dt>
+        <dd>声学回声消除：估计喇叭→麦克风的声学路径，从拾音中减掉「自己刚播出去的声音」。全双工对讲的核心。失败听感：回音、啸叫、远端听到自己。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>ANR / NS · Noise Reduction / Suppression</dt>
+        <dd>降噪/噪声抑制：削弱稳态或非语音噪声（空调、风噪、马路）。过度则「机器人声」、辅音被削。与 AEC 不同：AEC 针对已知参考（播放信号）。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>AGC · Automatic Gain Control</dt>
+        <dd>自动增益控制：把忽大忽小的语音电平拉到可用范围。过猛会放大噪声底、引入呼吸感（pumping）。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>Full-duplex / Half-duplex</dt>
+        <dd>全双工：双方可同时说听（依赖 AEC）。半双工：同一时刻只允许一个方向，用按住说话或 VAD 切换。竞品「自然对讲」通常指全双工。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>G.711 · AAC</dt>
+        <dd>G.711：8 kHz 窄带电话语音，低带宽低时延，安防机常见。AAC：更高采样率/码率，听感更宽，带宽与算力成本更高。ONVIF 常见枚举含二者。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>Far-field · 远场</dt>
+        <dd>声源距离麦较远（房间对讲、走廊）。声压随距离约每翻倍 −6 dB。摄像机内置麦多半是远场难题：直达声弱、混响与噪声占比高。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>Latency · 端到端时延</dt>
+        <dd>从说话到对方听到的总延迟（采集缓冲 + 算法 + 编码 + 网络 + 解码 + 播放）。对讲体验对时延极敏感；算法尾长/缓冲与 AEC 性能常需权衡。</dd>
+      </div>
+    </dl>
+
+    <p class="meta">
+      <a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课 · 信号链</a>
+      · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课 · MEMS Datasheet</a>
+      · <a href="mems-datasheet-cheatsheet.html">麦指标速查</a>
+      · <a href="../RESOURCES.md">RESOURCES.md</a>
+    </p>
+  </div>
+</body>
+</html>

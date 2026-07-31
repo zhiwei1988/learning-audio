@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 2 课 · 读 MEMS 麦克风 Datasheet</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0002 · 约 15 分钟</p>
+      <h1>读 MEMS 麦克风 Datasheet</h1>
+      <p class="lede">把 SNR、AOP、灵敏度从参数表翻译成产品决策：这颗麦适合远场听人声，还是扛门口大动态？</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      竞争力评审里，「换颗更好的麦」是最常被甩出来的方案。你会用 datasheet 判断：该砸在 SNR 上、AOP 上，还是其实麦已经够好、瓶颈在结构/算法/编码。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>给定使用场景 + 两行麦参数，选出更合理的一颗，并用 <span class="term">SNR</span> / <span class="term">AOP</span> / 灵敏度说明理由（而不是「数字更大」）。</p>
+
+    <h2>先钉死测试锚点</h2>
+    <p>
+      麦克风灵敏度几乎总是用 <strong>1 kHz 正弦、94 dB SPL（1 Pa）</strong> 测出来的。
+      这是声学域与电气域的换算锚点——不是「日常说话有多响」。
+      来源：
+      <a href="https://www.analog.com/en/resources/analog-dialogue/articles/understanding-microphone-sensitivity.html" target="_blank" rel="noopener">ADI · Understanding Microphone Sensitivity</a>。
+    </p>
+    <div class="callout warn">
+      <span class="label">比较规则</span>
+      两颗麦的 SNR 都写 65 dB，也要看脚注：是否 A 计权、测量带宽、模拟还是数字输出、供电模式。脚注不一致时，数字不可直接横比。
+    </div>
+
+    <h2>三个核心数字（按优先级）</h2>
+
+    <h3>1. SNR — 安静与远场的天花板</h3>
+    <p>
+      <strong>SNR</strong> = 94 dB SPL 参考信号 相对 麦克风自噪声 的比值（常见 A 计权，单位 dB(A)）。
+      等价地：
+    </p>
+    <p><code>等效输入噪声 EIN ≈ 94 − SNR　（dB SPL）</code></p>
+    <p>
+      例：SNR = 65 dB → EIN ≈ 29 dB SPL。比这更轻的声音，在理想条件下也会被自噪声淹没。
+      ADI 明确：跨模拟/数字接口时，应用声学域的 SNR 与最大声压来比较，而不是输出格式。
+    </p>
+    <p>
+      <strong>摄像机含义：</strong> 客厅/走廊远场、夜间安静环境要「听清轻声说话」——先看 SNR。
+      距离每翻倍约 −6 dB 声压（自由场），远场信号更弱，更容易掉进噪声底。
+      ADI 把 <em>security cameras</em> 列为需要认真对待远场衰减的场景之一。
+    </p>
+
+    <h3>2. AOP — 大声时炸不炸</h3>
+    <p>
+      <strong>AOP（Acoustic Overload Point）</strong>：失真达到约定阈值（常见 <strong>10% THD</strong>）时的声压级。
+      Infineon 选型指南把它列为与 SNR 并列的核心 datasheet 限值：安静靠 SNR，响亮靠 AOP。
+      （
+      <a href="https://community.infineon.com/t5/Knowledge-Base-Articles/Factors-to-consider-when-choosing-a-MEMS-microphone/ta-p/1210049" target="_blank" rel="noopener">Infineon · Factors to consider when choosing a MEMS microphone</a>
+      ）
+    </p>
+    <p>
+      <strong>摄像机含义：</strong> 门铃对讲大喊、关门砰、警报/驱离喇叭回灌到麦——需要高 AOP，否则「啪」一声失真，AEC 也会更难收敛。
+    </p>
+
+    <h3>3. 灵敏度 — 增益匹配，不是音质分</h3>
+    <p>
+      模拟麦：单位常为 <span class="term">dBV</span>（相对 1 V）。数字麦：<span class="term">dBFS</span>（相对数字满幅）。
+      数字麦灵敏度往往被最大声压锁死，例如最大 120 dB SPL → 灵敏度约 <strong>−26 dBFS</strong>（94 − 120）。
+    </p>
+    <div class="callout bad">
+      <span class="label">常见误区</span>
+      「灵敏度更高 = 拾音更远/更好」。错。灵敏度只说明同一声压下输出有多大；质量更应看 SNR、动态范围、THD、电源抑制等。高灵敏度在近场还更容易先削波。
+    </div>
+    <p>
+      远场系统确实可能需要更高的<strong>系统增益</strong>，但那是整条链（预放/数字增益/AGC）的预算问题，不是单独把 datasheet 灵敏度拉满。
+      在 DSP 满幅已贴着麦的最大声压时，再加数字增益 = 等效降低削波点（AOP 被吃掉）。
+    </p>
+
+    <h2>动态范围：一眼公式</h2>
+    <p>
+      麦克风可用动态范围 ≈ 最大不失真声压 − 噪声底：
+    </p>
+    <p><code>Dynamic range ≈ AOP − EIN ≈ AOP − (94 − SNR)</code></p>
+    <p>
+      例（ADI 叙述同型）：最大约 120 dB SPL、SNR 61 dB → EIN 33 dB SPL → 动态范围约 87 dB。
+      系统最终听感还会被 ADC、算法、编码木桶卡住（第 1 课）。
+    </p>
+
+    <div class="calc-wrap">
+      <p class="calc-title">动手：把 datasheet 三个数变成产品语言</p>
+      <div data-mic-calc></div>
+    </div>
+
+    <h2>场景对照：摄像机怎么选</h2>
+    <div class="scenario">
+      <div class="card">
+        <h3>室内云台 / 客厅监控</h3>
+        <ul>
+          <li>目标：数米外人声可懂</li>
+          <li>威胁：空调、冰箱、混响</li>
+          <li>大动态事件相对少</li>
+        </ul>
+        <p class="pick">优先：高 SNR → 再谈结构与 NS 算法</p>
+      </div>
+      <div class="card">
+        <h3>门铃 / 门口枪机</h3>
+        <ul>
+          <li>目标：对讲清晰 + 事件声不炸</li>
+          <li>威胁：喊叫、风、雨、关门</li>
+          <li>常有喇叭近距离耦合</li>
+        </ul>
+        <p class="pick">优先：足够 AOP + 可接受 SNR；结构隔离很关键</p>
+      </div>
+    </div>
+
+    <div class="callout good">
+      <span class="label">评审话术模板</span>
+      「这颗麦 SNR xx dB → EIN 约 yy dB SPL；AOP zz dB SPL。我们场景是远场人声，瓶颈更像 SNR/结构而不是灵敏度。AOP 只要覆盖门口峰值即可，盲目追灵敏度会牺牲削波余量。」
+    </div>
+
+    <h2>假想选型表（练习用）</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>型号（虚构）</th>
+          <th>SNR</th>
+          <th>AOP</th>
+          <th>灵敏度</th>
+          <th>备注</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mic-A</td>
+          <td>64 dB(A)</td>
+          <td>128 dB SPL</td>
+          <td>−34 dBFS</td>
+          <td>大声很稳，噪声底一般</td>
+        </tr>
+        <tr>
+          <td>Mic-B</td>
+          <td>70 dB(A)</td>
+          <td>118 dB SPL</td>
+          <td>−24 dBFS</td>
+          <td>很安静，大信号更早失真</td>
+        </tr>
+        <tr>
+          <td>Mic-C</td>
+          <td>66 dB(A)</td>
+          <td>122 dB SPL</td>
+          <td>−28 dBFS</td>
+          <td>均衡型</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>练习</h2>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 1 / 3"
+         data-prompt="室内云台主打「房间另一头说话可懂」。上表三颗麦，优先选哪颗？"
+         data-options='["Mic-A：AOP 最高更适合远场","Mic-B：SNR 最高利于远场轻声","Mic-C：参数最均衡没有短板","三者相同：灵敏度决定拾音距离"]'
+         data-answer="1"
+         data-explain-correct="正确。远场轻声的主矛盾是信号掉进噪声底；70 dB SNR → EIN 约 24 dB SPL，优于 A 的 30 dB。AOP 对客厅对话通常不是第一瓶颈。"
+         data-explain-wrong="再想：远场可懂度先看 SNR/噪声底，不是 AOP 或「灵敏度决定距离」。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 3"
+         data-prompt="视频门铃要扛大声喊叫与关门，且喇叭靠近麦克风。哪颗更稳妥？"
+         data-options='["Mic-B：灵敏度高对讲更响亮","Mic-A：AOP 高更不易大声失真","Mic-C：灵敏度居中便于调增益","Mic-B：SNR 高可同时解决回声"]'
+         data-answer="1"
+         data-explain-correct="正确。门口峰值声压与近距喇叭回灌都推高进入麦的 SPL；AOP 128 比 118 更抗炸。SNR 重要，但不消回声——回声靠 AEC 与结构。"
+         data-explain-wrong="再想：灵敏度高不代表对讲更响（那是喇叭），SNR 也不能替代 AEC；门口大动态先看 AOP。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 3"
+         data-prompt="数字麦灵敏度 −26 dBFS。在满幅已映射最大声压时，DSP 再加 6 dB 数字增益，最直接的副作用是？"
+         data-options='["SNR 数值自动提高约六分贝","等效削波点下降，更早失真","AOP 规格会在 datasheet 变高","采样率被强制提升到四十八千"]'
+         data-answer="1"
+         data-explain-correct="正确。满幅贴着最大声压时再加增益，会提前触达数字满幅，等效降低可用最大声压（吃掉 headroom）。SNR 不会「自动变好」。"
+         data-explain-wrong="再想：数字增益不改麦物理 SNR/AOP 规格，但会改变系统削波点；也与采样率无关。">
+    </div>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      可以把你们在用的真实麦型号或 datasheet 截图参数发来，我们按 SNR/AOP/灵敏度做一次「值不值更换」判断。
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://www.analog.com/en/resources/analog-dialogue/articles/understanding-microphone-sensitivity.html" target="_blank" rel="noopener"><strong>ADI · Understanding Microphone Sensitivity</strong></a>
+        — 灵敏度 dBV/dBFS、SNR 比较法、远场 −6 dB/倍距、security camera 场景、数字增益与动态范围。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://community.infineon.com/t5/Knowledge-Base-Articles/Factors-to-consider-when-choosing-a-MEMS-microphone/ta-p/1210049" target="_blank" rel="noopener">Infineon 选型因素</a>
+        ·
+        <a href="../reference/mems-datasheet-cheatsheet.html">Datasheet 速查</a>
+        ·
+        <a href="../reference/glossary.html">术语表</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0001-ip-camera-audio-signal-chain.html">信号链地图</a>
+        · 下一课预告：AEC 是什么、全双工为何离不开它、失败时听感是什么
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script type="module" src="../assets/quiz.js"></script>
+  <script type="module" src="../assets/mic-calc.js"></script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 1 课 · 网络摄像机音频信号链</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0001 · 约 12 分钟</p>
+      <h1>网络摄像机音频信号链</h1>
+      <p class="lede">先建立一张「地图」。之后所有硬件选型、算法卖点、用户投诉，都能落到链路上的某一环——这是产品音频竞争力讨论的通用语言。</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      你的目标是推动「听得清、对讲自然、远场可用」。没有信号链地图时，讨论会卡在「音质不好」这种不可验收的话上；有了地图，你才能说：问题在麦 SNR、AEC、编码带宽，还是喇叭与结构腔体。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>给定一条用户投诉或竞品卖点，你能指出它主要落在信号链的哪一环（可多环，但要能排出主因候选）。</p>
+
+    <h2>一张链，两端人</h2>
+    <p>
+      网络摄像机的音频不是「一个麦克风」的事。典型产品同时有<strong>上行拾音</strong>（现场 → 客户端）和<strong>下行放音</strong>（客户端 → 现场喇叭）。全双工对讲时两条路同时工作，而且<strong>下行播放会被上行麦克风再次收到</strong>——这就是回声问题的物理根源。
+    </p>
+    <p>
+      TI 面向视频门铃 / IP 摄像机的参考设计
+      <a href="https://www.ti.com/tool/TIDA-01589" target="_blank" rel="noopener">TIDA-01589</a>
+      把这件事说得很直白：免提全双工时，喇叭能量会耦合进麦克风，再叠加环境噪声，会严重损害可懂度，必须靠降噪与声学回声消除（AEC）等处理。
+    </p>
+
+    <h2>上行：现场声音如何变成远端听到的声音</h2>
+    <div class="chain">
+      <div class="stage">
+        <div class="tag">0 · 声场</div>
+        <div>
+          <h3>房间 / 门口声学</h3>
+          <p>直达声、反射（混响）、风噪、空调、马路。距离每翻倍，自由场声压约降 6 dB。</p>
+          <div class="examples">产品话术：远场拾音、10 m 拾音 · 投诉：人在客厅说话听不清</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">1 · 声学结构</div>
+        <div>
+          <h3>拾音孔 · 密封 · 防尘网 · 腔体</h3>
+          <p>外壳决定频响与抗风。密封不良会漏进机内噪声；孔过小/偏移会削弱高频与方向性。</p>
+          <div class="examples">竞争力：抗风结构、防水透声膜 · 投诉：雨天沙沙声、闷</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">2 · 传感器</div>
+        <div>
+          <h3>MEMS 麦克风</h3>
+          <p>关键指标：<span class="term">SNR</span>、<span class="term">AOP</span>、灵敏度、频响。灵敏度≠音质；远场更吃 SNR 与系统增益，近场大音量更吃 AOP。</p>
+          <div class="examples">竞争力：高 SNR 麦、双麦阵列 · 投诉：底噪大、关门爆音</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">3 · 前端</div>
+        <div>
+          <h3>偏置 · 预放 · ADC / Codec</h3>
+          <p>把模拟声压变成数字采样。ADC 动态范围、增益分级、抗混叠滤波是木桶的一环。</p>
+          <div class="examples">竞争力：高动态前端 · 投诉：小声淹没噪声、大声削波</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">4 · 算法</div>
+        <div>
+          <h3>AEC · NS/ANR · AGC ·（可选）波束成形</h3>
+          <p>这是「软件定义听感」的主战场。AEC 专治回声；NS 治环境噪声；AGC 治忽大忽小。顺序与参数会互相牵制。</p>
+          <div class="examples">竞争力：全双工、AI 降噪 · 投诉：回音、机器人声、呼吸感增益</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">5 · 编码与传输</div>
+        <div>
+          <h3>Codec · RTP/RTSP · 网络</h3>
+          <p>安防常见 <span class="term">G.711 @ 8 kHz</span>（电话带宽）；更高质量可用 AAC 等（ONVIF 亦枚举）。网络抖动缓冲增加时延。</p>
+          <div class="examples">竞争力：AAC、低时延链路 · 投诉：闷、齿音糊、对讲慢半拍</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">6 · 客户端</div>
+        <div>
+          <h3>解码 · 播放设备 · App 路由</h3>
+          <p>手机扬声器、App 音频会话、系统降噪都可能再改一遍声音。评测时要固定客户端，否则对比无效。</p>
+          <div class="examples">投诉：只有某款手机听不清 · 陷阱：把 App 问题当成摄像机麦问题</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>下行：远端说话如何变成现场喇叭声</h2>
+    <div class="chain">
+      <div class="stage">
+        <div class="tag">A · 接收</div>
+        <div>
+          <h3>网络 → 解码 → 播放缓冲</h3>
+          <p>时延与卡顿的另一半发生在这里。缓冲越大越稳、越晚。</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">B · 功放</div>
+        <div>
+          <h3>DAC · Class-D · Smart Amp</h3>
+          <p>小腔体喇叭要靠限幅保护与 EQ 换取响度与寿命。TI 参考设计用 Smart Amp 在微喇叭上推高 SPL 并做保护。</p>
+          <div class="examples">竞争力：更大声告警/对讲 · 投诉：破音、小声、烫</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">C · 声学</div>
+        <div>
+          <h3>喇叭单元 · 前腔后腔 · 出声孔</h3>
+          <p>结构决定效率与频响。出声孔朝向、防水网都会改变听感与回声路径（耦合到麦克风的能量）。</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">闭环</div>
+        <div>
+          <h3>喇叭声 → 再次进入麦克风</h3>
+          <p>这是 AEC 的参考路径。麦与喇叭越近、结构耦合越强，AEC 越难。半双工产品用「不同时说」回避这个问题；全双工必须正面硬刚。</p>
+          <div class="examples">竞争力：自然全双工 · 投诉：对讲回声、啸叫 howling</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="label">木桶法则</span>
+      整机音质由最弱一环决定。把 72 dB SNR 的麦接到噪声很大的前端，或后面用 8 kHz G.711 砍带宽，用户听不到你在麦上花的钱。嵌入式音频基础文献也强调：系统 SNR 跟随最弱组件。
+      （参见 <a href="https://www.eetimes.com/fundamentals-of-embedded-audio-part-2/" target="_blank" rel="noopener">EE Times: Fundamentals of embedded audio, part 2</a>）
+    </div>
+
+    <h2>产品竞争力：卖点落在哪一环？</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>常见卖点 / 投诉</th>
+          <th>优先怀疑的链路位置</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>「全双工双向语音」</td>
+          <td>算法 AEC + 麦/喇叭声学隔离 + 端到端时延</td>
+        </tr>
+        <tr>
+          <td>「AI 降噪 / 清晰人声」</td>
+          <td>算法 NS/ANR（过度则伪影）；麦 SNR 是上限</td>
+        </tr>
+        <tr>
+          <td>「远距离拾音」</td>
+          <td>声场距离损失 + 麦 SNR + AGC/波束 + 房间混响（常被夸大）</td>
+        </tr>
+        <tr>
+          <td>「更大声对讲 / 驱离」</td>
+          <td>喇叭 + 功放 + 腔体；同时恶化回声路径，拖累 AEC</td>
+        </tr>
+        <tr>
+          <td>「高清音频 / AAC」</td>
+          <td>编码与采样率；若前端已窄带滤波则收益有限</td>
+        </tr>
+        <tr>
+          <td>「对讲慢半拍」</td>
+          <td>编解码缓冲 + 网络抖动缓冲 + 算法帧长；非单纯麦差</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>知识要点（尽量少）</h2>
+    <ul class="tight">
+      <li><strong>灵敏度不是音质。</strong> ADI 指出：比较麦克风时，SNR、动态范围、THD 等比灵敏度更能说明质量；security camera 属于远场场景，距离导致声压快速下降。
+        <a href="https://www.analog.com/en/resources/analog-dialogue/articles/understanding-microphone-sensitivity.html" target="_blank" rel="noopener">Understanding Microphone Sensitivity (ADI)</a></li>
+      <li><strong>回声是物理闭环，不是「软件开关」。</strong> AEC 需要播放参考信号与稳定路径估计；结构改喇叭响度，会改变 AEC 工作条件。</li>
+      <li><strong>编码决定带宽天花板。</strong> G.711 典型 8 kHz 采样，适合语音、省带宽；「高保真环境声」需要更高采样率编码与全链路配合。
+        <a href="https://www.onvif.org/specs/srv/media/ONVIF-Media-Service-Spec-v1606.pdf" target="_blank" rel="noopener">ONVIF Media Service</a></li>
+    </ul>
+
+    <h2>练习 · 定位主因</h2>
+    <p>选项字数对齐，避免靠长短猜答案。点选后立刻反馈。</p>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 1 / 3"
+         data-prompt="用户说：对讲时能清楚听到自己延迟回来的声音。主因最可能落在哪一环？"
+         data-options='["麦克风 SNR 不足导致底噪偏高","AEC 失效或声学耦合过强","G.711 编码带宽限制齿音","客户端手机扬声器功率太小"]'
+         data-answer="1"
+         data-explain-correct="正确。延迟的「自己的声音」是经典回声：下行喇叭被上行麦拾取且未被 AEC 消掉（或路径突变）。"
+         data-explain-wrong="再想：听到「自己的声音延迟回来」是回声特征，优先查 AEC 与麦-喇叭耦合，而不是 SNR 或编码带宽。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 3"
+         data-prompt="竞品宣传「AAC 高清音频」，但实测人声仍闷、像电话。哪条解释最合理？"
+         data-options='["AAC 名称作假，实际仍是 G.711","仅编码升级，前端仍按窄带语音处理","喇叭太小所以录音也会变闷","AEC 开太强会切掉所有高频"]'
+         data-answer="1"
+         data-explain-correct="正确。木桶效应：若麦/滤波/算法链路按 8 kHz 语音优化，只把编码器换成 AAC，听感仍可能像电话。"
+         data-explain-wrong="再想：编码只是一环；「仍像电话」常常是整条链仍按窄带语音在跑，而不只是喇叭或 AEC。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 3"
+         data-prompt="评审会上有人说「换更高灵敏度的麦就能远场听清」。你的第一反应应是？"
+         data-options='["同意，灵敏度越高远场直达声越大","先看 SNR/噪声底与系统增益预算","先把采样率从 8k 提到 48k","先把喇叭功率加大一倍验证"]'
+         data-answer="1"
+         data-explain-correct="正确。灵敏度只描述「多大输出」；远场可懂度更依赖 SNR、噪声底、增益与房间声学。高灵敏度还可能更早削波。"
+         data-explain-wrong="再想：ADI 明确写过灵敏度不是质量指标；远场关键是 SNR 与系统动态，而不是单纯把灵敏度拉高。">
+    </div>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我（你的老师）。</strong><br />
+      例如：你们产品是门铃还是枪机/球机？半双工还是目标全双工？把真实竞品一句广告词丢过来，我们一起落到信号链上。
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://www.ti.com/lit/ug/tidue77/tidue77.pdf" target="_blank" rel="noopener"><strong>TI TIDA-01589 User Guide (tidue77)</strong></a>
+        — 近场全双工、双麦、噪声抑制 + AEC、微喇叭 Smart Amp；应用列表含 IP Network Camera。
+        先浏览系统框图与 Features，不必一次读完所有寄存器。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://www.analog.com/en/resources/analog-dialogue/articles/understanding-microphone-sensitivity.html" target="_blank" rel="noopener">ADI 麦克风灵敏度</a>
+        ·
+        <a href="../reference/glossary.html">术语表</a>
+        ·
+        <a href="../RESOURCES.md">资源库</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>下一课：<a href="0002-read-mems-microphone-datasheet.html">读 MEMS 麦克风 Datasheet</a>（SNR / AOP / 灵敏度 → 产品决策）</p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../reference/glossary.html">Glossary</a></p>
+    </nav>
+  </div>
+  <script type="module" src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查 · MEMS 麦克风 Datasheet</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>MEMS 麦克风 Datasheet 速查</h1>
+      <p class="lede">评审选型时扫这一页。定义对齐 ADI / Infineon 应用笔记的常见写法；具体器件以 datasheet 脚注为准。</p>
+    </header>
+
+    <h2>统一测试锚点</h2>
+    <p>灵敏度与 SNR 几乎总是在 <strong>1 kHz、94 dB SPL（= 1 Pa）</strong> 下给出。比较两颗麦时，先确认是否 A 计权、带宽、供电与接口模式一致。</p>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>指标</th>
+          <th>常见单位</th>
+          <th>一眼读法</th>
+          <th>摄像机产品含义</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sensitivity</td>
+          <td>dBV（模拟）<br />dBFS（数字）</td>
+          <td>94 dB SPL 时输出多大；<strong>不是音质分</strong></td>
+          <td>匹配前端增益；远场可能需要更大系统增益，但高灵敏度≠更远</td>
+        </tr>
+        <tr>
+          <td>SNR</td>
+          <td>dB(A)</td>
+          <td>94 dB SPL 参考 − 噪声底</td>
+          <td>安静/远场人声是否干净；越高越好（同价位优先）</td>
+        </tr>
+        <tr>
+          <td>EIN / Noise floor</td>
+          <td>dB SPL</td>
+          <td>≈ <code>94 − SNR</code></td>
+          <td>比该值更轻的声音会被自噪声盖住</td>
+        </tr>
+        <tr>
+          <td>AOP</td>
+          <td>dB SPL</td>
+          <td>THD 达到阈值（常 10%）的声压</td>
+          <td>喊叫、关门、警报是否炸麦；门铃/门口很关键</td>
+        </tr>
+        <tr>
+          <td>Dynamic range</td>
+          <td>dB</td>
+          <td>≈ <code>AOP − EIN</code></td>
+          <td>小声与大声是否都能扛；系统还要看 ADC/算法</td>
+        </tr>
+        <tr>
+          <td>THD</td>
+          <td>%</td>
+          <td>给定 SPL 下的失真</td>
+          <td>大信号是否「糊/破」；常与 AOP 曲线一起看</td>
+        </tr>
+        <tr>
+          <td>Frequency response / LFRO</td>
+          <td>Hz / dB</td>
+          <td>通带平坦度、低频滚降</td>
+          <td>语音可懂度主要在中频；过低 LF 有时有助风噪/结构噪声</td>
+        </tr>
+        <tr>
+          <td>PSRR / PSR</td>
+          <td>dB</td>
+          <td>电源噪声抑制</td>
+          <td>摄像机板上开关电源、IR-LED 纹波是否进音频</td>
+        </tr>
+        <tr>
+          <td>Interface</td>
+          <td>Analog / PDM / I²S</td>
+          <td>输出形态与时钟</td>
+          <td>布线抗扰、SoC 接口、双麦同步难度</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>数字麦灵敏度速算</h2>
+    <p>数字输出满幅通常映射到最大可接受声压。常见关系（峰值约定下）：</p>
+    <p><code>Sensitivity (dBFS) ≈ 94 − Maximum acoustic input (dB SPL)</code></p>
+    <p>例：最大 120 dB SPL → 灵敏度约 <strong>−26 dBFS</strong>。在 DSP 里乱加数字增益会提前削波，等效降低 AOP。</p>
+
+    <h2>选型一句话</h2>
+    <ul class="tight">
+      <li><strong>远场听清人声</strong> → 优先 SNR（及结构/算法），别迷信灵敏度</li>
+      <li><strong>门口大动态事件</strong> → 优先 AOP / THD vs SPL</li>
+      <li><strong>双麦阵列</strong> → 额外看灵敏度与相位一致性（part-to-part matching）</li>
+      <li><strong>整机</strong> → 麦指标是上限，腔体、ADC、编码、NS 都可能拖垮</li>
+    </ul>
+
+    <p class="meta">
+      主课：<a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a>
+      · 来源：
+      <a href="https://www.analog.com/en/resources/analog-dialogue/articles/understanding-microphone-sensitivity.html">ADI Sensitivity</a> ·
+      <a href="https://community.infineon.com/t5/Knowledge-Base-Articles/Factors-to-consider-when-choosing-a-MEMS-microphone/ta-p/1210049">Infineon 选型</a>
+    </p>
+  </div>
+</body>
+</html>
