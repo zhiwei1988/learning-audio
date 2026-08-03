@@ -454,6 +454,89 @@ code, .term {
   color: var(--muted);
 }
 
+/* Inline formula line */
+.formula {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  max-width: var(--max);
+  margin: 0.85rem 0;
+}
+
+h4.subhead {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 650;
+  margin: 1.25rem 0 0.45rem;
+  color: var(--ink);
+}
+
+/* Echo-tail timeline figure */
+.timeline-fig {
+  margin: 1.1rem 0 1.4rem;
+  max-width: var(--wide);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem 1rem 0.95rem;
+}
+
+.timeline-cap {
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 650;
+  margin: 0 0 0.55rem;
+  color: var(--ink);
+}
+
+.timeline-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+}
+
+.timeline-svg .t-label,
+.timeline-svg .t-tick,
+.timeline-svg .t-row,
+.timeline-svg .t-anno,
+.timeline-svg .t-win,
+.timeline-svg .t-res {
+  font-family: var(--sans);
+  fill: var(--muted);
+}
+
+.timeline-svg .t-label { font-size: 11px; }
+.timeline-svg .t-tick { font-size: 10px; }
+.timeline-svg .t-row {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.timeline-svg .t-anno { font-size: 10px; fill: var(--ink); }
+.timeline-svg .t-anno-bad { fill: var(--bad); }
+.timeline-svg .t-win {
+  font-size: 11px;
+  font-weight: 650;
+  fill: var(--accent);
+}
+.timeline-svg .t-res {
+  font-size: 11px;
+  font-weight: 650;
+  fill: var(--bad);
+}
+
+.timeline-note {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0.55rem 0 0;
+  max-width: none;
+}
+
 @media print {
   body { background: #fff; font-size: 11pt; }
   .page { padding: 0; max-width: none; }

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 3 课 · AEC 与全双工对讲</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0003 · 约 22 分钟</p>
+      <h1>AEC：全双工为何离不开它</h1>
+      <p class="lede">把「有回音」从模糊投诉，翻译成可验收的问题：参考信号、声学耦合、残差抑制，以及半双工妥协。</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      「对讲自然」几乎总等于全双工。全双工成立的前提不是更好的麦，而是可靠的 <span class="term">AEC</span>。你要能在评审里说清：回声来自物理闭环，算法靠什么消它，喇叭开大为何会拖垮它。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>听到一条对讲投诉或卖点时，能判断是否主要是 AEC 问题，并指出应先查的三个杠杆：参考路径、麦–喇叭耦合、是否退化成半双工。</p>
+
+    <h2>回声不是噪声，是「已知信号的回灌」</h2>
+    <p>
+      全双工时，远端话音经喇叭播出，再被本机麦克风拾起，送回远端——对方听到延迟的自己。
+      ADI 把这条路径拆成两条并行支路：
+      <strong>声学路径</strong>（功放 → 喇叭 → 房间 → 麦克风）与
+      <strong>DSP 路径</strong>（用同一段播放信号做估计）。
+      （
+      <a href="https://wiki.analog.com/resources/tools-software/sigmastudio/toolbox/adialgorithms/aec" target="_blank" rel="noopener">ADI · Acoustic Echo Cancellation</a>
+      ）
+    </p>
+    <p>
+      TI 面向门铃 / IP 摄像机的参考设计
+      <a href="https://www.ti.com/tool/TIDA-01589" target="_blank" rel="noopener">TIDA-01589</a>
+      说得同样直白：免提全双工时，喇叭能量耦合进麦克风，再叠加环境噪声，会严重损害可懂度——必须做噪声抑制与声学回声消除。
+    </p>
+
+    <div class="chain">
+      <div class="stage">
+        <div class="tag">Far-end</div>
+        <div>
+          <h3>远端话音（参考）</h3>
+          <p>即将从喇叭播出的数字信号。AEC 必须拿到这份 <span class="term">reference</span>，否则无法建模「自己刚播了什么」。</p>
+          <div class="examples">产品坑：参考取错时钟域、延迟未对齐、音量曲线与真实功放不一致</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">Acoustic</div>
+        <div>
+          <h3>喇叭 → 结构 → 房间 → 麦</h3>
+          <p>真实回声路径：直达漏音 + 腔体/外壳耦合 + 房间反射。路径越强、非线性越大，AEC 越难。</p>
+          <div class="examples">竞争力：麦喇叭隔离、防水膜、喇叭限幅；投诉：开大音量就回音</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">AEC</div>
+        <div>
+          <h3>自适应滤波 + 残差处理</h3>
+          <p>用参考估计回声并相减（线性部分）；残余非线性常用 RES / NLP 再压。可选再接 NS。</p>
+          <div class="examples">卖点：全双工、自然对讲 · 失败：回音、断续、双讲卡顿</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="tag">Near-end</div>
+        <div>
+          <h3>希望只留下本端说话人</h3>
+          <p>理想输出：现场人声；远端回声被消掉。本端说话时滤波器应暂停或减慢学习（双讲保护）。</p>
+          <div class="examples">投诉：双方同时说话时一方被削掉 / 「像半双工」</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>三个必须钉死的概念</h2>
+
+    <h3>1. Reference —— AEC 与 NS 的分水岭</h3>
+    <p>
+      <span class="term">AEC</span> 消的是<strong>已知播放信号</strong>经声学路径回来的成分。
+      <span class="term">NS / ANR</span> 抑制的是环境噪声（空调、风、马路），通常<strong>没有</strong>播放参考。
+      评审时一句话：有参考 → 先谈 AEC；只是「吵」→ 先谈 NS / 结构 / SNR。
+    </p>
+    <div class="callout warn">
+      <span class="label">决策含义</span>
+      「开了 AI 降噪」不能替代 AEC。降噪再强，也可能把回声当成「要保留的语音」或留下怪异伪影；全双工仍需要参考驱动的回声消除。
+    </div>
+
+    <h3>2. 自适应滤波 —— 在学「房间+喇叭」的冲激响应</h3>
+    <p>
+      ADI 实现以自适应 <span class="term">FIR</span> 建模声学路径，再从麦信号中减去估计回声；线性部分消不干净时，用残差块（RES / NLP）处理非线性伪影，并常与噪声抑制串联。
+      <span class="term">FIR</span>（Finite Impulse Response，有限冲激响应）= 只用过去<strong>有限个</strong>输入采样做加权求和的滤波器；AEC 线性部分用一排可调 <span class="term">taps</span> 去拟合喇叭→麦路径，长度决定能盖住多长的 echo tail。
+    </p>
+
+    <h4 class="subhead">回声尾长（echo tail）是什么</h4>
+    <p>
+      喇叭响一下之后，麦克风里听到的不只是「当下那一拍」，而是一串<strong>延迟叠在一起的副本</strong>：壳体内直达耦合、腔体/结构振动、门口墙面反射、更远的多次反射。
+      从「喇叭发出」到「麦里回声能量低到可以忽略」的这段<strong>拖尾时长</strong>，就是 <span class="term">echo tail</span>（回声尾长）。
+      它不是「有没有回声」本身，而是回声在时间轴上<strong>拖多长</strong>。
+    </p>
+    <p>
+      AEC 的自适应滤波器在学这条路径的冲激响应。滤波器有多长（多少个 <span class="term">taps</span>），就只能「记住」多长的拖尾。
+      <span class="term">tap</span>（抽头）= 滤波器里<strong>一个延迟点上的可调系数</strong>：把「过去第 <i>i</i> 个采样」乘上权重 <span class="term">w<sub>i</sub></span> 再累加，得到估计回声。
+      <strong>N taps</strong> = N 个系数 = 覆盖过去 N 个采样；除以采样率 <span class="term">f<sub>s</sub></span> 就是可建模的秒数：
+    </p>
+    <p class="formula">
+      可覆盖尾长 ≈ <span class="term">N</span> taps ÷ <span class="term">f<sub>s</sub></span>
+      &nbsp;→&nbsp; 例如 640 taps ÷ 16&nbsp;000&nbsp;Hz ≈ <strong>40&nbsp;ms</strong>
+    </p>
+    <p>
+      课里常见量级：ADI 默认 640 taps @16 kHz ≈ 40&nbsp;ms；TI TIDA-01589 的 DSP AEC 宣称可处理至约 <strong>128&nbsp;ms</strong>——数字越大通常算力与时延预算越高。
+    </p>
+
+    <figure class="timeline-fig" aria-label="回声尾长与滤波器覆盖窗口示意">
+      <figcaption class="timeline-cap">时间轴：参考脉冲 → 麦上的拖尾 → 滤波器窗口盖住/盖不住</figcaption>
+      <svg class="timeline-svg" viewBox="0 0 640 220" role="img" aria-labelledby="tail-title tail-desc">
+        <title id="tail-title">Echo tail vs filter length</title>
+        <desc id="tail-desc">
+          Reference impulse at t=0. Microphone receives direct coupling, cavity, wall reflection, then far reflections.
+          A 40 ms filter window covers early paths; later energy remains as residual echo if the tail is longer.
+        </desc>
+        <!-- axis -->
+        <line x1="48" y1="168" x2="610" y2="168" stroke="#1a1a1a" stroke-width="1.2"/>
+        <polygon points="610,168 598,163 598,173" fill="#1a1a1a"/>
+        <text x="48" y="188" class="t-label">t = 0（喇叭播出）</text>
+        <text x="560" y="188" class="t-label" text-anchor="end">时间 →</text>
+        <!-- tick marks -->
+        <line x1="48" y1="164" x2="48" y2="172" stroke="#1a1a1a"/>
+        <line x1="168" y1="164" x2="168" y2="172" stroke="#5c5c5c"/>
+        <line x1="288" y1="164" x2="288" y2="172" stroke="#5c5c5c"/>
+        <line x1="408" y1="164" x2="408" y2="172" stroke="#5c5c5c"/>
+        <text x="168" y="202" class="t-tick" text-anchor="middle">~10 ms</text>
+        <text x="288" y="202" class="t-tick" text-anchor="middle">~40 ms</text>
+        <text x="408" y="202" class="t-tick" text-anchor="middle">~80 ms</text>
+        <!-- filter window -->
+        <rect x="48" y="28" width="240" height="128" rx="4" fill="#e6f1f5" stroke="#0b4f6c" stroke-width="1" stroke-dasharray="4 3" opacity="0.95"/>
+        <text x="168" y="22" class="t-win" text-anchor="middle">滤波器窗口（例：40 ms 尾长预算）</text>
+        <!-- residual zone -->
+        <rect x="288" y="28" width="280" height="128" rx="4" fill="#f8eaea" stroke="#8b2e2e" stroke-width="1" stroke-dasharray="4 3" opacity="0.75"/>
+        <text x="428" y="22" class="t-res" text-anchor="middle">窗口外 → 残余回声</text>
+        <!-- reference row -->
+        <text x="12" y="58" class="t-row">参考</text>
+        <line x1="48" y1="72" x2="48" y2="48" stroke="#0b4f6c" stroke-width="2.5"/>
+        <circle cx="48" cy="48" r="4" fill="#0b4f6c"/>
+        <text x="58" y="46" class="t-anno">播放脉冲</text>
+        <!-- mic arrivals -->
+        <text x="12" y="118" class="t-row">麦上</text>
+        <!-- direct -->
+        <line x1="72" y1="132" x2="72" y2="78" stroke="#1a1a1a" stroke-width="2.2"/>
+        <circle cx="72" cy="78" r="3.5" fill="#1a1a1a"/>
+        <text x="72" y="148" class="t-anno" text-anchor="middle">直达</text>
+        <!-- cavity -->
+        <line x1="118" y1="132" x2="118" y2="92" stroke="#1a1a1a" stroke-width="1.8"/>
+        <circle cx="118" cy="92" r="3" fill="#1a1a1a"/>
+        <text x="118" y="148" class="t-anno" text-anchor="middle">腔体</text>
+        <!-- wall -->
+        <line x1="220" y1="132" x2="220" y2="100" stroke="#1a1a1a" stroke-width="1.5"/>
+        <circle cx="220" cy="100" r="3" fill="#1a1a1a"/>
+        <text x="220" y="148" class="t-anno" text-anchor="middle">近墙</text>
+        <!-- far reflections outside window -->
+        <line x1="340" y1="132" x2="340" y2="108" stroke="#8b2e2e" stroke-width="1.4"/>
+        <circle cx="340" cy="108" r="2.8" fill="#8b2e2e"/>
+        <line x1="400" y1="132" x2="400" y2="116" stroke="#8b2e2e" stroke-width="1.2"/>
+        <circle cx="400" cy="116" r="2.5" fill="#8b2e2e"/>
+        <line x1="470" y1="132" x2="470" y2="122" stroke="#8b2e2e" stroke-width="1"/>
+        <circle cx="470" cy="122" r="2.2" fill="#8b2e2e"/>
+        <text x="400" y="148" class="t-anno t-anno-bad" text-anchor="middle">远反射 / 多次反射（若尾长不够则消不掉）</text>
+      </svg>
+      <p class="timeline-note">
+        蓝区 = 滤波器「能建模」的时间范围；红区 = 盖不住的拖尾，会变成残余回声（再靠 RES/NLP 硬压，往往伤听感）。
+      </p>
+    </figure>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>情况</th>
+          <th>结果</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>尾长预算 ≥ 真实拖尾</td>
+          <td>线性部分能把主要回声减掉，残差压力小</td>
+        </tr>
+        <tr>
+          <td>尾长预算 &lt; 真实拖尾</td>
+          <td>后面的反射消不掉 → 远处还「嗡」一点的残余回声</td>
+        </tr>
+        <tr>
+          <td>尾长预算过长</td>
+          <td>多出来的 taps 易学噪声/本端话；算力与时延预算上升</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4 class="subhead">为何同一台机贴墙往往比自由场尾更长</h4>
+    <p>
+      自由场（悬空、周围空旷）时，麦主要听到<strong>壳内/结构直达耦合</strong>和外壳上的短路径散射；远处没有强反射面，<span class="term">h(t)</span> 前几毫秒很高、后面掉得快 → 有效尾长短。
+    </p>
+    <p>
+      贴墙等于在喇叭–麦路径旁加了一块强反射面：声能打到墙再弹回麦，多走一段往返路程，到达更晚；硬墙（瓷砖、水泥、玻璃）吸收小，反射仍够强，再叠加门框/地面的多次反射，冲激响应<strong>中后段多出一截拖尾</strong>。
+      用镜像声源想：墙后相当于有一个「虚喇叭」，路径差大约是机–墙距离量级的两倍。
+    </p>
+    <p>
+      这与「音量开大」要分开看：开大主要<strong>加强</strong>早期能量与喇叭非线性；贴墙主要<strong>加长</strong>晚到反射。软墙、远距离贴装时尾长增加可不明显——所以说「往往」，不是铁律。
+    </p>
+
+    <h4 class="subhead">回声尾长怎么测</h4>
+    <p>
+      工程上就是量（或估）<strong>本机喇叭 → 本机麦</strong>路径的冲激响应：能量从峰值衰减到「可以当它没了」要多久。
+      阈值要写进评测规范（常见：峰值下 −40&nbsp;dB 粗算主拖尾；−60&nbsp;dB 更严；或落到本底噪声）。
+    </p>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>方法</th>
+          <th>怎么做</th>
+          <th>何时用</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>扫频 / 反卷积（首选）</td>
+          <td>关 AEC·NS·AGC，喇叭播指数扫频（或 MLS），录 raw 麦，反卷积得 <span class="term">h[n]</span>；从直达峰到持续低于阈值的时间 = 尾长</td>
+          <td>可复现的选型与结构对比</td>
+        </tr>
+        <tr>
+          <td>互相关粗测</td>
+          <td>播已知参考，算 ref 与麦的互相关；最后一个明显高于噪声底的峰的时延 ≈ 尾长量级</td>
+          <td>快速判断 40&nbsp;ms 还是 100&nbsp;ms+</td>
+        </tr>
+        <tr>
+          <td>收敛后的 FIR 系数</td>
+          <td>远端单讲、近端静，等 AEC 收敛后看 <span class="term">w<sub>i</sub></span>；最后一个仍显著的系数序号 ÷ <span class="term">f<sub>s</sub></span></td>
+          <td>算法在机上时，看预算是否用满/浪费</td>
+        </tr>
+        <tr>
+          <td>加长 taps 看残余 / ERLE</td>
+          <td>固定场景逐步加长滤波器；ERLE 不再明显上升的拐点 ≈ 够用尾长</td>
+          <td>黑盒验收、栈只给配置项时</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>最小可复现：</strong>bypass 算法 → 本机扫频 + raw 麦 → 反卷积画 <span class="term">h(t)</span> → 按约定阈值读时间。
+      必测矩阵：音量档位 × 安装面（贴硬墙 / 门框 / 开阔）。
+      选型回扣公式：所需 taps ≳ 测得尾长 × <span class="term">f<sub>s</sub></span>（再留余量，例如 1.2～1.5×）。
+      例：50&nbsp;ms @16&nbsp;kHz → 至少约 800 taps。
+    </p>
+    <div class="callout warn">
+      <span class="label">别混</span>
+      房间 <span class="term">RT60</span> 会把尾长拉长，但 RT60 ≠ 机内耦合尾长；规格书上的 40/128&nbsp;ms 是<strong>算法能覆盖的预算</strong>，不是你测到的真实拖尾。整机 mouth-to-ear 时延是另一回事。
+    </div>
+
+    <p>
+      <strong>摄像机含义：</strong> 门口硬墙、走廊空旷会<strong>加长</strong>拖尾；塑料壳内强耦合、大音量喇叭会<strong>加强</strong>前几毫秒的能量（尾长未必更长，但更难消）。
+      结构改动（换喇叭、改密封）= 路径变了 = AEC 要重新收敛；量产评测要覆盖「音量档位 × 安装表面」——桌面悬空测「够了」不等于贴墙也够。
+    </p>
+
+    <h4 class="subhead">喇叭–麦布局：用 ERL / 隔离 dB 说话，不只报毫米</h4>
+    <p>
+      喇叭与麦的距离、开孔朝向、是否共腔，首先改变的是<strong>耦合强弱</strong>，其次才是路径时延与尾形。
+      毫米是结构设计输入；对 AEC 验收应落到可测指标：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>指标</th>
+          <th>含义</th>
+          <th>布局变差时</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">隔离 dB</span></td>
+          <td>喇叭侧电平 − 麦侧电平（耦合有多弱）</td>
+          <td>距离近 / 共腔 → 隔离下降</td>
+        </tr>
+        <tr>
+          <td><span class="term">ERL</span>（Echo Return Loss）</td>
+          <td>回声路径回损：播出相对「又被麦捡回」衰了多少</td>
+          <td>ERL 下降；免提大音量可为<strong>负值</strong></td>
+        </tr>
+        <tr>
+          <td><span class="term">h(t)</span> 主峰 / 尾长</td>
+          <td>直达强度与拖尾时长</td>
+          <td>主峰升高；贴墙还常加长尾</td>
+        </tr>
+        <tr>
+          <td><span class="term">ERLE</span></td>
+          <td>AEC <strong>额外</strong>压掉多少 dB（算法，不是结构）</td>
+          <td>耦合过强时 ERLE 难做高，更依赖 NLP</td>
+        </tr>
+        <tr>
+          <td>残余回声 / 双讲 / 收敛</td>
+          <td>消完后听感与稳定性</td>
+          <td>残余↑、双讲更脆、收敛变慢</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      因果链：布局/距离 → 隔离与 ERL 变差 → 线性 FIR 残差变大 → NLP 更猛或全双工垮掉。
+      大音量还会叠非线性与削波，不只是「距离」一个数。
+    </p>
+
+    <h4 class="subhead">ERL 与隔离：定义与典型量级</h4>
+    <p>
+      <strong>隔离 dB</strong>：只有喇叭在响时，喇叭侧电平减去麦侧电平。越大 = 耦合越弱。
+      <strong>ERL</strong>：近端静、AEC 关时，
+      <span class="term">ERL ≈ L<sub>Rout</sub> − L<sub>Sin</sub></span>
+      （播放参考 / receive-out 相对上行麦上的回声）。越大越好；为负表示回声比参考还「凶」。
+    </p>
+    <p>
+      当 Rout 就是 AEC 参考、Sin 就是 raw mic、单位与带宽一致时，数字通路上的<strong>隔离与 ERL 往往是同一测量、两个名字</strong>。
+      声学两点法（声级计在喇叭前与拾音孔）得到的是<strong>声学隔离</strong>，和数字 ERL 差一条电声与增益链，横比时不要混。
+    </p>
+    <p>
+      行业没有门铃/枪机统一国标数。电话与免提文献 + 紧凑全双工工程经验，可作<strong>评审锚点</strong>（同音量、同带宽、AEC 关）：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>档位（结构）</th>
+          <th>数字 ERL / 隔离（约）</th>
+          <th>对 AEC 的含义</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>差：共腔、孔对孔、大音量驱离</td>
+          <td>约 −12～+5 dB（负值常见）</td>
+          <td>线性部分吃力；NLP 易开狠或退化半双工。文献中免提 ERL 差到 −12 dB 并不罕见</td>
+        </tr>
+        <tr>
+          <td>可干活：有基本分腔/密封</td>
+          <td>约 +6～+15 dB</td>
+          <td>与线路 hybrid「ERL ≳ 6 dB」同一量级锚点；全双工靠扎实 AEC 可做</td>
+        </tr>
+        <tr>
+          <td>好结构：分腔、减振、开孔错位</td>
+          <td>约 +15～+30 dB（中语音带）</td>
+          <td>线性 FIR 压力明显下降；双讲余量更好</td>
+        </tr>
+        <tr>
+          <td>优秀 / 大间距手持听筒类</td>
+          <td>约 +30 dB 以上</td>
+          <td>AEC 轻松；紧凑门铃/枪机很少到此档</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <span class="label">读数纪律</span>
+      量级随音量、EQ、限幅、带宽、计权、安装面剧变——报告必须写清条件。
+      最大驱离档「差一截」往往可接受，但不能用对讲默认档的漂亮数代替大音量验收。
+      线性 ERLE 约 20–30 dB、总衰减到 ~40 dB 量级常被说成「听感接近干净」——那是<strong>算法</strong>指标，别和结构 ERL 比大小。
+    </div>
+
+    <h4 class="subhead">ERL / 隔离怎么测</h4>
+    <p>
+      共同前提：<strong>关 AEC·NS·AGC</strong>（量结构不是量算法）；近端静；音量档与安装面写死；带宽统一（如 300–3400 Hz 或 100 Hz–8 kHz）；计权要么都不用要么都 A 计权；激励用粉噪数秒或扫频，勿削波。
+    </p>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th></th>
+          <th>隔离 dB</th>
+          <th>ERL</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>测点 A</td>
+          <td>喇叭侧：数字参考（与功放一致）或约定声学点 SPL</td>
+          <td><span class="term">Rout</span> / 播放参考（receive-out）</td>
+        </tr>
+        <tr>
+          <td>测点 B</td>
+          <td>麦侧：raw mic 数字电平或拾音孔 SPL</td>
+          <td><span class="term">Sin</span> 上行麦（近端静 ≈ 纯回声）</td>
+        </tr>
+        <tr>
+          <td>计算</td>
+          <td>L<sub>A</sub> − L<sub>B</sub>（同带宽功率）</td>
+          <td>L<sub>Rout</sub> − L<sub>Sin</sub></td>
+        </tr>
+        <tr>
+          <td>首选做法</td>
+          <td colspan="2">数字通路：同步抓 reference + raw mic → 稳态段功率相减（结构评审与 AEC 对齐）</td>
+        </tr>
+        <tr>
+          <td>结构辅证</td>
+          <td>声学法：声级计喇叭约定点 − 拾音孔</td>
+          <td>一般不单独用声学两点冒充电话 ERL</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>最小脚本：</strong>
+      ① 算法全关，音量=对讲默认，贴墙；
+      ② 播 8 s 粉噪，录 reference + raw mic；
+      ③ 取中间稳态：ERL = dBFS(ref) − dBFS(mic)；
+      ④ 再测最大驱离音量、自由架空；
+      ⑤ 重要改版加看 <span class="term">ERL(f)</span>（分频带），避免壳体共振峰被全带平均数掩盖。
+    </p>
+    <div class="callout bad">
+      <span class="label">常见坑</span>
+      参考不是真功放路径（EQ/限幅后才到喇叭）→ 数虚高，AEC 仍对不齐；
+      麦削波 → 功率乱；
+      AEC 开着测 → 当成结构指标会美化；
+      把 ERL 和 ERLE 比大小 → 无意义（一个硬件、一个算法）。
+    </div>
+
+    <h3>3. Double-talk —— 全双工最难的一档</h3>
+    <p>
+      双方同时说话时，麦里混着本端语音 + 远端回声。若滤波器继续猛学，会把本端语音当成回声「学进去」而损伤语音。
+      ADI 明确：检测到声学路径中出现与 far-end 无关的声音时，滤波器应暂停适应，以便本端话音能送到远端。
+    </p>
+    <p>
+      <strong>产品听感：</strong> 双讲时一方突然变轻、断续、像对讲机抢麦——常见是双讲检测过猛，或其实整机在半双工策略下用 VAD 互斥。
+      「全双工」卖点要用双讲用例验收，不能只测单人轮流说。
+    </p>
+
+    <h2>失败模式 → 你该查什么</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>听感 / 投诉</th>
+          <th>优先怀疑</th>
+          <th>产品杠杆</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>听到自己延迟回来</td>
+          <td>AEC 未工作 / 参考缺失或延迟错</td>
+          <td>核对 reference 路由与 delay；是否半双工伪装</td>
+        </tr>
+        <tr>
+          <td>小声还行，喇叭开大就回</td>
+          <td>路径非线性（喇叭 THD）、残差抑制不够</td>
+          <td>限 SPL、Smart Amp 保护、加强隔离、调 NLP</td>
+        </tr>
+        <tr>
+          <td>双方同时说就断</td>
+          <td>双讲检测过激 / 实为半双工</td>
+          <td>双讲用例评测；核对是否 VAD 互斥</td>
+        </tr>
+        <tr>
+          <td>消回声后「空」或沙沙</td>
+          <td>NLP 过猛切信号；缺舒适噪声</td>
+          <td>残差参数；comfort noise（若栈支持）</td>
+        </tr>
+        <tr>
+          <td>只有环境吵、无自我回声</td>
+          <td>多半不是 AEC，是 NS / SNR / 远场</td>
+          <td>回到第 1–2 课：声场、麦 SNR、降噪</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout bad">
+      <span class="label">常见误区</span>
+      「换更高 SNR 的麦就能解决回音」。麦 SNR 改善底噪与远场，不消回声闭环。回音要靠 AEC + 声学隔离；有时换麦（灵敏度/相位）反而改变路径，需要重调。
+    </div>
+
+    <h2>竞争力评审三问</h2>
+    <ol class="tight">
+      <li><strong>是全双工还是半双工？</strong> 半双工用互斥掩盖回声，体验上限低，但实现便宜——写进规格，别用「自然对讲」糊弄。</li>
+      <li><strong>参考是否可信？</strong> 播放链路的音量、EQ、限幅是否与 AEC 看到的 reference 一致？不一致 = 估计永远对不齐。</li>
+      <li><strong>喇叭竞争力是否在吃 AEC？</strong> 「更大声驱离」会恶化耦合与非线性；要同时预算隔离 / ERL 与尾长/算力，而不是只加功放。改布局先对比默认音量与最大音量下的 ERL，再谈算法参数。</li>
+    </ol>
+
+    <h2>练习 · 投诉落点</h2>
+    <p>选项字数对齐。点选后立刻反馈。</p>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 1 / 3"
+         data-prompt="用户说：对讲时能清楚听到自己延迟回来的声音。主因最可能是？"
+         data-options='["麦克风 SNR 太低导致底噪偏大","AEC 失效或参考路径未对齐","AAC 码率不足齿音被编码切掉","AGC 把环境噪声抬得过高了"]'
+         data-answer="1"
+         data-explain-correct="正确。延迟的「自己」是回声特征：下行被上行拾取且未被消除，或参考/延迟使 AEC 对不齐。"
+         data-explain-wrong="再想：听到「自己延迟回来」不是底噪或齿音问题，优先查 AEC 与参考对齐。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 3"
+         data-prompt="竞品写「AI 降噪全双工」。拆卖点时，哪句最站得住？"
+         data-options='["有 AI 降噪就等于 AEC 已经足够","全双工仍需参考驱动的回声消除","降噪开到最大即可关闭全部 AEC","灵敏度更高的麦能替代回声消除"]'
+         data-answer="1"
+         data-explain-correct="正确。NS/AI 降噪与 AEC 职责不同；全双工依赖已知播放参考来建模并减去回声。"
+         data-explain-wrong="再想：降噪没有播放参考；不能把 NS 广告词当成 AEC 已经做对。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 3"
+         data-prompt="产品把驱离喇叭响度加大一档后，回音投诉激增。你的第一反应？"
+         data-options='["先换更高灵敏度麦克风抵消回灌","先查耦合/非线性是否拖垮了 AEC","先把采样率从八千改到四十八千","先关闭 AGC 以免放大远端回声"]'
+         data-answer="1"
+         data-explain-correct="正确。更大声 → 更强耦合与喇叭非线性 → 线性 AEC 残差变大。杠杆在隔离、限幅、残差抑制与重调，不是先加灵敏度。"
+         data-explain-wrong="再想：响度上升首先改变声学路径与非线性；采样率或灵敏度通常不是第一刀。">
+    </div>
+
+    <h2>本课关键术语（速查）</h2>
+    <p>讨论结构与 AEC 时优先用这些词。完整释义见 <a href="../reference/glossary.html#fir">术语表</a>。</p>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>术语</th>
+          <th>一句话</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">FIR</span></td>
+          <td>有限冲激响应滤波器；AEC 线性部分用 N 个 taps 拟合回声路径</td>
+        </tr>
+        <tr>
+          <td><span class="term">ERL</span></td>
+          <td>回声回损（AEC 关）：L<sub>参考</sub> − L<sub>麦</sub>；结构好不好，看它</td>
+        </tr>
+        <tr>
+          <td><span class="term">Isolation</span></td>
+          <td>喇叭→麦隔离 dB；数字通路上常与 ERL 同一测法</td>
+        </tr>
+        <tr>
+          <td><span class="term">ERLE</span></td>
+          <td>AEC <strong>额外</strong>衰减（算法指标）；勿与 ERL 比大小</td>
+        </tr>
+        <tr>
+          <td><span class="term">NLP</span> / RES</td>
+          <td>线性 FIR 之后的残差/非线性抑制（≠ 自然语言处理）</td>
+        </tr>
+        <tr>
+          <td><span class="term">tap</span> / echo tail</td>
+          <td>抽头个数与可覆盖拖尾；尾长 ≈ N / f<sub>s</sub></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      例如：你们是门铃大音量驱离，还是室内枪机轻声对讲？有没有「看起来全双工、实际半双工」的固件策略？把现象描述丢过来，我们一起落到参考 / 耦合 / 双讲。
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://wiki.analog.com/resources/tools-software/sigmastudio/toolbox/adialgorithms/aec" target="_blank" rel="noopener"><strong>ADI Wiki · Acoustic Echo Cancellation</strong></a>
+        — Far End In / 声学路径 / 自适应 FIR / 残差 RES / 双讲时暂停适应。先读概念段与「When AEC is Required」，实现细节可略过。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://www.ti.com/tool/TIDA-01589" target="_blank" rel="noopener">TI TIDA-01589（IP Camera 场景）</a>
+        ·
+        <a href="../reference/aec-cheatsheet.html">AEC 速查</a>
+        ·
+        <a href="../reference/glossary.html">术语表</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0002-read-mems-microphone-datasheet.html">MEMS Datasheet</a>
+        · 下一课预告：NS/ANR 与 AGC —— 各自失败听感，以及为何顺序通常是 AEC → NS → AGC
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script type="module" src="../assets/quiz.js"></script>
+</body>
+</html>

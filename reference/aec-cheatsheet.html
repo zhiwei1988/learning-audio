@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查 · AEC 与全双工</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>AEC 与全双工速查</h1>
+      <p class="lede">对讲评审时扫这一页。概念对齐 ADI AEC 说明与 TI 近场全双工参考设计用语。</p>
+    </header>
+
+    <h2>一句话</h2>
+    <p><strong>AEC</strong> = 用播放参考估计「喇叭→麦」路径，从拾音里减去回声。没有可信 reference，就没有真正的全双工。</p>
+
+    <h2>信号角色</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>是什么</th>
+          <th>搞错时的症状</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Far-end / Reference</td>
+          <td>即将（或正在）播放的远端信号副本</td>
+          <td>回音消不掉；或误消本端语音</td>
+        </tr>
+        <tr>
+          <td>Near-end</td>
+          <td>现场说话人（希望保留）</td>
+          <td>被当成回声削减 → 双讲损伤</td>
+        </tr>
+        <tr>
+          <td>Echo / Tail</td>
+          <td>参考经声学路径的延迟与拖尾；可覆盖时长 ≈ N taps / f<sub>s</sub></td>
+          <td>尾长不够 → 残余回声；过长 → 算力/时延成本。贴硬墙通常比自由场更长</td>
+        </tr>
+        <tr>
+          <td>量尾长</td>
+          <td>关算法扫频→反卷积 h(t)；或 xcorr / 收敛系数 / 加长 taps 看 ERLE</td>
+          <td>阈值（−40/−60 dB 或噪声底）与安装面必须写进规范</td>
+        </tr>
+        <tr>
+          <td>ERL / 隔离 dB</td>
+          <td>AEC 关、近端静：L_ref − L_mic（同带宽）；结构指标</td>
+          <td>差：可负～个位数；可干活：≳6–15 dB；好：≳15–30 dB。必写音量/安装面</td>
+        </tr>
+        <tr>
+          <td>ERLE</td>
+          <td>AEC 开：算法额外衰减</td>
+          <td>与 ERL 勿比大小；线性常见 ~20–30 dB</td>
+        </tr>
+        <tr>
+          <td>RES / NLP</td>
+          <td>线性滤波后的残差/非线性抑制（≠自然语言）</td>
+          <td>过猛 → 断续、空洞；过弱 → 大音量仍回</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>AEC vs NS vs 半双工</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th></th>
+          <th>解决什么</th>
+          <th>需要参考？</th>
+          <th>典型失败听感</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AEC</td>
+          <td>喇叭回灌的远端声</td>
+          <td>是</td>
+          <td>听到自己；双讲卡顿</td>
+        </tr>
+        <tr>
+          <td>NS / ANR</td>
+          <td>环境噪声</td>
+          <td>否</td>
+          <td>机器人声、辅音被削</td>
+        </tr>
+        <tr>
+          <td>半双工</td>
+          <td>用互斥回避回声</td>
+          <td>否（靠切换）</td>
+          <td>抢话、一方突然静音</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>验收最小集</h2>
+    <ul class="tight">
+      <li>单讲：远端说，近端静 → 远端不应听到清晰回声</li>
+      <li>近端单讲：近端说，远端静 → 语音清晰、无「空洞切削」</li>
+      <li>双讲：同时说 → 双方可懂（这是全双工真门槛）</li>
+      <li>音量扫描：喇叭多档；开大后回声/失真是否恶化</li>
+      <li>结构：AEC 关测 ERL/隔离（默认对讲 + 最大驱离 × 贴墙）；改布局先比 ERL 再调 NLP</li>
+      <li>结构扰动：换壳/贴墙/开门后是否需重收敛时间可接受</li>
+    </ul>
+
+    <h2>评审三问</h2>
+    <ol class="tight">
+      <li>规格写的是全双工还是半双工？</li>
+      <li>AEC 的 reference 是否与真实功放输出一致（音量/EQ/限幅）？</li>
+      <li>加大喇叭竞争力时，是否同步预算了耦合隔离与残差抑制？</li>
+    </ol>
+
+    <p class="meta">
+      <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课 · AEC</a>
+      · <a href="glossary.html">术语表</a>
+      ·
+      <a href="https://wiki.analog.com/resources/tools-software/sigmastudio/toolbox/adialgorithms/aec" target="_blank" rel="noopener">ADI AEC</a>
+      ·
+      <a href="https://www.ti.com/tool/TIDA-01589" target="_blank" rel="noopener">TI TIDA-01589</a>
+    </p>
+  </div>
+</body>
+</html>

@@ -37,8 +37,10 @@
   P.861 → P.862 → P.863 系谱。Use for: 评测路线图入门。
 
 ### 实时通信算法栈（对照）
+- [ADI Wiki: Acoustic Echo Cancellation](https://wiki.analog.com/resources/tools-software/sigmastudio/toolbox/adialgorithms/aec)
+  Far End In、声学路径、自适应 FIR、残差 RES、双讲时暂停适应；说明 AEC 何时必需。Use for: AEC 概念与全双工评审语言（第 3 课主文献）。
 - [WebRTC Audio Processing Module (APM) headers / docs](https://webrtc.googlesource.com/src/+/main/modules/audio_processing/include/audio_processing.h)
-  业界公开的 AEC / NS / AGC 实时语音处理组件集合。Use for: 算法模块命名与职责对照（摄像机厂商栈常类似）。
+  业界公开的 AEC / NS / AGC 实时语音处理组件集合。Use for: 算法模块命名与职责对照（摄像机厂商栈常类似）；后续课对照常见处理顺序 AEC → NS → AGC。
 
 ## Wisdom (Communities)
 

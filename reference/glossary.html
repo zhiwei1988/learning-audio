@@ -14,6 +14,19 @@
       <p class="lede">本课与后续课程共用的词表。产品讨论里请优先使用这些英文缩写，避免「听不清」「有回音」这种不可验收描述。</p>
     </header>
 
+    <p class="meta" style="max-width: none; margin: 0 0 1.25rem;">
+      第 3 课相关：
+      <a href="#aec">AEC</a> ·
+      <a href="#fir">FIR</a> ·
+      <a href="#tap">Tap</a> ·
+      <a href="#echo-tail">Echo tail</a> ·
+      <a href="#erl">ERL</a> ·
+      <a href="#isolation">Isolation</a> ·
+      <a href="#erle">ERLE</a> ·
+      <a href="#nlp">NLP / RES</a> ·
+      <a href="#double-talk">Double-talk</a>
+    </p>
+
     <dl>
       <div class="glossary-item">
         <dt>拾音 / Capture · 放音 / Playback</dt>
@@ -51,9 +64,45 @@
         <dt>PDM / I²S</dt>
         <dd>数字麦常见接口。PDM：脉冲密度调制，需时钟与抽滤；I²S：更接近 PCM 采样流。影响布线、抗扰与 SoC 对接，不直接等于音质优劣。</dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="aec">
         <dt>AEC · Acoustic Echo Cancellation</dt>
         <dd>声学回声消除：估计喇叭→麦克风的声学路径，从拾音中减掉「自己刚播出去的声音」。全双工对讲的核心。失败听感：回音、啸叫、远端听到自己。</dd>
+      </div>
+      <div class="glossary-item">
+        <dt>Reference · Far-end reference</dt>
+        <dd>AEC 用来建模回声的「已知播放信号」副本。没有可信参考（或延迟/音量与真实功放不一致），AEC 无法对齐。这是 AEC 与 NS 的分水岭。</dd>
+      </div>
+      <div class="glossary-item" id="double-talk">
+        <dt>Double-talk · 双讲</dt>
+        <dd>近端与远端同时说话。麦信号混有本端语音与回声；滤波器应减慢或暂停适应，否则会损伤本端语音。全双工真门槛用例。</dd>
+      </div>
+      <div class="glossary-item" id="echo-tail">
+        <dt>Echo tail · 回声尾长</dt>
+        <dd>喇叭→麦路径上，回声能量拖到可忽略的时长。量法：扫频反卷积得 h(t)，按峰值下 −40/−60 dB 或噪声底读时间；也可互相关粗测、看收敛 FIR 系数、或加长 taps 看 ERLE 拐点。贴硬墙往往比自由场更长（墙反射把中后段抬高）。算法规格里的 40/128 ms 是覆盖预算，不是测得值。门口反射、强耦合更吃算力与时延。</dd>
+      </div>
+      <div class="glossary-item" id="tap">
+        <dt>Tap · 抽头</dt>
+        <dd>FIR / 自适应滤波器里一个延迟点上的可调系数。N taps = N 个系数 = 能「记住」过去 N 个采样；可覆盖尾长 ≈ N / f<sub>s</sub>（如 640 taps @16 kHz ≈ 40 ms）。taps 越多，尾长预算越长，算力也越高。</dd>
+      </div>
+      <div class="glossary-item" id="fir">
+        <dt>FIR · Finite Impulse Response（有限冲激响应）</dt>
+        <dd>有限冲激响应滤波器：输出 = 过去有限个输入采样的加权和。AEC 线性部分常用自适应 FIR 拟合喇叭→麦路径；长度（taps）决定可覆盖的 echo tail。</dd>
+      </div>
+      <div class="glossary-item" id="erl">
+        <dt>ERL · Echo Return Loss（回声回损）</dt>
+        <dd>回声路径回损（AEC 关、近端静）：L_Rout − L_Sin（播放参考相对上行麦上的回声）。越大越好；免提大音量可为负。数字通路上常与「喇叭→麦隔离 dB」同一测法。测结构时必须关 AEC。</dd>
+      </div>
+      <div class="glossary-item" id="isolation">
+        <dt>Isolation · 喇叭→麦隔离（dB）</dt>
+        <dd>只有喇叭响时，喇叭侧电平减去麦侧电平（dB）。越大耦合越弱。数字法用 reference vs raw mic；声学法用声级计两点。与 ERL 相关但不与声学 SPL 混比。</dd>
+      </div>
+      <div class="glossary-item" id="erle">
+        <dt>ERLE · Echo Return Loss Enhancement（回声回损改善）</dt>
+        <dd>AEC 额外提供的回声衰减（算法指标）：AEC 前/后回声功率比。别和结构 ERL 比大小。线性部分常见约 20–30 dB 量级；再高常靠 NLP。</dd>
+      </div>
+      <div class="glossary-item" id="nlp">
+        <dt>RES / NLP · Residual / Non-linear processing（残差 / 非线性处理）</dt>
+        <dd>线性 AEC（FIR）之后对残余回声与非线性伪影（喇叭失真等）的抑制。过猛：语音断续、空洞；过弱：大音量仍回。此处 NLP ≠ 自然语言处理。</dd>
       </div>
       <div class="glossary-item">
         <dt>ANR / NS · Noise Reduction / Suppression</dt>
@@ -84,7 +133,9 @@
     <p class="meta">
       <a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课 · 信号链</a>
       · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课 · MEMS Datasheet</a>
+      · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课 · AEC</a>
       · <a href="mems-datasheet-cheatsheet.html">麦指标速查</a>
+      · <a href="aec-cheatsheet.html">AEC 速查</a>
       · <a href="../RESOURCES.md">RESOURCES.md</a>
     </p>
   </div>
