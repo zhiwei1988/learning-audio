@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 8 课 · 把听感变成站得住的数</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0008 · 约 20 分钟</p>
+      <h1>没有消声室，也能测出结论</h1>
+      <p class="lede">前七课每一课末尾都留了一串验收条款——「要求 X 米、Y dB(A) 下的 S-MOS」。但那些数，你自己怎么测？这一课回答它，并说清一件反直觉的事：<strong>你缺的从来不是精度，是可复现性。而可复现性可以不花钱买到。</strong></p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      MISSION 里写着「写出可验收的音频需求/评测条目」和「在跨职能评审中提出<strong>有证据</strong>的建议」。
+      前面七课给了你要什么数，这一课给你<strong>怎么拿到数</strong>——以及更重要的：
+      怎么判断一个数（你的，或供应商给的）<strong>能不能当证据</strong>。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>
+      给定一个「A 和 B 哪个好」的问题，能设计一次<strong>你自己就能跑</strong>的测试，
+      算出它的<strong>最小可分辨差异</strong>，并说清结论能证明什么、不能证明什么。
+      顺带把<a href="0003-aec-full-duplex-essentials.html">第 3 课</a>留下的那个空——「全双工要用双讲用例验收」——补成一个可以查表的等级。
+    </p>
+
+    <h2>一、先问你要回答哪个问题</h2>
+    <p>
+      「测音频」不是一件事，是三件。它们对设备的要求差着两个数量级，而绝大多数人把第一件的门槛套到了后两件上，结论就是「测不了，得买设备」。
+    </p>
+
+    <table class="ref">
+      <thead>
+        <tr><th>你要回答的问题</th><th>例子</th><th>需要什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>合规取证</strong><br /><span class="meta">要一个能对外声称的绝对数</span></td>
+          <td>「本机 TCLw ≥ 45 dB」写进规格书 / 过运营商入网</td>
+          <td><strong>必须外包</strong>给第三方实验室。消声室、人工头、认证签章，绕不过去</td>
+        </tr>
+        <tr>
+          <td><strong>A vs B 排序</strong><br /><span class="meta">两个方案谁好，好多少</span></td>
+          <td>麦 A 换成麦 B 值不值？降噪调到「强」是赚是赔？</td>
+          <td><strong>你自己能做。</strong>本课的主战场</td>
+        </tr>
+        <tr>
+          <td><strong>回归防守</strong><br /><span class="meta">改了东西有没有变差</span></td>
+          <td>播放缓冲从 60 ms 改到 120 ms，回声有没有回来？</td>
+          <td><strong>你自己能做</strong>，而且必须自己做——外包太慢，跟不上固件节奏</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout good">
+      <span class="label">这一刀先切下去</span>
+      产品决策里 <strong>90% 是后两类</strong>。后两类<strong>根本不需要绝对准确</strong>——
+      你不需要知道这台机器的真实 MOS 是 3.41 还是 3.28，你只需要知道<strong>换了之后是变好还是变坏、变了多少</strong>。
+      <br /><br />
+      而这两件事的难度天差地别。下面两节讲为什么。
+    </div>
+
+    <h2>二、消声室到底买的是什么</h2>
+    <p>
+      免提设备的测试条件写在 <strong>ITU-T P.340</strong> 里（免提终端的传输特性与语音质量参数）。
+      它对测试环境的第一句话，是整节课最值得读的一句：
+    </p>
+
+    <div class="callout warn">
+      <span class="label">标准自己说了实话</span>
+      <em>「<strong>For the repeatability of the tests</strong>, the environment for most of the measurements shall be free field (anechoic) down to the lowest frequency of the 1/3 octave band centred on 200 Hz.」</em>
+      （<a href="https://www.itu.int/rec/T-REC-P.340-200005-I" target="_blank" rel="noopener">ITU-T P.340</a> §5.4，可免费下载）
+      <br /><br />
+      注意开头那半句：消声室是<strong>为了可复现（repeatability）</strong>——
+      让同一台机器今天测和下个月测、在东京测和在深圳测，得到同一个数。
+      <strong>它买的不是「真实」，是「不变」。</strong>
+      <br /><br />
+      这句话是本课的钥匙：如果我能用别的办法买到「不变」，我就不需要那间房。
+    </div>
+
+    <p>那间房有多苛刻？P.340 §5.4 与 §5.3 的几条硬指标：</p>
+
+    <div class="callout warn">
+      <span class="label">先说清楚一个单位</span>
+      <strong>dBPa</strong>：以 <strong>1 帕斯卡（Pa）为 0 点</strong>的声压级刻度。
+      而 1 Pa 就是<a href="0002-read-mems-microphone-datasheet.html">第 2 课</a>那个 <strong>94 dB SPL</strong>。
+      所以换算只有一步：<code>dB SPL = 94 + dBPa</code>。
+      电话行业用它，是因为免提测试的电平天生都在 94 dB SPL 以下，写成负数比写 SPL 顺手。
+    </div>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>P.340 的要求</th>
+          <th>原文写法</th>
+          <th>换成 dB SPL<br /><span class="meta">+ 94</span></th>
+          <th>这是什么感觉</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>房间本底噪声</td>
+          <td>≤ −70 dBPa(A)</td>
+          <td><strong>24 dB(A)</strong></td>
+          <td>比无人的录音棚还静。普通安静卧室 30 dB(A) <strong>就已经超标</strong></td>
+        </tr>
+        <tr>
+          <td>消声到多低的频率</td>
+          <td>1/3 倍频程 200 Hz</td>
+          <td>—</td>
+          <td>200 Hz 波长 1.7 m，吸声尖劈得半米长。这是房间造价的大头</td>
+        </tr>
+        <tr>
+          <td>人工嘴校准电平</td>
+          <td>−4.7 dBPa @ MRP</td>
+          <td>89.3 dB SPL</td>
+          <td>MRP = 嘴唇前 25 mm 的参考点，贴着嘴测</td>
+        </tr>
+        <tr>
+          <td>被测机处收到的语音</td>
+          <td>−28.7 dBPa @ HFRP</td>
+          <td><strong>65.3 dB SPL</strong></td>
+          <td>免提机在 <strong>50 cm</strong> 外。这个数你见过</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout good">
+      <span class="label">停一下，这个数你确实见过</span>
+      <a href="0007-far-field-and-beamforming.html">第 7 课</a>用的说话人基准是 <strong>60 dB SPL @ 1 m</strong>。
+      按<a href="../reference/glossary.html#inverse-square">平方反比定律</a>，走近到 0.5 m 要加 6 dB → <strong>66 dB SPL @ 0.5 m</strong>。
+      P.340 规定的是 <strong>65.3 dB SPL @ 0.5 m</strong>。
+      <br /><br />
+      两个来源、两条路径，落在同一个点上。<strong>这不是巧合，是「正常人说话」这件事只有一个答案</strong>——
+      你之前算远场用的那把尺子，和 ITU 校准人工嘴用的是同一把。
+    </div>
+
+    <p>
+      还有一条常被忽略但很省事的：<strong>测试信号必须符合 <a href="https://www.itu.int/rec/T-REC-P.501" target="_blank" rel="noopener">ITU-T P.501</a></strong>（P.340 §5.5）。
+      而 P.501 的语音素材与噪声序列是<strong>免费公开下载</strong>的。
+      也就是说，四条要求里有一条你今天就能满足，而且零成本。
+    </p>
+
+    <h2>三、绝对分靠不住——这有实证</h2>
+    <p>
+      上一节是「标准说它需要可复现性」。这一节是「不满足条件时到底有多不可复现」——有人认真做过这个实验。
+    </p>
+    <p>
+      Naderi 与 Cutler 把 <strong>700 条同样的音频素材</strong>，用同一套流程、
+      在<strong>五个不同的日子</strong>各跑一次主观听音测试，每天换一批人（平均 89 位互不重复的评分者）。
+      唯一变的是「哪一天、哪批人」。结果：
+    </p>
+
+    <div class="callout warn">
+      <span class="label">先说清楚一个读数</span>
+      <strong>ICC</strong>（组内相关系数）：同一件事重复做 N 次，<strong>N 次的结果彼此有多一致</strong>。
+      1.0 = 五次完全重合；0 = 五次之间毫无关系。
+      <br />
+      粗略标尺：<strong>0.9 以上</strong>可以拿来做决策；<strong>0.7 上下</strong>叫「勉强」——
+      意思是你看到的差别里，有相当一部分只是「今天是星期几」。
+    </div>
+
+    <table class="ref">
+      <thead>
+        <tr><th>看哪个数</th><th>它是什么</th><th>五次之间的一致性 ICC</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MOS（绝对分）</td>
+          <td>「这段音频几分」——直接报出来的分</td>
+          <td><strong>0.719</strong>　勉强</td>
+        </tr>
+        <tr>
+          <td><strong>DMOS（差值）</strong></td>
+          <td>「这段音频的分 <strong>减去</strong> 同一场里那段未处理原声的分」</td>
+          <td><strong>0.907</strong>　可用</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="meta">
+      来源：Naderi &amp; Cutler,
+      <a href="https://arxiv.org/pdf/2005.08138" target="_blank" rel="noopener"><em>An Open source Implementation of ITU-T Recommendation P.808 with Validation</em></a>（INTERSPEECH 2020）§4.2。
+      原文：<em>「bias observed between MOS values in different runs is a <strong>well-known and common behavior</strong> in the subjective tests. Using the DMOS successfully <strong>removed that offset</strong>.」</em>
+      同一篇还验证了这套众包流程与实验室 P.800 结果的相关性 PCC = 0.962。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">这张表在说什么</span>
+      素材没变、流程没变、题目没变，<strong>只是换了一天</strong>，绝对分就整体漂移了。
+      但漂移是<strong>整场一起漂</strong>的——所以只要你在<strong>同一场</strong>里也测了一个参照物，
+      两者相减，漂移就消失了。
+      <br /><br />
+      <strong>这就是那把不用花钱的钥匙：消声室用「把环境钉死」买可复现性，你用「减去同场的参照」买同一样东西。</strong>
+      <br /><br />
+      而且这条规律不只对人耳打分成立。房间没变但空调开了、麦的位置挪了 2 cm、
+      功放热了 3 度、录音设备的增益旋钮被人碰过——每一样都是「今天是星期几」。
+    </div>
+
+    <div class="callout good">
+      <span class="label">配对四规则 · 本课最该记住的东西</span>
+      <ul class="tight" style="margin: 0.4rem 0 0;">
+        <li><strong>同一场</strong>：A 和 B 在同一次开机、同一个房间、连续测完。绝不「今天测 A，明天测 B」。</li>
+        <li><strong>同一素材</strong>：用同一个音频文件由喇叭播出，<strong>不要真人说话</strong>——人是不可复现的声源。</li>
+        <li><strong>同一参照</strong>：每一场都测一次「不变的那个东西」（原始未处理录音、或一台从不改动的基准机）。它是你的零点。</li>
+        <li><strong>报差值</strong>：结论写「B 比 A 好 1.8 dB」，不写「B 得了 3.4 分」。绝对分只在同一场内部有意义。</li>
+      </ul>
+    </div>
+
+    <h2>四、那这个差值，是真的吗？</h2>
+    <p>
+      配对解决了「场次漂移」。但还剩一件事：<strong>就算在同一场里，同一台机器连测两次也不会给出同一个数。</strong>
+      于是你测到 B 比 A 好 0.4 dB——这 0.4 是真的，还是抖出来的？
+    </p>
+
+    <div class="callout warn">
+      <span class="label">三个词，一次说清</span>
+      <strong>单次抖动</strong>：同一台机器、同一个条件，连测两次的差别有多大。这是你无法消除的随机成分。
+      <br />
+      <strong>场次偏置</strong>：整场一起偏的那个量（换了一天、挪了位置、动了增益）。配对能消掉它，重复测多少次都消不掉。
+      <br />
+      <strong>误差棒</strong>：你测到的那个差值，真值有 95% 的可能落在这段区间里。
+      <strong>只要这段区间跨过 0，你就不能说「B 比 A 好」</strong>——因为「一样好」也在区间里。
+    </div>
+
+    <div class="formula">
+      配对测（同场交替）：误差棒半宽 = <strong>1.96 × 单次抖动 × √(2 / 次数)</strong><br />
+      分开测（A 今天 B 明天）：= <strong>1.96 × √(2 × 场次偏置² + 2 × 单次抖动² / 次数)</strong><br />
+      <span class="meta">
+        注意第二个式子里，「次数」只除得动第二项。第一项是<strong>地板</strong>——
+        加测再多次，误差棒也压不到 1.96 × √2 × 场次偏置 以下。
+      </span>
+    </div>
+
+    <p>
+      下面这个模拟器让你亲手撞一次这堵墙。它替你扮演「真值已知」的上帝视角——现实里你永远不知道真值，
+      这正是为什么你必须先算误差棒。按顺序试这四步：
+    </p>
+    <ol>
+      <li>默认就是<strong>分开测 · 真实差异 +0.5 dB · 抖动 ±0.5 · 偏置 ±1.5 · 各测 3 次</strong>。看结论。</li>
+      <li>连点五次<strong>「重新做一次这个实验」</strong>。真值一直是 +0.5，而<strong>「本次测到的差值」在 ±4 之间乱跳</strong>，有时还是负的。这就是不可复现长什么样。</li>
+      <li>把「各测几次」拉到 <strong>30 次</strong>。误差棒从 ±4.23 变成 <strong>±4.17</strong>——<strong>十倍的工作量，几乎没变。</strong>盯住那行公式，看是哪一项没被除掉。</li>
+      <li>次数保持 30，只把设计切成<strong>配对测</strong>。误差棒 <strong>±0.25</strong>，胜率从 3% 跳到 98%。<strong>一个字的改动，抵过十倍的工作量。</strong></li>
+    </ol>
+
+    <div class="abrep"
+         data-ab-repeat
+         data-title="同一个真实差异，两种测法：你的结论能不能重复出来"
+         data-unit="dB"
+         data-labels='["配置 B（新）","配置 A（旧）"]'
+         data-truths='[0.2,0.5,1,2]'
+         data-withins='[0.2,0.5,1]'
+         data-biases='[0,0.5,1.5]'
+         data-repeats='[1,3,10,30]'
+         data-preset='{"truth":0.5,"within":0.5,"bias":1.5,"n":3,"design":"split"}'>
+    </div>
+
+    <div class="callout bad">
+      <span class="label">第 3 步是这一课最贵的一行</span>
+      <strong>「多测几次」是错觉。</strong>它只压得住单次抖动，压不住场次偏置。
+      你把 3 次加到 30 次，误差棒从 ±4.23 挪到 ±4.17，然后宣布「看不出差别」——
+      而真正的问题是<strong>这个测法本身有地板</strong>，你今天再测三百次也踩不穿。
+      <br /><br />
+      <strong>要改的是设计，不是次数。</strong>这句话适用范围远超音频：
+      任何「A 组和 B 组分开采集」的对比，都在交这份税。
+      <br /><br />
+      还有一个更坏的失败，在读数最后一行：<strong>「反了」</strong>那一栏。
+      误差棒不跨 0，你信心满满写进报告，<strong>但方向是反的</strong>。
+      它的比例通常只有 1–2%，靠手点很难撞上——但你一年做几十次对比测试，它就会来找你一两回。
+      <strong>这种失败最危险，因为它看起来像个结论。</strong>
+    </div>
+
+    <h2>五、跑一个真的：把「全双工」变成一个等级</h2>
+    <p>
+      <a href="0003-aec-full-duplex-essentials.html">第 3 课</a>说过：「全双工」这个卖点要用<strong>双讲</strong>用例验收，不能只测单人轮流说。
+      但当时没给你验收的刻度。P.340 §8 给了，而且它<strong>天生就是一个差值</strong>——
+      正好是本课方法的完美示范。
+    </p>
+
+    <div class="callout warn">
+      <span class="label">要测的量</span>
+      <strong>双讲衰减量 a<sub>H,S,DT</sub></strong>：本机说话人的声音送出去的电平，
+      <strong>在对方也在说话时</strong>，比<strong>只有本机在说话时</strong>低了多少 dB。
+      <br /><br />
+      衰减 0 dB = 对方插话完全不影响你——真全双工。
+      衰减 15 dB = 对方一开口你就被压掉大半——那是<a href="../reference/glossary.html#full-duplex">半双工</a>套了个全双工的壳。
+      <br /><br />
+      <strong>注意它是两个电平相减。</strong>所以你不需要知道任何一个电平的绝对准确值——
+      只要两次测量在同一场、同一素材、同一增益下完成，误差就在相减时抵消了。<strong>这正是配对四规则。</strong>
+    </div>
+
+    <table class="ref">
+      <thead>
+        <tr><th>步骤</th><th>做什么</th><th>为什么这么做</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>被测摄像机固定好，正前方 50 cm 放一只喇叭当「本地说话人」，播 P.501 语音（约 65 dB SPL）</td>
+          <td>喇叭可复现，真人不可复现。50 cm / 65 dB 直接抄 P.340，省掉自己定标准</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>另一台设备接通对讲，当「远端」。远端也用<strong>播放文件</strong>说话，不用真人</td>
+          <td>同上。而且远端素材必须每次一模一样，否则双讲的重合时刻会变</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>单讲</strong>：只放本地素材，远端静音。在远端<strong>录下</strong>收到的音频</td>
+          <td>这是你的参照。录音设备的增益从此不许动</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong>双讲</strong>：本地素材不变，同时放远端素材。同样在远端录</td>
+          <td>唯一变量是「远端有没有在说话」</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>两段录音里截出<strong>同一句话</strong>的同一段，算各自的 RMS 电平</td>
+          <td>必须是同一句——不同句子本身响度就不同，那是新的变量</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>a<sub>H,S,DT</sub> = 单讲电平 − 双讲电平</code>，查下表</td>
+          <td>差值。绝对刻度在这一步被消掉了</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>P.340 等级</th>
+          <th>送话方向衰减 a<sub>H,S,DT</sub></th>
+          <th>双讲时的回声衰减 TELR<sub>DT</sub></th>
+          <th>产品语言</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Behaviour 1</strong></td><td>≤ 3 dB</td><td>≥ 37 dB</td><td><strong>全双工</strong>（full duplex capability）</td></tr>
+        <tr><td>Behaviour 2a</td><td>3 – 6 dB</td><td>33 – 37 dB</td><td rowspan="3">部分双工——插话听得见，但自己被压低</td></tr>
+        <tr><td>Behaviour 2b</td><td>6 – 9 dB</td><td>27 – 33 dB</td></tr>
+        <tr><td>Behaviour 2c</td><td>9 – 12 dB</td><td>21 – 27 dB</td></tr>
+        <tr><td><strong>Behaviour 3</strong></td><td>&gt; 12 dB</td><td>&lt; 21 dB</td><td><strong>无双工能力</strong>——实为半双工</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      门槛来自 <a href="https://www.itu.int/rec/T-REC-P.340-200005-I" target="_blank" rel="noopener">ITU-T P.340</a> Table 4 与 §8.2（受话方向门槛略严：3 / 5 / 8 / 10 dB）。
+      P.340 §8.1 的原话是这套分级的依据：<em>「Hands-free terminal should be categorized on the basis of "duplex capability"… they may be characterized by the attenuation range.」</em>
+    </p>
+
+    <div class="callout bad">
+      <span class="label">诚实声明：这是近似，不是合规</span>
+      P.340 原版要用消声室、人工嘴、人工头和 CSS 复合测试信号，电平和带宽都有严格规定。
+      上面这套用喇叭 + 录音笔的做法<strong>拿不到合规结论，不能对外声称「符合 P.340 Behaviour 1」</strong>。
+      <br /><br />
+      但它<strong>完全够用于</strong>：给三台竞品排序、验证固件改动有没有把双讲搞坏、
+      以及在评审桌上把「我们是全双工」逼成「衰减 8 dB，属于 2b」。
+      <strong>这正是第一节那三个问题的分工——你在做后两个，不是第一个。</strong>
+    </div>
+
+    <h2>六、其余三个用例与器材清单</h2>
+    <table class="ref">
+      <thead>
+        <tr><th>问题</th><th>配对怎么配</th><th>报什么数</th><th>怎么读</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>降噪调狠了值不值</strong></td>
+          <td>同一段带噪录音，喂两个档位跑一遍</td>
+          <td><strong>成对报两个数</strong>：噪声降了多少 dB / 语音也降了多少 dB</td>
+          <td>只报前一个就是耍流氓（<a href="0004-ns-agc-and-chain-order.html">第 4 课</a>的 <a href="../reference/glossary.html#snri">SNRI / DSN</a> 成对原则）</td>
+        </tr>
+        <tr>
+          <td><strong>换麦值不值</strong></td>
+          <td>两台机同场、同位置、同素材，交替录</td>
+          <td>安静房间里的<strong>本底噪声</strong>差、4 m 处的<strong>信噪比</strong>差</td>
+          <td>回<a href="0007-far-field-and-beamforming.html">第 7 课</a>那张距离表判读</td>
+        </tr>
+        <tr>
+          <td><strong>时延</strong></td>
+          <td>声学环回 + 第三方录音设备</td>
+          <td>嘴到耳单程 ms</td>
+          <td><a href="0006-latency-budget.html">第 6 课</a>已给方法，标尺是 <a href="../reference/glossary.html#g114">G.114</a> 的 150 / 400 ms</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="ref">
+      <thead>
+        <tr><th>器材</th><th>量级</th><th>干什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>已校准 USB 测量麦<br /><span class="meta">如 miniDSP UMIK-1，逐支附校准文件</span></td>
+          <td>约 ¥600</td>
+          <td>测房间本底噪声、测你那只喇叭实际放出多少 dB SPL。<strong>没有它，你连「环境噪声 45 dB(A)」这句话都写不出来</strong></td>
+        </tr>
+        <tr>
+          <td>一只小监听喇叭 + 声卡</td>
+          <td>约 ¥800</td>
+          <td>当「说话人」。要求不高——它只需要<strong>每次一样</strong>，不需要 Hi-Fi</td>
+        </tr>
+        <tr>
+          <td>一台<strong>不参与被测链路</strong>的录音设备</td>
+          <td>手上的手机就行</td>
+          <td>录远端收到的音频。关键是它<strong>不能是被测系统的一部分</strong>，否则你测的是它</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.roomeqwizard.com/" target="_blank" rel="noopener">REW（Room EQ Wizard）</a></td>
+          <td>免费</td>
+          <td>房间本底噪声、频响、<strong>RT60 混响时间</strong>（<a href="0007-far-field-and-beamforming.html">第 7 课</a>的<a href="../reference/glossary.html#critical-distance">混响半径</a>要用）</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.itu.int/rec/T-REC-P.501" target="_blank" rel="noopener">ITU-T P.501 测试信号</a></td>
+          <td>免费</td>
+          <td>标准语音素材与噪声序列。<strong>用它，你的素材就和实验室是同一批</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="ref">
+      <thead>
+        <tr><th>开源打分工具</th><th>它给什么</th><th>坑</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>DNSMOS P.835</strong><br /><span class="meta">Microsoft，神经网络模型</span></td>
+          <td>三个分：语音质量 SIG / 背景噪声 BAK / 综合 OVRL，与人耳评分相关性 0.94–0.98</td>
+          <td>不需要参考信号，最省事。但它是在<strong>降噪算法的数据</strong>上训的——拿去评回声或时延，超出它的射程</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://github.com/google/visqol" target="_blank" rel="noopener">ViSQOL v3</a></strong><br /><span class="meta">Google，开源 C++/Python</span></td>
+          <td>拿处理后音频与<strong>干净原声</strong>比对，输出 MOS-LQO（1–5）</td>
+          <td>需要严格时间对齐的参考信号。适合编码、丢包，不适合有房间声学的录音</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://github.com/microsoft/P.808" target="_blank" rel="noopener">microsoft/P.808 工具包</a></strong><br /><span class="meta">众包主观听音</span></td>
+          <td>ACR / DCR / <strong>CCR</strong> / P.835 的完整流程：听力筛查、环境测试、陷阱题、数据清洗</td>
+          <td>要挂 Amazon MTurk 或 Prolific，涉及付费与合规。但<strong>它是唯一给你真人耳朵的路</strong></td>
+        </tr>
+        <tr>
+          <td>PESQ / P.563</td>
+          <td>老牌客观分</td>
+          <td><strong>慎用。</strong>见下</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout bad">
+      <span class="label">客观分不是听感的替身</span>
+      <em>「Objective measures of speech quality such as <strong>PESQ, SRMR, and P.563</strong> have been shown to have a
+      <strong>low correlation to listening opinion, and are not reliable replacements</strong> for listening opinion tests
+      even though they are widely used by researchers due to their convenience.」</em>
+      （<a href="https://arxiv.org/pdf/2005.08138" target="_blank" rel="noopener">Naderi &amp; Cutler 2020</a> §1）
+      <br /><br />
+      翻译成产品语言：客观分适合当<strong>回归防守的哨兵</strong>——分掉了说明有事发生，值得去听。
+      但它不能当<strong>选型的裁判</strong>。要在两个方案之间下注，最终得有人耳朵在场。
+      <br /><br />
+      如果只能听一次，用 <strong>CCR</strong>（成对比较：把 A 和 B 连着放，问「后一个比前一个好还是差」）。
+      它天然就是差值，抖动比让人打绝对分小得多——<strong>又一次配对</strong>。
+    </div>
+
+    <div class="checklist">
+      <h3>评测条款 · 可直接抄进需求文档或发给供应商</h3>
+      <ul>
+        <li><strong>任何音频指标必须带条件</strong>：距离、声源电平 dB SPL、环境噪声 dB(A)、被测功能开关状态。缺一条就退回。</li>
+        <li><strong>要成对的数</strong>：降噪报 SNRI 必须同时报 DSN；波束成形报 DI 必须同时报 WNG；从不接受单边好消息。</li>
+        <li><strong>全双工写等级不写形容词</strong>：要求供应商给 <strong>P.340 Behaviour 等级</strong>及双讲衰减量 dB，不接受「支持全双工」。</li>
+        <li><strong>要求对比测试同场完成</strong>：竞品对比、版本对比必须同一天同一房间同素材，报告里写明。</li>
+        <li><strong>要求给出重复次数与波动范围</strong>，不接受单次测量的一个数。差值小于波动范围时视为无差异。</li>
+        <li><strong>回归门槛写差值</strong>：如「相对基线版本，双讲衰减量恶化不得超过 2 dB」，而不是「双讲衰减量 ≤ 6 dB」。</li>
+        <li><strong>素材统一</strong>：全项目使用同一套 P.501 语音与噪声素材，版本入库，不许各测各的。</li>
+        <li><strong>只有需要对外声称的绝对数才外包实验室</strong>，其余全部内部跑——预算花在刀刃上。</li>
+      </ul>
+    </div>
+
+    <h2>练习 1 · 排出一次站得住的测试</h2>
+    <p>你要对比两版降噪固件。把下面六步排成正确顺序——先想，再点。</p>
+
+    <div class="order-drill"
+         data-order-drill
+         data-title="练习 · 一次可复现的 A/B 对比"
+         data-prompt="按执行的正确顺序点选。"
+         data-items='["测并记录房间本底噪声","布好几何并锁死增益","录基准参照","交替录 A 与 B 各若干次","算差值与误差棒","下结论或宣布测不出"]'
+         data-why='[
+           "先量环境。房间今天多吵决定了这场测试的结果能不能和上一场比——也是报告里必须写进去的条件之一。它还给你一个中止条件：装修队开工的日子就别测了。",
+           "距离、角度、音量、录音增益，全部锁死并记下来。这一步是把「场次偏置」这个变量按住的唯一机会——一旦开测就不许再碰。",
+           "录一次不变的参照物（未处理原声，或一台从不改动的基准机）。它是这一场的零点。没有它，这场的数就没法和别的场比，绝对分会带着当天的漂移。",
+           "交替、同场、多次。交替是为了让缓慢漂移（功放变热、房间变吵）平均地落在 A 和 B 身上，而不是全砸在后测的那个头上。",
+           "先算误差棒，再看差值。顺序反了你会不自觉地挑一个能支持结论的读法。",
+           "差值大于误差棒才下结论；否则老实写「本次测不出差异」。这不是失败——「测不出」是一个合法且有用的结论，它告诉你这个改动不值得为它花钱。"
+         ]'
+         data-done="全对。注意这个形状：量环境 → 锁变量 → 立零点 → 交替测 → 先算不确定度 → 才允许下结论。任何 A/B 对比都是这六步，音频只是它的一个实例。">
+    </div>
+
+    <h2>练习 2 · 判断题</h2>
+    <p>选项字数对齐。点选后立刻反馈。</p>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 4"
+         data-prompt="上周测了麦 A，这周测了麦 B，各测 30 次，B 好 0.6 dB。这个结论？"
+         data-options='["存疑，两场之间的偏置没有被抵消掉","可信，各测三十次已经足够压住抖动","可信，两支麦用的是同一套测试素材","存疑，但再各加测三十次就能确认了"]'
+         data-answer="0"
+         data-explain-correct="正确。分开测时误差棒有地板：1.96 × √2 × 场次偏置，次数除不动它。上周和这周之间，房间、温度、增益旋钮、甚至你自己的手法都可能变了，而这些变化整场一起偏，正好伪装成「差异」。唯一的修法是重做一次同场配对。"
+         data-explain-wrong="再想：回到模拟器把次数拉到 30，看误差棒动了多少。次数只除得动单次抖动那一项；场次偏置那一项分母上根本没有次数。素材相同是必要条件，但它管不住两场之间的环境与设备状态。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 4"
+         data-prompt="供应商说「我们支持全双工」。按本课，你要求他把这句话换成什么？"
+         data-options='["双讲衰减量的分贝数与对应等级","第三方消声室出具的合规认证报告","双讲场景下的用户满意度调研结论","更长的回声消除器尾长与收敛时间"]'
+         data-answer="0"
+         data-explain-correct="正确。P.340 把「全双工」定义成一个可量的差值：双讲时送话电平比单讲低几 dB。≤3 dB 是 Behaviour 1（真全双工），>12 dB 是 Behaviour 3（其实是半双工）。要这个数，你自己也能复核；要「认证报告」则既慢又贵，而且多数摄像机厂商根本没做过。"
+         data-explain-wrong="再想：你要的是一个自己能复核、能写进验收、能做回归的量。尾长和收敛时间是实现细节，不直接等于双讲表现；满意度调研样本小、不可复现，也没法用来卡版本。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 4 / 4"
+         data-prompt="你在同一场里配对测了两版降噪，差值 0.3 dB，误差棒 ±0.9 dB。写什么？"
+         data-options='["本次测不出差异，改动不值得为它花钱","新版略优于旧版，提升幅度约零点三分贝","测试无效需要重做，误差棒明显过大了","应改用绝对评分，差值法在这里不适用"]'
+         data-answer="0"
+         data-explain-correct="正确。误差棒跨过 0，「两版一样」也在区间里，所以不能声称有提升。而这恰恰是有用的信息：如果新版还带来了算力或风险成本，那这个改动不划算。「测不出」是结论，不是失败——它把决策从「感觉变好了」拉回到证据上。"
+         data-explain-wrong="再想：0.3 落在 ±0.9 里面，写「略优」就是把噪声当信号，这是报告里最常见的错误。误差棒大也不等于测试无效——它诚实地告诉你这套测法能分辨到什么粒度；真要分辨 0.3 dB，就得加次数或降抖动，那是下一次的事。改回绝对分只会更差，第三节的 ICC 表已经说明了。">
+    </div>
+
+    <h2>本课关键术语（速查）</h2>
+    <table class="ref">
+      <thead>
+        <tr><th>术语</th><th>一句话</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="term">repeatability</span> 可复现性</td><td>同一件事重复做，能不能得到同一个数。消声室买的就是它</td></tr>
+        <tr><td><span class="term">场次偏置</span></td><td>整场一起偏的量；配对能消掉，加测次数消不掉</td></tr>
+        <tr><td><span class="term">误差棒</span></td><td>差值的 95% 区间；跨过 0 就不能下结论</td></tr>
+        <tr><td><span class="term">DMOS</span> 差值分</td><td>减去同场参照后的分；ICC 0.907 vs 绝对分 0.719</td></tr>
+        <tr><td><span class="term">CCR</span> 成对比较</td><td>连着放 A 和 B 问哪个好；主观测试里的配对法</td></tr>
+        <tr><td><span class="term">dBPa</span></td><td>以 1 Pa 为 0 点的声压刻度；<code>dB SPL = 94 + dBPa</code></td></tr>
+        <tr><td><span class="term">双讲衰减量</span> a<sub>H,DT</sub></td><td>双讲时送话比单讲低几 dB；P.340 用它给全双工分级</td></tr>
+        <tr><td><span class="term">DNSMOS</span></td><td>免参考的神经网络打分，给 SIG / BAK / OVRL 三个数</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      完整释义见 <a href="../reference/glossary.html#repeatability">术语表</a>；
+      配对规则、P.340 等级表、器材与工具清单见 <a href="../reference/measurement-cheatsheet.html">评测方法速查</a>。
+    </p>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      最有价值的下一步：挑一个你眼下真正要拍板的问题——换麦、调降噪档位、改缓冲——
+      告诉我它是什么，我们一起把它写成一份具体的测试计划：素材、几何、参照物、测几次、误差棒预估。
+      也可以把供应商给你的测试报告发我，我们一起看它有没有说清条件、有没有报成对的数、是不是同场测的。
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://www.itu.int/rec/T-REC-P.340-200005-I" target="_blank" rel="noopener"><strong>ITU-T Recommendation P.340 · Transmission characteristics and speech quality parameters of hands-free terminals</strong></a>
+        — ITU 官网免费下载。<strong>不要通读</strong>，只读三节：
+        <strong>§5「Testing conditions」</strong>（那句 "for the repeatability of the tests" 和全部电平定义）、
+        <strong>§8「Behaviour … in double talk situation」</strong>（Table 4，两页，本课的分级表）、
+        <strong>§6「Conversational quality」</strong>（full / partial / no duplex 的官方定义）。
+        <br />
+        它是一份 2000 年的电话行业文档，但摄像机对讲面对的是同一个物理问题——
+        而<strong>它给了你一把别人不好意思反驳的尺子</strong>。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://arxiv.org/pdf/2005.08138" target="_blank" rel="noopener">Naderi &amp; Cutler 2020 · 绝对分 vs 差值的复现性实证（§4.2 两页）</a>
+        ·
+        <a href="https://github.com/microsoft/P.808" target="_blank" rel="noopener">microsoft/P.808 · 众包听音工具包</a>
+        ·
+        <a href="https://www.itu.int/rec/T-REC-P.501" target="_blank" rel="noopener">ITU-T P.501 · 免费测试信号</a>
+        ·
+        <a href="../reference/measurement-cheatsheet.html">评测方法速查</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0007-far-field-and-beamforming.html">远场与波束成形</a>
+        · 下一课：<a href="0009-loudspeaker-amp-and-smart-amp.html">放音侧 —— 喇叭、功放与 Smart Amp</a>
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/order-drill.js"></script>
+  <script defer src="../assets/ab-repeat.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

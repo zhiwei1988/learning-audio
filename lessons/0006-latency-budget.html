@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 6 课 · 时延预算</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0006 · 约 20 分钟</p>
+      <h1>把「有点卡」拆成一张可分配的账</h1>
+      <p class="lede">对讲慢，几乎不是算力问题，而是一笔没人记过的账。这一课教你把 mouth-to-ear 拆成九项、逐项填数、找出最大项——然后知道该找谁改。</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      第 5 课留了一个钩子：<strong>时延不能只报编码那一段</strong>。
+      但「总时延要低」是句废话，除非你能说出它由哪几项构成、每项典型多少、哪项能动。
+      这张账是评审桌上最有杀伤力的一页纸——因为供应商通常只报一个总数，或者只报对自己有利的那一段。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>
+      给定一台设备的对讲配置，能<strong>列出九项时延、各填一个数、算出总数</strong>，
+      指出<strong>最大的那一两项</strong>，并区分哪些是<strong>你能改的</strong>、哪些在设备之外。
+    </p>
+
+    <h2>一、先立两根标尺</h2>
+    <p>
+      时延没有绝对好坏，只有相对于哪条线。行业里有两条，量的不是同一件事：
+    </p>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>标尺</th>
+          <th>数值</th>
+          <th>出处与含义</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>交互式双向通信</td>
+          <td><strong>≤ 50 ms</strong></td>
+          <td>
+            Fraunhofer：<em>「the system delay for interactive two way communication should not exceed 50 ms」</em>
+            （<a href="https://www.iis.fraunhofer.de/content/dam/iis/de/doc/ame/conference/AES-122-Convention_AAC-ELD_LowBitrateHighQualityCommunication_AES6998.pdf" target="_blank" rel="noopener">AES 122</a>）。
+            这是<strong>编码方为「毫无察觉的自然对话」设的高标</strong>。
+          </td>
+        </tr>
+        <tr>
+          <td rowspan="3">ITU-T G.114<br /><span class="meta">单向 mouth-to-ear</span></td>
+          <td><strong>0–150 ms</strong></td>
+          <td>基本透明，绝大多数应用感觉不到延迟。<strong>这是消费级对讲的现实目标。</strong></td>
+        </tr>
+        <tr>
+          <td>150–400 ms</td>
+          <td>「可接受，但前提是使用方知情」。开始出现抢话、互相打断。</td>
+        </tr>
+        <tr>
+          <td>&gt; 400 ms</td>
+          <td>网络规划上不应超过。用户会自发退回半双工——说完一句停一下等回应。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      G.114 数据出自 <a href="https://www.itu.int/rec/T-REC-G.114/en" target="_blank" rel="noopener">ITU-T Rec. G.114 (05/2003)</a>
+      （<a href="http://www.cs.columbia.edu/~andreaf/new/documents/other/T-REC-G.114-200305.pdf" target="_blank" rel="noopener">公开 PDF 镜像</a>）。
+      同一份文件还有一句常被忽略：<strong>高交互性任务在超过约 100 ms 时就已明显变难</strong>。
+    </p>
+
+    <div class="callout warn">
+      <span class="label">先说清楚一个词</span>
+      <strong><span class="term">mouth-to-ear</span>（嘴到耳）</strong>：从说话人张嘴，到听话人耳朵听见，中间<strong>全部</strong>环节的单向总延迟。
+      它不是「编码时延」，不是「网络 ping 值」，也不是 ping 的一半。
+      供应商报「我们时延 30 ms」时，第一句话应该是：<strong>「这 30 ms 是哪一段？」</strong>
+    </div>
+
+    <h2>二、这张账有九行</h2>
+    <p>
+      按信号流经的顺序，从访客的嘴到用户的耳。下面每一项都可选，选完实时算总数。
+      先点「典型出厂配置」看看一台没优化过的机器长什么样。
+    </p>
+
+    <div class="budget"
+         data-budget
+         data-unit="ms"
+         data-title="时延预算 · 访客说话 → 手机 App 听见（单向）"
+         data-items='[
+           {"name":"声音走过空气","note":"声速 343 m/s","default":1,"options":[{"label":"1 m","v":3},{"label":"3 m（门口典型）","v":9},{"label":"5 m","v":15}]},
+           {"name":"麦克风 + ADC","note":"器件固有 group delay","default":0,"options":[{"label":"数字 MEMS · 6 µs","v":0.006},{"label":"模拟麦 + Codec ADC","v":0.5}]},
+           {"name":"采集缓冲（DMA 块）","note":"驱动一次交给你多少数据","default":2,"options":[{"label":"5 ms 块","v":5},{"label":"10 ms 块","v":10},{"label":"20 ms 块（常见）","v":20},{"label":"40 ms 块","v":40}]},
+           {"name":"算法块 AEC / NS / AGC","note":"处理帧长，非 AEC 尾长","default":0,"options":[{"label":"10 ms 帧（WebRTC APM）","v":10},{"label":"16 ms 帧","v":16},{"label":"20 ms 帧","v":20}]},
+           {"name":"编解码算法时延","note":"公开数值已含解码，只填一次","default":0,"options":[{"label":"G.711 · 逐样本","v":0.125},{"label":"AAC-ELD · 15 ms","v":15},{"label":"AAC-LD · 20 ms","v":20},{"label":"AAC-LC · 55 ms","v":55}]},
+           {"name":"打包 ptime","note":"一个 RTP 包装多少音频","default":2,"options":[{"label":"5 ms","v":5},{"label":"10 ms","v":10},{"label":"20 ms（VoIP 默认）","v":20},{"label":"40 ms","v":40}]},
+           {"name":"网络单程传输","own":false,"note":"ping 值的一半","default":1,"options":[{"label":"同一局域网","v":2},{"label":"家宽跨省","v":30},{"label":"移动网络","v":60},{"label":"跨国","v":150}]},
+           {"name":"抖动缓冲（接收侧）","note":"典型 3×ptime，弱网自适应加长","default":1,"options":[{"label":"1×ptime · 20 ms","v":20},{"label":"3×ptime · 60 ms","v":60},{"label":"弱网自适应 · 120 ms","v":120},{"label":"极端弱网 · 200 ms","v":200}]},
+           {"name":"播放缓冲 + DAC","note":"送进喇叭前的最后一段","default":1,"options":[{"label":"5 ms","v":5},{"label":"10 ms","v":10},{"label":"20 ms","v":20}]}
+         ]'
+         data-thresholds='[
+           {"at":50,"label":"交互式双向通信","tone":"good","verdict":"极好。落在 Fraunhofer 给交互式双向通信画的 50 ms 线内——现实中几乎只有同一局域网 + 极限小块 + 逐样本编码才够得着。"},
+           {"at":150,"label":"G.114 基本透明","tone":"good","verdict":"可交付。落在 ITU-T G.114 的「基本透明」区间（≤150 ms）。这是消费级对讲的现实目标，不必去追 50 ms。"},
+           {"at":400,"label":"G.114 规划上限","tone":"warn","verdict":"开始变差。G.114 说 150–400 ms 只有在用户知情的前提下才可接受。这一档会开始收到「抢话」「两个人同时开口」的投诉。"}
+         ]'
+         data-over="不可接受。超过 G.114 的 400 ms 规划上限，用户会自己退回半双工——说一句、停一下、等回应，像在用对讲机。"
+         data-presets='[
+           {"label":"典型出厂配置","pick":[1,0,2,0,0,2,1,1,1]},
+           {"label":"把对讲换成 AAC-LC","pick":[1,0,2,0,3,2,1,1,1]},
+           {"label":"认真优化过","pick":[1,0,1,0,0,1,1,0,0]},
+           {"label":"局域网直连 + 极限小块","pick":[0,0,0,0,0,0,0,0,0]}
+         ]'>
+    </div>
+
+    <div class="callout good">
+      <span class="label">这张表最想让你看见的一件事</span>
+      把每一项都试一遍，你会发现：<strong>缓冲统治了这张账，算法几乎不占位置。</strong>
+      麦克风的固有延迟是 <strong>6 µs</strong>（Infineon IM69D130，
+      <a href="https://www.infineon.com/assets/row/public/documents/24/49/infineon-im69d130-datasheet-en.pdf" target="_blank" rel="noopener">datasheet</a>）——
+      比声音走过 1 米空气还小 <strong>五百倍</strong>。
+      所以「换个好麦降时延」是一句无意义的话；而「把采集块从 20 ms 改成 10 ms」白赚 10 ms，代价只是中断频率翻倍。
+    </div>
+
+    <p>
+      再点一次「局域网直连 + 极限小块」：每一档都拧到最小、网络只有 2 ms，总数是 <strong>50 ms</strong>。
+      刚好卡在 Fraunhofer 那条线上。这不是巧合，是结论——
+      <strong>50 ms 是一台联网设备的地板，不是可以拿来验收的目标。</strong>
+      真正该写进规格书的是 G.114 的 <strong>150 ms</strong>：它给你留了做抖动缓冲、跨网络传输、以及产品必然要有的那些冗余的空间。
+    </p>
+
+    <h2>三、三个最常见的记账错误</h2>
+
+    <h4 class="subhead">错误 1：把 AEC 的尾长当成时延</h4>
+    <p>
+      第 3 课讲过 <a href="../reference/glossary.html#echo-tail"><span class="term">echo tail</span>（回声尾长）</a>——AEC 自适应滤波器能覆盖多长的回声路径，典型 128 ms。
+      很多人在预算表里直接加一行「AEC 128 ms」。<strong>错。</strong>
+      尾长是<strong>滤波器有多长</strong>，不是<strong>信号要等多久</strong>。
+      AEC 引入的时延只有它的处理帧长——WebRTC 的音频处理模块（APM）文档写得很死：
+      <em>「APM accepts only 16-bit linear PCM audio data in frames of 10 ms」</em>
+      （<a href="https://webrtc.googlesource.com/src/+/main/modules/audio_processing/include/audio_processing.h" target="_blank" rel="noopener">audio_processing.h</a>）。
+      <strong>10 ms，不是 128 ms。</strong>
+    </p>
+
+    <h4 class="subhead">错误 2：编码和解码各记一次</h4>
+    <p>
+      「AAC-LD 算法时延 20 ms」这类公开数字，指的是<strong>编码器 + 解码器这一对</strong>加起来的固有延迟。
+      在预算表里填两次，等于凭空多算一倍。同理，
+      <a href="0005-codec-bandwidth-and-latency.html">第 5 课</a>表里的 55 / 20 / 15 ms 都是<strong>整对</strong>的数。
+    </p>
+
+    <h4 class="subhead">错误 3：把 ping 值当成单程时延</h4>
+    <p>
+      ping 报的是<strong>往返</strong>（round-trip）。单向预算里要用一半。
+      但反过来——聊「回声」时又必须用整个往返，因为回声本来就是绕了一圈回来的。
+      这两个场景用同一个数字，是评审里最容易糊弄过去的一处。
+    </p>
+
+    <h2>四、时延和回声是同一笔账（回到第 3 课）</h2>
+    <p>
+      G.114 里有一条容易被跳过的因果：<strong>延迟越长，回声越难忍受</strong>。
+      同样 −30 dB 的残余回声，延迟 20 ms 时听起来只是「声音有点厚」，延迟 200 ms 时就是清清楚楚的另一个自己在说话。
+      这就是为什么<a href="0003-aec-full-duplex-essentials.html">第 3 课</a>的 AEC 和这一课的预算表必须一起看。
+    </p>
+    <p>
+      还有一条更硬的耦合。<a href="../reference/glossary.html#aec">AEC</a> 要能消掉回声，前提是
+      <strong>参考信号与麦克风收到的回声之间的时间差，必须落在滤波器的尾长之内</strong>。这个时间差是：
+    </p>
+    <div class="formula">
+      播放缓冲 &nbsp;+&nbsp; 喇叭到麦的空气路径与房间混响 &nbsp;+&nbsp; 采集缓冲 &nbsp;&lt;&nbsp; AEC 尾长
+    </div>
+
+    <div class="callout bad">
+      <span class="label">一个真实会发生的连锁事故</span>
+      弱网下有杂音 → 工程把<strong>播放缓冲从 20 ms 加到 200 ms</strong> → 杂音没了，
+      但喇叭发声比参考信号晚了 200 ms，<strong>整段回声跑到 128 ms 尾长之外</strong> →
+      AEC 一点都消不掉 → 用户投诉「对方能听见自己说话」。
+      于是有人去调 AEC 参数，调三个月也调不好——因为问题根本不在 AEC，在缓冲。
+      <strong>改任何一个缓冲之前，先问它会不会把回声推出尾长。</strong>
+    </div>
+
+    <h2>五、这些 ms 到底怎么量</h2>
+    <p>
+      没有 HEAD acoustics 那套设备也能量，用<strong>声学环回法</strong>，成本是一支录音笔：
+    </p>
+    <ol>
+      <li>把摄像机和手机放在同一张桌上，<strong>都开着对讲</strong>，音量调小避免啸叫。</li>
+      <li>用第三个设备（另一支手机的录音 App）在旁边录音。</li>
+      <li>对着摄像机<strong>打一次响指</strong>（脉冲信号，起止清晰）。</li>
+      <li>录音里会出现两个脉冲：原始响指、以及它从手机喇叭出来的那一次。</li>
+      <li>用 Audacity 之类的软件量两个脉冲的间隔——<strong>那就是 mouth-to-ear 单向时延</strong>。</li>
+    </ol>
+    <p class="meta">
+      精度大约 ±5 ms，对产品决策足够。要注意：这法子测的是<strong>一个方向</strong>；
+      反向（App 说话 → 摄像机喇叭）要单独测一次，两个方向的缓冲配置往往不一样。
+    </p>
+
+    <div class="checklist">
+      <h3>时延条款 · 可直接抄进需求文档</h3>
+      <ul>
+        <li><strong>指标写 mouth-to-ear</strong>，不接受「编码时延」「网络时延」单项充数。</li>
+        <li><strong>双向分别报</strong>：设备→App、App→设备，两个数。</li>
+        <li><strong>分网络条件报</strong>：局域网 / 家宽 / 移动网络各一档，并写明测法。</li>
+        <li><strong>要求逐级 breakdown</strong>：九项各是多少。给不出的供应商，说明这条链没人整体负责。</li>
+        <li><strong>抖动缓冲要写策略</strong>：静态还是自适应；自适应的话，弱网下的<strong>上限</strong>是多少毫秒。</li>
+        <li><strong>验收线</strong>：局域网 ≤150 ms（G.114 透明区）；移动网络下写明可接受上限并说明依据。</li>
+        <li><strong>联动条款</strong>：任何缓冲变更需同时说明对 AEC 尾长余量的影响。</li>
+      </ul>
+    </div>
+
+    <h2>练习 1 · 谁最大</h2>
+    <p>凭记忆排出典型量级，从大到小。这是检索练习——先想，再点。</p>
+
+    <div class="order-drill"
+         data-order-drill
+         data-title="练习 · 按典型时延从大到小排序"
+         data-prompt="一台没优化过的摄像机对讲，下面各项典型值，从大到小点选。"
+         data-items='["抖动缓冲 60 ms","AAC-LC 编解码 55 ms","网络单程 30 ms","采集缓冲 20 ms","算法块 10 ms","声音走 3 米 9 ms","数字麦 group delay 6 µs"]'
+         data-why='[
+           "最大项通常是抖动缓冲，典型取 3×ptime。它是为抗弱网买的保险，保费直接记在时延上。",
+           "AAC-LC 算法时延 ≥55 ms @48 kHz——一个编码器就吃掉大半预算。这正是对讲路不能用它的原因。",
+           "网络单程：家宽跨省约 30 ms 量级（ping 的一半）。这是唯一你完全控制不了的一项，先扣掉它再谈优化。",
+           "采集缓冲：驱动一次交给你多少数据。20 ms 块很常见，改 10 ms 白赚 10 ms，代价是中断频率翻倍。",
+           "算法块：WebRTC APM 固定按 10 ms 帧处理。注意 AEC 的 128 ms 尾长不是时延，别加进来。",
+           "声速 343 m/s，3 米约 9 ms。比整条数字链路的器件延迟都大——但和缓冲比仍然是零头。",
+           "数字 MEMS 的 group delay 只有 6 µs @1 kHz（Infineon IM69D130）。换更贵的麦对时延毫无帮助。"
+         ]'
+         data-done="全对。记住这个形状：缓冲 > 编码 > 网络 > 器件。优化永远从最上面那一项开始。">
+    </div>
+
+    <h2>练习 2 · 判断题</h2>
+    <p>选项字数对齐。点选后立刻反馈。</p>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 4"
+         data-prompt="实测 mouth-to-ear 190 ms，用户说「要等一下才有反应」。工程建议换更快的 SoC。你的判断？"
+         data-options='["有效，算力提高后各级缓冲会变短","无效，时延主要来自缓冲而非算力","有效，编码器的算法时延也会变小","无效，但换更好的麦克风可以解决"]'
+         data-answer="1"
+         data-explain-correct="正确。190 ms 里，抖动缓冲、采集缓冲、播放缓冲、ptime 加起来通常占七成以上——这些是「等数据攒够」的时间，与 CPU 快慢无关。算法时延同理：编码器必须攒够一帧才能开始编。"
+         data-explain-wrong="再想：缓冲是在等数据攒够，不是在等计算完成。CPU 再快也不能让 20 ms 的音频块提前凑齐。麦克风的 group delay 只有 6 µs，更不是问题所在。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 4"
+         data-prompt="规格写「AAC-LD 算法时延 20 ms」。在你的九行预算表里，这 20 ms 该怎么填？"
+         data-options='["编码填二十，解码再填二十毫秒","整条链上只填一次二十毫秒即可","编码填二十，解码按半数十毫秒","按采样率折算后再乘以帧的数量"]'
+         data-answer="1"
+         data-explain-correct="正确。公开的编码时延数字指的是编码器 + 解码器这一对的固有延迟总和。填两次等于凭空多算一倍——这是预算表里最常见的虚高来源。"
+         data-explain-wrong="再想：这类标称值是「一对」的数，不是单边的。第 5 课表里的 55 / 20 / 15 ms 同理，整条链只记一次。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 4 / 4"
+         data-prompt="为了压住弱网杂音，团队把播放缓冲从 20 ms 加到 200 ms。除了变慢，最可能还出什么问题？"
+         data-options='["麦克风的信噪比会随之下降","编码带宽被压缩导致声音闷","回声跑到消除器的尾长之外","自动增益的启动时间被拉长"]'
+         data-answer="2"
+         data-explain-correct="正确。喇叭发声比参考信号晚了 200 ms，而 AEC 的尾长典型只有 128 ms——整段回声落在滤波器覆盖范围之外，一点都消不掉。症状是「对方听见自己说话」，但根因在缓冲，不在 AEC 参数。"
+         data-explain-wrong="再想：播放缓冲改变的是参考信号与麦克风收到的回声之间的时间差。这个差必须落在 AEC 尾长之内——200 ms 已经超出典型的 128 ms。">
+    </div>
+
+    <h2>本课关键术语（速查）</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>术语</th>
+          <th>一句话</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">mouth-to-ear</span></td>
+          <td>嘴到耳的单向总时延；唯一该写进规格书的时延指标</td>
+        </tr>
+        <tr>
+          <td><span class="term">group delay</span> 群延迟</td>
+          <td>器件本身的固有延迟；数字 MEMS 约 6 µs，可忽略</td>
+        </tr>
+        <tr>
+          <td>块长 / 帧长 <span class="term">block size</span></td>
+          <td>一次交给下一级多少音频；WebRTC APM 固定 10 ms</td>
+        </tr>
+        <tr>
+          <td><span class="term">ptime</span> 打包时长</td>
+          <td>一个 RTP 包装多少音频；VoIP 默认 20 ms</td>
+        </tr>
+        <tr>
+          <td><span class="term">jitter buffer</span> 抖动缓冲</td>
+          <td>抗网络抖动的保险，典型 3×ptime；通常是最大的一项</td>
+        </tr>
+        <tr>
+          <td>尾长 ≠ 时延</td>
+          <td>AEC 尾长 128 ms 是滤波器长度，不进预算表</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      完整释义见 <a href="../reference/glossary.html#mouth-to-ear">术语表</a>；
+      整张账与验收条款见 <a href="../reference/latency-cheatsheet.html">时延预算速查</a>。
+    </p>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      最有价值的下一步：把你手上这台设备的九项数字填一遍，填不出来的那几格就是要去问供应商的问题。
+      贴给我，我们一起看最大项在哪、能不能动。
+      也可以问我：为什么抖动缓冲不能一味调小？自适应缓冲的上限该定多少？
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="http://www.cs.columbia.edu/~andreaf/new/documents/other/T-REC-G.114-200305.pdf" target="_blank" rel="noopener"><strong>ITU-T Recommendation G.114 · One-way transmission time</strong></a>
+        — 只读 <strong>第 1 节</strong>与<strong>图 1（E-model 与延迟的关系曲线）</strong>。
+        它是全行业时延讨论的共同标尺，二十多年来所有 VoIP、会议、对讲产品的验收线都从这里派生。
+        附录里关于回声与延迟相互作用的部分，配合第 3 课读效果最好。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://www.iis.fraunhofer.de/content/dam/iis/de/doc/ame/conference/AES-122-Convention_AAC-ELD_LowBitrateHighQualityCommunication_AES6998.pdf" target="_blank" rel="noopener">Fraunhofer AAC-ELD（50 ms 交互线）</a>
+        ·
+        <a href="https://www.ecg.co/blog/40-voip-rtp-packetization-interval-maybe-it-s-time-for-a-smaller-ptime" target="_blank" rel="noopener">ECG · ptime 与回声延迟</a>
+        ·
+        <a href="../reference/latency-cheatsheet.html">时延预算速查</a>
+        ·
+        <a href="../reference/aec-cheatsheet.html">AEC 速查</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0005-codec-bandwidth-and-latency.html">编码、带宽与时延</a>
+        · 下一课：<a href="0007-far-field-and-beamforming.html">远场与波束成形</a>
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/order-drill.js"></script>
+  <script defer src="../assets/budget-builder.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

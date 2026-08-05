@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 4 课 · NS 与 AGC：处理链顺序</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0004 · 约 18 分钟</p>
+      <h1>NS 与 AGC：顺序不是习惯，是约束</h1>
+      <p class="lede">「AI 降噪」和「自动增益」是规格表上最容易被一个数字糊弄过去的两行。本课把它们拆开，并教你用「顺序」和「成对的数」钉死它们。</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      第 3 课你已经能把「有回音」落到 <a href="0003-aec-full-duplex-essentials.html">AEC</a>。但真实投诉更多是「太吵」「听不清」「忽大忽小」——这些落在 NS 与 AGC 上。
+      能说清这三个模块<strong>谁在前谁在后、为什么</strong>，是你在跨职能评审里最快建立可信度的一招：它同时暴露供应商的算法栈是否被真正理解过。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>
+      拿到一条「太吵 / 发闷 / 忽大忽小 / 夜里沙沙」的投诉或卖点，能判断该动 <span class="term">NS</span>、该动 <span class="term">AGC</span>、还是要回到硬件；
+      并能说出为什么上行链顺序是 <strong>HPF → AEC → NS → AGC</strong>，以及顺序错了会以什么听感暴露出来。
+    </p>
+
+    <h2>一、三个模块，一句话分工</h2>
+    <p>
+      核心分界线还是第 3 课那条：<strong>有没有播放参考</strong>。只有 AEC 需要 reference，其余都在「盲」处理麦信号——这决定了它们能做什么、不能做什么。
+    </p>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>模块</th>
+          <th>解决什么</th>
+          <th>要参考？</th>
+          <th>做过头的听感</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">HPF</span> 高通滤波</td>
+          <td>切掉直流偏置（DC offset）与低频隆隆声（rumble）：风噪、云台马达与结构振动、触碰噪声（handling noise）</td>
+          <td>否</td>
+          <td>拐点定太高 → 人声变薄、缺胸腔感</td>
+        </tr>
+        <tr>
+          <td><span class="term">AEC</span> 回声消除</td>
+          <td>减掉「自己刚播出去的声音」经声学路径的回灌</td>
+          <td><strong>是</strong></td>
+          <td>NLP 过猛 → 断续、空洞、双讲被削</td>
+        </tr>
+        <tr>
+          <td><span class="term">NS / ANR</span> 噪声抑制</td>
+          <td>压环境噪声（空调、马路、雨）；谱域估噪声底再做增益衰减</td>
+          <td>否</td>
+          <td>语音发闷、辅音丢、musical noise</td>
+        </tr>
+        <tr>
+          <td><span class="term">AGC</span> 自动增益</td>
+          <td>把忽大忽小的语音电平拉进可用窗口</td>
+          <td>否</td>
+          <td>底噪被抬起（pumping / breathing）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      TI 面向门铃 / IP 摄像机的
+      <a href="https://www.ti.com/tool/TIDA-01589" target="_blank" rel="noopener">TIDA-01589</a>
+      把这套组合说得很直白：<em>「ASNR helps to reduce background and broadband noise with a minimal reduction in signal quality and automatic gain control (AGC) helps to boost lower level speech signals in hands-free environments.」</em>
+      注意它对 NS 的定语是 <strong>minimal reduction in signal quality</strong>——降噪从设计目标上就是一笔<strong>交易</strong>，不是白拿。
+      （<a href="https://www.ti.com/lit/ug/tidue77/tidue77.pdf" target="_blank" rel="noopener">TIDUE77 用户指南</a>）
+    </p>
+
+    <h2>二、顺序：HPF → AEC → NS → AGC</h2>
+    <p>
+      业界实现高度一致。WebRTC 的 <span class="term">APM</span> 把采集侧固定成
+      <strong>高通滤波 → AEC3 → NS → AGC2</strong>，且明确「每一级都假设上一级已经做完自己的活，重排会破坏各自依赖的前提」。
+      （<a href="https://www.forasoft.com/learn/audio-for-video/articles-audio/webrtc-audio-pipeline-end-to-end" target="_blank" rel="noopener">WebRTC audio pipeline</a> ·
+      <a href="https://webrtc.googlesource.com/src/+/main/modules/audio_processing/include/audio_processing.h" target="_blank" rel="noopener">APM 头文件</a>）
+    </p>
+
+    <div class="order-drill"
+         data-order-drill
+         data-title="练习 · 先把顺序排出来"
+         data-prompt="上行（拾音）处理链：按正确顺序点选四个模块。点错会给提示。"
+         data-items='["高通滤波 HPF","回声消除 AEC","噪声抑制 NS","自动增益 AGC"]'
+         data-why='["先去掉直流与低频隆隆（风、结构振动），后面每一级都少扛一份无用能量，自适应滤波也更稳。","AEC 必须吃尽量线性、未被动过增益的麦信号，才能稳定拟合喇叭→麦这条路径。","NS 是收尾清洁工：处理 AEC（与波束成形）之后剩下的环境噪声。","AGC 放最后。增益一跳，AEC 会以为回声路径变了而反复重收敛。"]'
+         data-done="顺序正确。下面三条是「为什么」——比顺序本身更值钱。">
+    </div>
+
+    <h3>理由 1 · AEC 前面不能放非线性处理</h3>
+    <p>
+      自适应滤波器的全部前提是：麦信号里的回声，与参考之间是一条<strong>线性</strong>关系。谱减类降噪会破坏这个前提。
+      VOCAL Technologies 说得很干脆：<em>「it is not good practice to introduce noise reduction before adaptive linear filters, as it is possible for the spectral subtraction to introduce nonlinearities into the system」</em>；
+      并把降噪定位为<em>「a post-processing technique to cleanup what the AEC and beamformer leave behind」</em>。
+      （<a href="https://vocal.com/beamforming-2/aec-noise-suppression/" target="_blank" rel="noopener">VOCAL · Beamforming with AEC and Noise Suppression</a>）
+    </p>
+
+    <h3>理由 2 · 增益一跳，回声路径就「变了」</h3>
+    <p>
+      这是最容易在现场踩、也最容易在评审里问倒供应商的一条。Q-SYS 的 AEC 白皮书：
+      <em>「When the gain changes on the input microphone path, the AEC will readapt to account for this change of gain. This causes the AEC to 'chase' the compressor, limiter or AGC. This is a bad thing.」</em>
+      结论是把压缩器、限幅器、AGC 这类非线性处理<strong>放在 AEC 的输出侧</strong>。
+      （<a href="https://help.qsys.com/q-sys_8.3/Content/AEC/Q-SYS_Acoustic_Echo_Cancellation_White_Paper.htm" target="_blank" rel="noopener">Q-SYS AEC White Paper</a>）
+    </p>
+    <p>
+      滤波器分不清「房间变了」和「你把麦增益调大了 6 dB」——两者在它眼里都是冲激响应突变，都要重新收敛。
+      同一份白皮书给的收敛量级：初始收敛约 <strong>1–2 秒</strong>，完全收敛需要约 <strong>10 秒</strong>不间断的远端语音。
+      也就是说，一个每隔几秒动一次的 AGC，足以让 AEC <strong>永远收敛不完</strong>——听感就是「时好时坏的回音」。
+    </p>
+
+    <h3>理由 3 · NS 收尾，但别让它太用力</h3>
+    <p>
+      AEC 消掉线性回声、<span class="term">RES/NLP</span> 压掉残差之后，剩下的才是纯粹的环境噪声——这时 NS 才有一个干净的问题要解。
+      顺序反过来，NS 会把回声当成「要保留的类语音成分」或制造出让 AEC 更难对齐的伪影。
+    </p>
+
+    <div class="callout warn">
+      <span class="label">一个必须记住的例外：下行路径</span>
+      上面说的都是<strong>上行（send）</strong>。<strong>下行（receive，送去喇叭）</strong>的 AGC / 限幅要放在 AEC <strong>之前</strong>——
+      VOCAL：<em>「an AGC module should be inserted before the AEC on the receive path, and after the AEC on the send path」</em>。
+      Q-SYS 说得更直接：任何非线性处理都要插在「分叉给喇叭与 AEC 参考」<strong>之前</strong>，
+      <em>「so that the AEC reference input sees the same compressed or limited signals that is sent to the loudspeakers」</em>。
+      这正是第 3 课「<a href="0003-aec-full-duplex-essentials.html">参考是否可信</a>」那一问的工程答案：<strong>参考必须取自最终送到功放的那一点</strong>。
+      （<a href="https://vocal.com/echo-cancellation/automatic-gain-and-saturation-control-for-an-acoustic-echo-canceller/" target="_blank" rel="noopener">VOCAL · AGC & saturation control for AEC</a>）
+    </div>
+
+    <h2>三、NS 是一个滑杆，不是一个开关</h2>
+    <p>
+      这是本课最值钱的一条。「降噪 −20 dB」听起来像一个成绩，其实只报了交易的一半。
+    </p>
+    <p>
+      <a href="https://www.itu.int/rec/T-REC-G.160/en" target="_blank" rel="noopener">ITU-T G.160</a>（Voice enhancement devices）给了降噪的客观指标：
+      <span class="term">SNRI</span>（信噪比改善）、<span class="term">NPLR</span>（语音附近的噪声电平下降）、
+      <span class="term">DSN</span>（前两者之差，反映「压噪声的同时有没有连语音一起压」）、<span class="term">TNLR</span>（长停顿段的总噪声下降）。
+      但 G.160 这套<strong>不衡量语音质量与语音失真</strong>——它只回答「噪声掉了多少」。
+    </p>
+    <p>
+      要看另一半，得用 <strong>3QUEST</strong>（ETSI EG 202 396-3 / TS 103 106）：把结果拆成三个分数——
+      <span class="term">S-MOS</span>（语音质量）、<span class="term">N-MOS</span>（噪声残留质量）、<span class="term">G-MOS</span>（综合）。
+    </p>
+
+    <div class="scenario">
+      <div class="card">
+        <h3>设备 A</h3>
+        <ul>
+          <li>G-MOS <strong>2.2</strong></li>
+          <li>S-MOS <strong>1.3</strong>（语音很差）</li>
+          <li>N-MOS <strong>4.7</strong>（噪声很干净）</li>
+        </ul>
+        <p class="pick">→ 降噪激进：噪声压光了，语音也削坏了</p>
+      </div>
+      <div class="card">
+        <h3>设备 B</h3>
+        <ul>
+          <li>G-MOS <strong>2.3</strong></li>
+          <li>S-MOS <strong>2.4</strong>（语音尚可）</li>
+          <li>N-MOS <strong>3.2</strong>（噪声还在）</li>
+        </ul>
+        <p class="pick">→ 降噪保守：语音保住了，噪声漏出来</p>
+      </div>
+    </div>
+
+    <p>
+      这两台机的综合分几乎相同，产品体验却完全不是一回事。HEAD acoustics 的实测应用笔记把原因写明了：
+      <em>「A typical reason for this effect is a different implementation of the 'aggressiveness' of built-in noise cancellers: Moderate implementations may have fewer effects on speech quality but will also let pass some noise.」</em>
+      （<a href="https://cdn.head-acoustics.com/fileadmin/data/global/Application-Notes/Telecom/3QUEST-Applications-and-Use-In-Practice-Application-Note.pdf" target="_blank" rel="noopener">3QUEST: Applications & Use in Practice</a>）
+    </p>
+
+    <div class="callout bad">
+      <span class="label">规格书红线</span>
+      只给<strong>一个</strong>降噪数字（无论是 dB 还是单一 MOS）的规格，等于没有规格——它把「压噪」和「保语音」的取舍藏起来了。
+      要求成对报：<strong>噪声抑制量 + 语音失真</strong>（S-MOS/N-MOS，或 SNRI + 可懂度/主观语音分）。
+    </div>
+
+    <p>同一份笔记还有两条直接可用于摄像机评测的结论：</p>
+    <ul class="tight">
+      <li>
+        <strong>非稳态噪声最难。</strong> 实测中 “Road” 这类又响又时变的噪声让所有机型 S-MOS 明显下滑，作者建议评测<em>必须</em>包含时变噪声。
+        摄像机的现实噪声——风、雨、车流、树叶、邻居装修——几乎全是非稳态；只用粉噪或空调噪声验收会严重高估。
+      </li>
+      <li>
+        <strong>安静房间测得好，不代表带噪好。</strong> 原文：<em>「A sufficient T-MOS score cannot be taken as indication that the phone quality will also be sufficient in the presence of background noise.」</em>
+        实验室里念一段话很清楚，装到门口就翻车，多半就是这条。
+      </li>
+    </ul>
+
+    <h2>四、AGC 的三个时间常数</h2>
+    <p>
+      AGC 不是「一个音量旋钮」，是一组时间行为：<strong>attack</strong>（信号变大时压下去多快）→ <strong>hold</strong>（保持多久）→ <strong>release</strong>（信号变小后增益回升多慢）。
+      ADI 的 MAX9814 datasheet 把失败模式写得最清楚：
+      <em>「If the attack-and-release times are configured to respond too fast, audible artifacts often described as 'pumping' or 'breathing' can occur as the gain is rapidly adjusted to follow the dynamics of the signal.」</em>
+      （<a href="https://www.analog.com/media/en/technical-documentation/data-sheets/max9814.pdf" target="_blank" rel="noopener">MAX9814 datasheet</a>）
+    </p>
+    <p>
+      这颗芯片的实际量级可以当锚点：attack 约 <strong>1.1 ms</strong>（C<sub>CT</sub>=470 nF），hold 固定 <strong>30 ms</strong>，
+      attack∶release 比可选 <strong>1∶500 / 1∶2000 / 1∶4000</strong>，最大 AGC 衰减 <strong>20 dB</strong>。
+      记住这个不对称：<strong>压得快、放得慢</strong>。放得越快，用户越容易在句子间隙听到「底噪一波一波涌上来」——那就是呼吸感。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">AGC 救不回来的东西</span>
+      如果声音在<strong>采集端</strong>就已经削波（超过麦克风 <span class="term">AOP</span> 或 ADC 满量程），后面的数字 AGC 只是在<strong>放大失真</strong>。
+      门口大喊、关门声这类场景，杠杆在第 2 课的<a href="0002-read-mems-microphone-datasheet.html">器件选型（AOP / 动态范围）</a>与模拟前端增益，不在 AGC 参数。
+    </div>
+
+    <h4 class="subhead">模拟增益还是数字增益？</h4>
+    <p>
+      两者都要用，但分工完全不同：<strong>模拟增益是设计时定死的一次性决策，运行时会动的那个 AGC 必须是数字的。</strong>
+      分界线是 ADC：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th></th>
+          <th>模拟增益（PGA / 前置放大）</th>
+          <th>数字增益</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>位置</td>
+          <td><strong>ADC 之前</strong></td>
+          <td>ADC 之后</td>
+        </tr>
+        <tr>
+          <td>改变 SNR？</td>
+          <td><strong>会</strong>——决定信号占 ADC 量程多少；用满才能拿到 ADC 的全部 SNR 能力</td>
+          <td><strong>不会</strong>——信号与底噪一起放大</td>
+        </tr>
+        <tr>
+          <td>代价</td>
+          <td>每级模拟放大自带噪声；给太大直接削波</td>
+          <td>ADI：<em>「adding any amount of gain reduces the dynamic range by an equal amount and lowers the system's clipping point」</em></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      一句话：<strong>模拟增益买的是「动态范围的位置」，数字增益只买「响度」。</strong>
+      （<a href="https://www.analog.com/en/resources/analog-dialogue/articles/understanding-microphone-sensitivity.html" target="_blank" rel="noopener">ADI · Understanding Microphone Sensitivity</a>）
+    </p>
+    <p>
+      但摄像机上要先问一个更前面的问题：<strong>你的麦是数字麦还是模拟麦？</strong>
+      数字 MEMS 麦（<span class="term">PDM</span> / <span class="term">I²S</span>）的 ADC 在麦壳里，主控<strong>根本没有模拟增益可调</strong>——灵敏度在选型时就锁死了，AGC 必然纯数字，「模拟」那一档的决策在 BOM 阶段（<a href="0002-read-mems-microphone-datasheet.html">第 2 课</a>）就结束了。
+      只有模拟麦 + codec PGA 才有模拟增益可调，而<strong>危险的正是这一档</strong>。
+    </p>
+    <div class="callout bad">
+      <span class="label">运行时动模拟增益 = 正反馈陷阱</span>
+      模拟增益在 AEC <strong>前面</strong>，改它就是改回声路径幅度（理由 2）。而且它会在最坏时刻触发：
+      对讲中喇叭正响 → 麦电平大 → AGC 压模拟增益 → AEC 瞬间失配 → 回音漏出 → 电平更大 → 再压……
+      用户描述通常是「刚接通那几秒有回音，然后好了，对方一大声又回来」。
+    </div>
+    <p>
+      <strong>路 A（摄像机 95% 场景该走这条）</strong>：模拟增益<strong>静态标定一次</strong>——按最响的必测场景（门口大喊、关门声）留够 headroom 保证不削波，之后再也不动；运行时 AGC 全部走数字，放在 AEC 之后。
+    </p>
+    <p>
+      <strong>路 B（非要动，就必须让 AEC 知道）</strong>：WebRTC APM 就是这个设计——
+      <span class="term">set_stream_analog_level()</span> 在 <span class="term">ProcessStream()</span> <strong>之前</strong>把当前硬件模拟电平告诉 APM，处理完再用
+      <span class="term">recommended_stream_analog_level()</span> 取回建议值、由调用方施加到 HAL。头文件原话：
+      <em>「This must be called prior to ProcessStream() if and only if adaptive analog gain control is enabled, to pass the current analog level from the audio HAL.」</em>
+      关键不在「能不能动」，而在<strong>模拟增益的变化对 AEC 是可见的，不是背着它偷偷改</strong>。
+      （<a href="https://webrtc.googlesource.com/src/+/main/api/audio/audio_processing.h" target="_blank" rel="noopener">WebRTC APM 头文件</a>）
+    </p>
+    <div class="callout warn">
+      <span class="label">最常见的翻车方式</span>
+      SoC 的 codec 驱动里默认开了一个<strong>硬件 AGC</strong>，而算法栈完全不知道它存在。
+      这个要专门去查——它不会出现在任何算法文档里。评审三问：
+      ① 麦是数字还是模拟？模拟增益由谁调、多久调一次？
+      ② 模拟增益变化有没有告知 AEC？
+      ③ codec / 驱动层的硬件 AGC 是不是关着的？
+    </div>
+
+    <h2>五、算力：为什么便宜方案总是先砍 AEC</h2>
+    <p>
+      TIDA-01589 给了同一颗 C5517 DSP 上各算法的实测 MIPS，这张表能解释市面上大量产品决策：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>算法</th>
+          <th>MIPS（平均 / 峰值）</th>
+          <th>读法</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>固定波束成形</td>
+          <td>9.2 / 9.3</td>
+          <td>多麦阵列本身很便宜</td>
+        </tr>
+        <tr>
+          <td>噪声抑制（ASNR）</td>
+          <td>13.2 / 13.5</td>
+          <td>降噪是这条链上最便宜的卖点</td>
+        </tr>
+        <tr>
+          <td>HD AEC</td>
+          <td><strong>113.1 / 131.1</strong></td>
+          <td>≈ NS 的 8 倍；长尾长还要更贵</td>
+        </tr>
+        <tr>
+          <td>整套 DSP 应用</td>
+          <td>136.6 / 157.3</td>
+          <td>AEC 一家吃掉约 80% 预算</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      推论：<strong>「加降噪」几乎免费，「加真全双工」很贵。</strong>
+      所以低成本机型的常见策略是——降噪拉满、AEC 用短尾长或干脆退化成半双工，然后在宣传里统称「智能降噪·清晰对讲」。
+      你现在有能力在评审里拆开这句话：问尾长（第 3 课）、问算力预算、问双讲用例。
+    </p>
+
+    <h2>六、失败模式 → 先查什么</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>听感 / 投诉</th>
+          <th>优先怀疑</th>
+          <th>产品杠杆</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>夜里安静时沙沙声一阵阵</td>
+          <td>AGC release 太快 / 无噪声门</td>
+          <td>放慢 release、加 hold；查静音段底噪抬升 dB</td>
+        </tr>
+        <tr>
+          <td>人声发闷、辅音丢、像水下</td>
+          <td>NS 过于激进（S-MOS 差）</td>
+          <td>降 aggressiveness；成对复测 S-MOS / N-MOS</td>
+        </tr>
+        <tr>
+          <td>背景有金属「叮叮」或水声</td>
+          <td>musical noise（谱减留下的孤立谱峰）</td>
+          <td>NS 平滑/谱底参数；换算法档位</td>
+        </tr>
+        <tr>
+          <td>开了降噪之后回音反而更明显</td>
+          <td>顺序或参考错：NS/增益跑到了 AEC 前</td>
+          <td>要供应商画实际处理链，标出参考取点</td>
+        </tr>
+        <tr>
+          <td>对讲音量忽大忽小</td>
+          <td>AGC 目标电平/时间常数，或压根没开</td>
+          <td>核对目标电平与 attack/hold/release</td>
+        </tr>
+        <tr>
+          <td>大喊或关门时爆音失真</td>
+          <td>采集端已削波（AOP / ADC 满量程）</td>
+          <td>回第 2 课：器件 AOP、动态范围、前端增益</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>七、把它写成可验收的条目</h2>
+    <div class="checklist">
+      <h3>音频算法验收 · 可直接抄进需求文档</h3>
+      <ul>
+        <li><strong>处理链图</strong>：供应商须提供上行/下行实际模块顺序，并标明 AEC 参考的取点（在 EQ / 限幅 / 音量之前还是之后）。</li>
+        <li><strong>NS 成对指标</strong>：每种噪声下同时报噪声抑制量与语音质量（S-MOS + N-MOS，或 SNRI + 语音失真评分）。单一数字不接受。</li>
+        <li><strong>噪声集合</strong>：至少含 1 种稳态（空调/风机）+ 2 种非稳态（车流、雨、人声嘈杂）。写明噪声电平与距离。</li>
+        <li><strong>AGC 参数</strong>：报目标电平、attack / hold / release、最大增益范围；测「静音段底噪抬升 dB」。</li>
+        <li><strong>AGC 作用点</strong>：说明是数字增益还是模拟前端增益；若动模拟增益，须给出对 AEC 收敛的影响测试。</li>
+        <li><strong>联测条件</strong>：所有指标必须在 AEC 开启、对讲默认音量与最大音量两档下各测一遍（结构指标另按第 3 课关算法测）。</li>
+      </ul>
+    </div>
+
+    <h2>练习 · 落点判断</h2>
+    <p>选项字数对齐。点选后立刻反馈。</p>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 1 / 3"
+         data-prompt="供应商说：我们把降噪放在回声消除之前，这样送进去的信号更干净。你的第一反应是？"
+         data-options='["同意，先降噪能让 AEC 更干净","反对，谱减的非线性会拖垮 AEC","无所谓，顺序不影响 AEC 听感","同意，降噪可以替代 AEC 建模"]'
+         data-answer="1"
+         data-explain-correct="正确。自适应滤波依赖回声与参考之间的线性关系；谱减类降噪会引入非线性，让 AEC 难以收敛。NS 应作为 AEC 之后的收尾处理。"
+         data-explain-wrong="再想：AEC 是线性自适应滤波，前面任何非线性处理都会破坏它的前提。VOCAL 明确不建议在自适应线性滤波前做降噪。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 3"
+         data-prompt="两台机 G-MOS 都约 2.2；A 的 S-MOS 1.3 / N-MOS 4.7，B 的 S-MOS 2.4 / N-MOS 3.2。最合理的解读是？"
+         data-options='["A 的降噪更激进，语音更失真","B 的降噪更激进，语音更失真","A 的麦克风信噪比明显更高些","B 的整体听感一定明显更好些"]'
+         data-answer="0"
+         data-explain-correct="正确。A 的 N-MOS 高（噪声压得干净）而 S-MOS 低（语音被削坏），正是激进降噪的签名。综合分相同掩盖了完全不同的取舍。"
+         data-explain-wrong="再想：S-MOS 看语音、N-MOS 看噪声。噪声分高而语音分低 = 压得狠、伤了语音。综合分相同不代表体验相同。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 3"
+         data-prompt="门口有人大喊，录音爆音失真。工程师建议「把 AGC 调猛一点压住」。你的判断？"
+         data-options='["有效，AGC 能压住采集端的削波","无效，AGC 之前信号就已经削掉","有效，AGC 会顺带抬高过载上限","无效，AGC 应换成更强的降噪档"]'
+         data-answer="1"
+         data-explain-correct="正确。削波发生在麦克风 AOP 或 ADC 满量程处，信息已经丢失；数字 AGC 只能放大失真。杠杆在器件 AOP 与模拟前端增益。"
+         data-explain-wrong="再想：AGC 在采集之后。已经削掉的波形无法还原，调 AGC 只是把失真调响或调轻。">
+    </div>
+
+    <h2>本课关键术语（速查）</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>术语</th>
+          <th>一句话</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">HPF</span></td>
+          <td>高通滤波：链首切掉直流与低频隆隆（风、结构振动）</td>
+        </tr>
+        <tr>
+          <td><span class="term">SNRI</span> / <span class="term">DSN</span></td>
+          <td>G.160 降噪客观指标；只量噪声，不量语音失真</td>
+        </tr>
+        <tr>
+          <td><span class="term">S-MOS</span> / <span class="term">N-MOS</span></td>
+          <td>3QUEST：语音质量 / 噪声质量，必须成对看</td>
+        </tr>
+        <tr>
+          <td>musical noise</td>
+          <td>谱减留下的孤立谱峰；听感是金属「叮叮」或水声</td>
+        </tr>
+        <tr>
+          <td>attack / hold / release</td>
+          <td>AGC 三时间常数；放得太快 = pumping / breathing</td>
+        </tr>
+        <tr>
+          <td>aggressiveness</td>
+          <td>降噪激进度：压噪与保语音之间的那根滑杆</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">完整释义见 <a href="../reference/glossary.html#ns">术语表</a>；评审速查见 <a href="../reference/ns-agc-cheatsheet.html">NS / AGC 速查</a>。</p>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      例如：你们的 SoC 音频栈是自研还是用方案商的（海思/安凯/君正等）？能不能拿到实际处理链框图？
+      如果只能拿到「降噪等级 0–3」这种黑盒配置项，我可以帮你设计一组能反推 aggressiveness 的对比测试。
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://cdn.head-acoustics.com/fileadmin/data/global/Application-Notes/Telecom/3QUEST-Applications-and-Use-In-Practice-Application-Note.pdf" target="_blank" rel="noopener"><strong>HEAD acoustics · 3QUEST: Applications & Use in Practice</strong></a>
+        — 用真实机型实测说明「为什么单一分数会骗人」。重点读第 3.3–3.4 节与第 4 节 Summary（S-/N-/G-MOS 的分离分析），前面的测试台架细节可略过。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://help.qsys.com/q-sys_8.3/Content/AEC/Q-SYS_Acoustic_Echo_Cancellation_White_Paper.htm" target="_blank" rel="noopener">Q-SYS AEC White Paper（顺序与增益放置）</a>
+        ·
+        <a href="https://www.analog.com/media/en/technical-documentation/data-sheets/max9814.pdf" target="_blank" rel="noopener">MAX9814（AGC 时间常数）</a>
+        ·
+        <a href="../reference/ns-agc-cheatsheet.html">NS / AGC 速查</a>
+        ·
+        <a href="../reference/glossary.html">术语表</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0003-aec-full-duplex-essentials.html">AEC 与全双工</a>
+        · 下一课：<a href="0005-codec-bandwidth-and-latency.html">「高清拾音」断在哪一环</a>
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/order-drill.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

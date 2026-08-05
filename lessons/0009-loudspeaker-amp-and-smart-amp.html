@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 9 课 · 放音侧：喇叭、功放与 Smart Amp</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0009 · 约 20 分钟</p>
+      <h1>喊话喊不远，一喊就断音</h1>
+      <p class="lede">前八课全在讲拾音。这一课转到下行链——喇叭和功放。你会发现两件事：<strong>「加大功率」在多数摄像机上买不到几个 dB</strong>；而<strong>喇叭的失真会给 AEC 的 ERLE 设一个硬天花板</strong>，把全双工打回半双工。同一个音量旋钮，在两本账上符号相反。</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      MISSION 第一句写的是「拾音<strong>与放音</strong>」。放音链到目前为止只在
+      <a href="0001-ip-camera-audio-signal-chain.html">第 1 课</a>被扫过一次。
+      而现场最常见的两条投诉——<strong>「对方听不见我们喊话」</strong>和
+      <strong>「一按对讲就有一方被切掉」</strong>——落点都在这一段。
+      这一课让你能对着一份喇叭 datasheet 和一个供电电压，当场判断这两条投诉能不能被这套硬件解决。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>
+      给定一颗喇叭的 datasheet 和一个供电电压，能算出<strong>用户在 N 米外听到多少 dB SPL</strong>、
+      <strong>是哪一个天花板挡住了你</strong>，以及<strong>这颗喇叭给 ERLE 留了多少空间</strong>。
+      然后能判断「换喇叭 / 加供电 / 上 Smart Amp」三条路各自值多少 dB。
+    </p>
+
+    <div class="callout warn">
+      <span class="label">先约定两个方向词</span>
+      前八课的信号都在<strong>上行</strong>（uplink）：声音进麦克风、经算法、编码送出去。
+      这一课全部在<strong>下行</strong>（downlink）：对方的声音解码后，经功放推动喇叭放出来。
+      <br /><br />
+      两条链在物理上是分开的，但它们在<strong>空气里重新相遇</strong>——喇叭放出来的声音会被自己的麦克风收回去。
+      这就是<a href="0003-aec-full-duplex-essentials.html">第 3 课</a>那个回声。
+      所以下行链的每一个决定，都会回头影响上行链的成绩单。
+    </div>
+
+    <h2>一、两条投诉，同一颗器件</h2>
+
+    <div class="scenario">
+      <div class="card">
+        <h4>投诉 A · 听不见</h4>
+        <p>「我在院子里（离摄像机约 3 米）按对讲喊话，家里人说完全听不清。」</p>
+        <p class="pick">直觉归因：喇叭太小 → 硬件的事</p>
+      </div>
+      <div class="card">
+        <h4>投诉 B · 一喊就断</h4>
+        <p>「对讲时只要对方在说话，我说什么那边都收不到；要等他停下来我才能插进去。」</p>
+        <p class="pick">直觉归因：AEC 不行 → 算法的事</p>
+      </div>
+    </div>
+
+    <p>
+      直觉会把它们分给两个人：A 是硬件的事（喇叭太小），B 是算法的事（AEC 不行）。
+      这一课的结论是——<strong>它们常常是同一颗喇叭的两个症状</strong>，而且
+      <strong>你为解决 A 做的事，会让 B 更严重</strong>。
+    </p>
+
+    <h2>二、放音侧 datasheet 的三个陷阱</h2>
+    <p>
+      <a href="0002-read-mems-microphone-datasheet.html">第 2 课</a>你已经拆过一次麦克风的 datasheet。
+      喇叭的 datasheet 更短，但坑更密。下面是一颗真实的、摄像机上会用的密闭小喇叭——
+      <a href="https://www.sameskydevices.com/product/resource/ces-361811-18pm-67.pdf" target="_blank" rel="noopener">Same Sky（原 CUI Devices）CES-361811-18PM-67</a>，
+      IP67、25 × 15.6 × 10.9 mm、4 克。原文照抄：
+    </p>
+
+    <table class="ref">
+      <thead>
+        <tr><th>datasheet 原文</th><th>条件栏原文</th><th>典型值</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>input power</td><td>max power: IEC-60268-5, filter <strong>60 秒开 / 120 秒关，10 个循环</strong></td><td>1.0 W（max 1.2）</td></tr>
+        <tr><td>impedance</td><td>at 2.0 kHz</td><td>8 Ω</td></tr>
+        <tr><td>resonant frequency (Fo)</td><td>at 1.0 V</td><td><strong>900 Hz</strong></td></tr>
+        <tr><td>frequency response</td><td>—</td><td><strong>Fo ~ 20,000 Hz</strong></td></tr>
+        <tr><td>sound pressure level</td><td>at 1.0 W, <strong>10 cm</strong>, avg at 2.0 kHz</td><td>89 dB</td></tr>
+        <tr><td>distortion</td><td>at 1.0 kHz, <strong>rated power</strong>, 10 cm</td><td>max <strong>10 %</strong></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-family: var(--sans); font-size: 0.98rem; margin-top: 1.6rem;">陷阱 1 · 那个 89 dB 不是在 1 米量的</h3>
+
+    <div class="callout bad">
+      <span class="label">20 dB 的落差就藏在条件栏里</span>
+      喇叭行业的通行写法是 <strong>dB SPL @ 1 W / 1 m</strong>。
+      但微型喇叭太轻，1 米外的声音已经淹在测试室的底噪里，所以厂商普遍改在
+      <strong>10 cm</strong> 量。两种写法都叫「sound pressure level」，<strong>差 20 dB</strong>。
+      <br /><br />
+      换算就是<a href="../reference/glossary.html#inverse-square">平方反比定律</a>（<a href="0007-far-field-and-beamforming.html">第 7 课</a>用过，
+      <a href="0008-measurement-that-holds-up.html">第 8 课</a>又用过一次）：
+      <code>ΔL = 20·log₁₀(d₂/d₁)</code>。
+      <br />
+      从 10 cm 挪到 1 m 是距离 ×10 → <code>20·log₁₀(0.1) = −20 dB</code>。
+    </div>
+
+    <div class="formula">
+      89 dB @ 1 W / 10 cm　→　<strong>69 dB @ 1 W / 1 m</strong>
+      <span class="meta">
+        Same Sky 官方的换算示例用的是同一条式子：<em>「65 dB at 0.1 meter of measurement distance will be 45 dB at 1 meter
+        (65 + 20 log₁₀(0.1/1) = 45 dB)」</em>
+        （<a href="https://www.sameskydevices.com/blog/understanding-and-measuring-sensitivity-in-audio-components" target="_blank" rel="noopener">Understanding and Measuring Sensitivity in Audio Components</a>）
+      </span>
+    </div>
+
+    <p>
+      69 dB 是什么概念？<a href="0008-measurement-that-holds-up.html">第 8 课</a>里 ITU 校准人工嘴的电平是
+      <strong>65.3 dB SPL @ 0.5 m</strong>，也就是一个人正常说话的音量。
+      <strong>这颗喇叭吃满 1 瓦，在 1 米外也就相当于一个人在正常说话。</strong>
+      比较竞品 spec 时，第一件事永远是<strong>把两边都归一到同一个距离</strong>，
+      否则 89 和 69 会让你以为差了 20 dB 的产品力——其实是同一颗喇叭。
+    </p>
+
+    <h3 style="font-family: var(--sans); font-size: 0.98rem; margin-top: 1.6rem;">陷阱 2 · 频响的下限写的是 Fo，不是一个数字</h3>
+
+    <p>
+      「frequency response: Fo ~ 20,000 Hz」——这个 <strong>Fo</strong> 是
+      <strong>共振频率（resonant frequency）</strong>，本颗为 <strong>900 Hz</strong>。
+      喇叭在 Fo 以下的辐射效率会迅速塌掉（每倍频程掉 12 dB 量级），所以厂商干脆把 Fo 当作频响下限写。
+      <strong>这句话真正的意思是：900 Hz 以下，这颗喇叭基本不发声。</strong>
+    </p>
+
+    <p>
+      <a href="0005-codec-bandwidth-and-latency.html">第 5 课</a>那个「看编码砍掉了什么」的图，
+      换成从<strong>低频那一头</strong>切，就是这颗喇叭的处境：
+    </p>
+
+    <div class="band-limit"
+         data-band-limit
+         data-title="这次是从低频那一头切：喇叭的 Fo 决定了下限"
+         data-options='[
+           {"label":"本颗小喇叭 Fo = 900 Hz","cut":900,"dir":"low","note":"男声基频（85–180 Hz）与女声基频（165–255 Hz）整段不存在。你听到的「男声」是靠大脑从谐波里补出来的基频——现象叫 missing fundamental。"},
+           {"label":"带 1 cc 后腔的稍大喇叭 Fo ≈ 500 Hz","cut":500,"dir":"low","note":"仍然没有基频，但 500–900 Hz 这段回来了，人声的胸腔感与「近」的感觉主要在这里。"},
+           {"label":"喊话号角 / 大腔体 Fo ≈ 250 Hz","cut":250,"dir":"low","note":"女声基频进来了，男声仍缺。安防喊话喇叭很少做更低——低频要靠体积换，而低频对可懂度贡献很小。"}
+         ]'
+         data-features='[{"lo":85,"hi":255,"label":"基频 F0（男/女声）"},{"lo":300,"hi":3400,"label":"元音与共振峰"},{"lo":4000,"hi":8000,"label":"齿擦音 /s/ /f/"},{"lo":8000,"hi":16000,"label":"空气感 / 自然度"}]'>
+    </div>
+
+    <div class="callout good">
+      <span class="label">这个缺口该不该补</span>
+      基频丢了，声音会变「薄」「像从铁盒子里传出来」，但<strong>可懂度掉得很少</strong>——
+      承载语义的元音共振峰在 300–3400 Hz，那一段这颗喇叭是有的。
+      <br /><br />
+      所以低频缺口是<strong>品牌质感问题，不是听不清问题</strong>。
+      要补它得加腔体体积，而摄像机的体积预算通常宁可给别的。
+      <strong>先把它记成一笔「已知的、故意欠的账」，别在评审里被当成缺陷追着修。</strong>
+      真正让人听不清的是下一节的响度，和再下一节的失真。
+    </div>
+
+    <h3 style="font-family: var(--sans); font-size: 0.98rem; margin-top: 1.6rem;">陷阱 3 · 额定功率是断续测出来的，失真是满功率下量的</h3>
+
+    <p>
+      「1.0 W」不是「可以一直灌 1 瓦」。条件栏写着 IEC-60268-5 的
+      <strong>60 秒通电 / 120 秒断电、循环 10 次</strong>——占空比只有 1/3。
+      而 10 % 的 THD 是<strong>在额定功率下</strong>量的，也就是<strong>最难看的那个工况</strong>。
+      这两条留到第四、第五节各有大用。
+    </p>
+
+    <h2>三、算一遍：从 datasheet 到用户的耳朵</h2>
+
+    <p>要把 69 dB @1W/1m 变成「3 米外听到多少」，还差三个量。逐个说清。</p>
+
+    <div class="callout warn">
+      <span class="label">量一 · 功放能给多少功率</span>
+      功放不是想给多少给多少，它的上限由<strong>供电电压</strong>决定。
+      摄像机上普遍用 <strong>BTL（bridge-tied load，桥接负载）</strong>接法：
+      喇叭两端各接一个半桥，两边反相摆动，所以喇叭上能拿到的峰值电压接近整个供电电压，
+      比单端接法多一倍电压、四倍功率。理想情况下的最大不削波正弦功率是
+      <br /><br />
+      <code>P = Vcc² / (2R)</code>
+      <br /><br />
+      12 V 供电、8 Ω 喇叭 → <code>144 / 16 = 9 W</code>。
+      <span class="meta">
+        实际会比这个低——<a href="https://www.edn.com/understanding-class-d-amplifier-power-supply-requirements/" target="_blank" rel="noopener">EDN 的完整式子</a>
+        把 MOS 导通电阻、滤波电感直流电阻、PCB 走线、电源内阻都算进串联损耗：
+        <em>P<sub>BTL(RMS)</sub> = [(V<sub>CC</sub>·M<sub>MAX</sub>)² / (2·R<sub>T</sub>²)]·R<sub>LOAD</sub></em>。
+        做估算时先用理想式，再打八折。
+      </span>
+    </div>
+
+    <div class="callout warn">
+      <span class="label">量二 · 语音的峰均比是 12 dB</span>
+      <strong>峰均比（crest factor）</strong>：一段信号的<strong>峰值</strong>比它的<strong>有效值（RMS）</strong>高多少 dB。
+      语音在辅音（爆破音、齿擦音）上出尖峰，在元音上维持，所以峰均比大——
+      业界常用值是 <strong>12 dB</strong>（<a href="https://www.merlijnvanveen.nl/en/study-hall/191-crest-factor-part-1" target="_blank" rel="noopener">Merlijn van Veen · Crest Factor</a>；
+      压得很死的流行乐约 6 dB，鼓组 15–20 dB）。
+      <br /><br />
+      12 dB 的功率含义是 <code>10^(12/10) ≈ 15.8 倍</code>：
+      <strong>峰值功率是平均功率的 15.8 倍。</strong>
+      <br /><br />
+      这一条决定了两个天花板要看不同的量：<strong>功放怕的是峰值</strong>（顶到供电就削波），
+      <strong>喇叭音圈怕的是平均</strong>（发热是能量的积分）。同一个信号，两套算法。
+    </div>
+
+    <div class="callout warn">
+      <span class="label">量三 · 「听得清」的门槛是环境噪声 + 10 dB</span>
+      扩声工程的通行判据：<em>「the sound pressure level (SPL) that a speaker system must be able to achieve is a
+      <strong>minimum of 10 dB SPL over the average ambient noise level</strong>. … Many designers prefer to use 15 dB」</em>
+      （<a href="https://www.lowellmfg.com/wp-content/uploads/LowellDSPR.pdf" target="_blank" rel="noopener">Lowell Mfg · Determining Speaker Power Requirements for the Integrator</a>）。
+      <br /><br />
+      这就是你在需求文档里该写的那个数：不是「喇叭要 3 W」，而是
+      <strong>「在 D 米、环境 X dB(A) 下，听音点 SPL ≥ X + 10」</strong>。
+      安静住宅院子约 45–50 dB(A)，临街约 55–60，商铺门口 60–65——<strong>这个数必须去现场量，不能查表</strong>。
+    </div>
+
+    <p>
+      三个量齐了。下面这个计算器把整条链拆成十步，每一步都把算式摆出来，
+      并且告诉你<strong>哪个天花板先到</strong>。先点三个预设，看结论怎么翻转。
+    </p>
+
+    <div class="pbspl"
+         data-playback-spl
+         data-title="放音链路计算器 · 从 datasheet 到用户耳朵，以及两本账"
+         data-presets='[
+           {"label":"① 现状：本颗 1 W 喇叭 + 12 V","note":"CES-361811-18PM-67，8 Ω，3 米外，环境 55 dB(A)","values":{"sens":89,"refCm":10,"imp":8,"vcc":12,"rated":1,"dist":3,"amb":55,"thd":10,"strategy":"open"}},
+           {"label":"② 只把供电从 12 V 提到 24 V","note":"功放能力 ×4（+6 dB），看实际买到几 dB","values":{"sens":89,"refCm":10,"imp":8,"vcc":24,"rated":1,"dist":3,"amb":55,"thd":10,"strategy":"open"}},
+           {"label":"③ 不动供电，换 95 dB @1 W/1 m 带箱喇叭","note":"3 W 额定，同样 12 V","values":{"sens":95,"refCm":100,"imp":8,"vcc":12,"rated":3,"dist":3,"amb":55,"thd":3,"strategy":"open"}}
+         ]'
+         data-note="峰均比取 12 dB（语音通行值）。功放用理想 BTL 式 Vcc²/(2R)，未计导通电阻与走线损耗，实际再打八折。ERLE 上限按「残差里只剩谐波失真」的极限情形推，是理论天花板而非实测值——真机还会被机构振动、时变回声路径进一步拉低。">
+    </div>
+
+    <div class="callout bad">
+      <span class="label">预设 ② 是本节最该记住的一格</span>
+      把供电从 12 V 提到 24 V，功放能力涨了 <strong>4 倍（+6 dB）</strong>——
+      听起来是一次大升级。实际到用户耳朵只多了 <strong>+2.5 dB</strong>（57.0 → 59.5 dB SPL @ 3 m）。
+      <br /><br />
+      因为天花板换人了：12 V 时是<strong>功放先到</strong>（0.57 W 平均），
+      24 V 时功放放开到 2.27 W，可<strong>喇叭的热限只有 1 W</strong>，于是喇叭接管了瓶颈。
+      多出来的 6 dB 里，你只兑现得了 2.5 dB，剩下的撞在另一堵墙上。
+      <br /><br />
+      而且 24 V 意味着新的升压电路、新的 EMC 摸底、新的散热——
+      <strong>为 2.5 dB 付这笔钱之前，先看预设 ③：换喇叭一步拿到 +26 dB。</strong>
+      <br /><br />
+      这是<a href="0007-far-field-and-beamforming.html">第 7 课</a>那条主线的第二次出现：
+      <strong>同一个动作在不同的账上价值完全不同。先问「我在哪本账上算」，再问「加多少」。</strong>
+    </div>
+
+    <h2>四、Smart Amp 卖的是那 9.5 dB</h2>
+
+    <p>
+      在计算器上把策略切成<strong>「保守：峰值不超额定」</strong>，同样的硬件，
+      3 米处从 <strong>57.0 dB 掉到 47.5 dB</strong>——<strong>整整 9.5 dB</strong>，
+      比换供电（+2.5 dB）大得多。<strong>这 9.5 dB 是一个纯软件/算法的差额</strong>，
+      硬件一颗螺丝都没动。
+    </p>
+
+    <p>
+      差别只在一句话：<strong>你敢不敢让语音的峰值冲到额定功率的 15.8 倍。</strong>
+      传统做法不敢，因为 datasheet 只给了一个连续功率数字，没有任何关于峰值的信息——
+      本颗甚至只用「2.83 V 正弦下不得有异响（buzz、rattle）」来兜底，而 2.83 V 进 8 Ω 恰好就是 1 W。
+      <strong>datasheet 对「这颗喇叭能扛多大的瞬时峰」这个问题，一个字都没说。</strong>
+    </p>
+
+    <div class="callout good">
+      <span class="label">Smart Amp 补的就是这个信息缺口</span>
+      TI 的说法很直白：Smart Amp
+      <em>「replaces traditional continuous power design principles and hardware based speaker protection methods
+      with algorithms that allow <strong>significant increases in peak power output, loudness and sound quality</strong>
+      relative to conventional amplifiers」</em>
+      （<a href="https://www.ti.com/lit/an/slaa625d/slaa625d.pdf" target="_blank" rel="noopener">TI SLAA625D</a>）。
+      <br /><br />
+      做法是<strong>实时测电流和电压（I/V sensing）</strong>，再用喇叭模型反推两个物理量：
+      <strong>音圈温度</strong>和<strong>振膜位移（excursion）</strong>。
+      只要这两个量没到限，就允许继续加大——限到了才压。
+      它把「峰值上限」从<strong>查表</strong>变成了<strong>量出来</strong>。
+    </div>
+
+    <p>为什么这样是安全的？答案在一个具体的时间常数上。</p>
+
+    <table class="ref">
+      <thead>
+        <tr><th>部位</th><th>热阻 R<sub>t</sub></th><th>热容 C<sub>t</sub></th><th>时间常数 τ = R<sub>t</sub>·C<sub>t</sub></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>音圈 voice coil</td><td>76.9 K/W</td><td>0.0549 J/K</td><td><strong>4.22 秒</strong></td></tr>
+        <tr><td>磁体 magnet pole</td><td>495 K/W</td><td>0.832 J/K</td><td>411.8 秒</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      来源：<a href="https://www.ti.com/lit/an/slaa857/slaa857.pdf" target="_blank" rel="noopener">TI SLAA857 · SmartPA Speaker Protection Algorithm</a> §4.2 Table 4，
+      对一颗 iPhone 7 微型喇叭的实测表征结果。原文结论：
+      <em>「temperature of voice coil can rise much faster than the magnet as the power increases.」</em>
+    </p>
+
+    <div class="callout good">
+      <span class="label">4.22 秒这个数在说什么</span>
+      音圈的温度要花<strong>数秒</strong>才会跟上功率的变化。
+      而语音的峰值只有<strong>几十毫秒</strong>——一个爆破音、一个齿擦音。
+      <strong>这些峰根本来不及把音圈加热。</strong>
+      <br /><br />
+      所以「平均功率 ≤ 额定」这个判据在物理上是对的，
+      「峰值功率 ≤ 额定」只是<strong>因为不知道，所以保守</strong>。
+      datasheet 那个 60 秒开 / 120 秒关的测法，本身就是承认发热是个慢过程。
+      <br /><br />
+      Smart Amp 用 <strong>60 Hz 导频音</strong>连续估算音圈直流电阻 R<sub>E</sub>
+      （铜的电阻随温度线性上升），由此反推温度；
+      再用<strong>反电动势（back-EMF）</strong>配一个自适应滤波器估算振膜位移。
+      两个模型都在线更新，因为喇叭会老化。（SLAA857 §4.1–4.2）
+    </div>
+
+    <div class="callout warn">
+      <span class="label">诚实边界 · 这 9.5 dB 不是查来的</span>
+      计算器里「放开峰值」给出的 9.5 dB，是<strong>假设喇叭能承受 15.8 倍峰值</strong>算出来的上界。
+      真实能放开多少，<strong>必须由喇叭表征（characterization）得出</strong>——
+      TI 的流程是把喇叭装进目标腔体，用学习板扫出安全工作区（SOA），产出一组系数。
+      <br /><br />
+      所以在评审里，正确的问法不是「Smart Amp 能大几 dB」（没人能回答），
+      而是：<strong>「这颗喇叭在我们的腔体里表征过吗？SOA 系数是谁给的？峰值上限是多少瓦？」</strong>
+      拿不出表征结果的「支持 Smart Amp」，等于只买了芯片没买算法。
+    </div>
+
+    <h2>五、另一本账：喇叭的失真给 ERLE 设了硬天花板</h2>
+
+    <p>
+      到这里为止都在算响度。现在回到投诉 B——一按对讲就有一方被切掉。
+      这一节是本课最该带走的东西。
+    </p>
+
+    <p>
+      <a href="0003-aec-full-duplex-essentials.html">第 3 课</a>讲过：AEC 是一个
+      <strong>线性自适应滤波器</strong>。它拿到播放出去的<a href="../reference/glossary.html#reference">参考信号</a>，
+      估计「这个信号经过房间会变成什么样」，然后从麦克风信号里减掉。
+      它能建模的只有<strong>线性变换</strong>：延时、衰减、反射、频响。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">谐波失真在参考信号里根本不存在</span>
+      喇叭推到大音量时会产生<strong>谐波失真</strong>：你送进去 1 kHz，它放出来 1 kHz + 2 kHz + 3 kHz……
+      这些谐波<strong>不在参考信号里</strong>——参考信号里只有 1 kHz。
+      <br /><br />
+      AEC 无论怎么调都<strong>无法预测它没见过的东西</strong>，于是这部分回声原封不动地留在残差里，
+      顺着上行链送到对方耳朵。Microchip 的原话：
+      <em>「Speaker systems output some non-linear distortion along with the linear signal which causes non-linear echo
+      to appear on the microphone. <strong>Since there is no reference signal for the non-linear echo</strong>,
+      the residual output of the AEC to the far-end contains amounts of non-linear distortion.」</em>
+      （<a href="https://support.microchip.com/s/article/Speaker-Design-Considerations-for-Acoustic-Echo-Cancellation" target="_blank" rel="noopener">Speaker Design Considerations for Acoustic Echo Cancellation</a>）
+    </div>
+
+    <p>
+      于是能推出一条很好用的估算：如果残差里<strong>只剩</strong>谐波失真（线性那部分被 AEC 消干净了），
+      那么残差与回声的能量比就等于 THD 本身。<a href="../reference/glossary.html#erle">ERLE</a> 的定义是这个比值的倒数取 dB，所以
+    </p>
+
+    <div class="formula">
+      <strong>ERLE 上限 ≈ −20 · log₁₀(THD)</strong>
+      <span class="meta">
+        THD 10 % → 20 dB　·　5.6 % → 25 dB　·　3.1 % → 30 dB　·　1 % → 40 dB
+      </span>
+    </div>
+
+    <div class="callout good">
+      <span class="label">这条式子有出处，不是我推的</span>
+      Microchip 同一篇文档直接给出了对照：
+      <em>「An <strong>ERLE of 25 dB to 30 dB</strong> is considered to be industry standard for good far-field
+      user-experience. This translates to having <strong>Total Distortion + Noise of 3.1 % to 5.6 %</strong>
+      respectively in the 20 Hz–8 kHz range in the loudspeaker-enclosure-microphone system.」</em>
+      <br /><br />
+      把 25 dB 和 30 dB 代进上面那条式子，得到的正是 5.6 % 和 3.1 %。
+      两边对得上——<strong>这说明业界那条「ERLE 要 25–30 dB」的经验，本质上是一条对喇叭失真的要求。</strong>
+    </div>
+
+    <p>现在把它接回我们那颗喇叭。datasheet 写着<strong>额定功率下 THD max 10 %</strong>。</p>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>驱动电平</th>
+          <th>该电平的 THD</th>
+          <th>ERLE 上限<br /><span class="meta">−20·log₁₀(THD)</span></th>
+          <th>对照业界 25–30 dB</th>
+          <th>用户听到什么</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>小音量（约 1/10 额定）</td>
+          <td>约 2 %<span class="meta">（需实测，datasheet 未给）</span></td>
+          <td><strong>34 dB</strong></td>
+          <td>够用</td>
+          <td>回声干净，双讲能插话</td>
+        </tr>
+        <tr>
+          <td>中音量</td>
+          <td>约 5 %</td>
+          <td><strong>26 dB</strong></td>
+          <td>压在下沿</td>
+          <td>安静时正常，稍吵就开始有残留</td>
+        </tr>
+        <tr>
+          <td><strong>开到额定功率</strong></td>
+          <td><strong>10 %</strong>（datasheet 上限）</td>
+          <td><strong>20 dB</strong></td>
+          <td><strong>低于业界下限 5 dB</strong></td>
+          <td>对方听到自己的回声</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="meta">
+      诚实标注：表里只有<strong>额定功率那一行的 10 %</strong> 来自 datasheet，
+      前两行的 2 % 与 5 % 是<strong>按经验填的占位值</strong>——
+      因为几乎没有厂商给「THD vs 驱动电平」的曲线。
+      这正是本课验收条款里要向供应商索要那条曲线的原因：<strong>你要的拐点就藏在中间那两个电平上</strong>，
+      而它决定了你的音量上限该钉在哪里。自己用 REW 扫一遍也能测出来（见本课末尾）。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">于是投诉 B 的成因是这样的</span>
+      ERLE 只有 20 dB，残留回声对方听得见 → 算法侧唯一的补救是让
+      <a href="../reference/glossary.html#nlp">NLP / RES</a>（非线性后处理）加大压制 →
+      NLP 的做法是<strong>在检测到远端有声音时，把上行整个衰减掉</strong> →
+      <strong>双讲时近端被切掉</strong>。
+      <br /><br />
+      而<a href="0008-measurement-that-holds-up.html">第 8 课</a>已经给了这件事的刻度：
+      ITU-T P.340 §8 用<strong>双讲衰减量 a<sub>H,DT</sub></strong>分级——
+      ≤3 dB 是 Behaviour 1（真全双工），>12 dB 是 Behaviour 3（实为半双工）。
+      <br /><br />
+      <strong>「全双工」这个卖点，可以被一颗 10 % THD 的喇叭单方面否决。</strong>
+      而这件事在硬件评审里通常没人提，因为喇叭归结构，AEC 归算法。
+    </div>
+
+    <div class="callout warn">
+      <span class="label">而且失真不止来自喇叭本身</span>
+      Microchip 那份 <a href="https://onlinedocs.microchip.com/oxy/GUID-8A8101C4-6FEF-463A-8D5E-D83C5A884302-en-US-1/GUID-D1A0A43D-CE59-42A7-A5D9-2016A3C17829.html" target="_blank" rel="noopener">机构设计指引</a>
+      把整个「喇叭—腔体—麦克风」系统算作失真源，给了三条可以直接抄进结构评审的要求：
+      <ul class="tight" style="margin: 0.5rem 0 0;">
+        <li><strong>软安装</strong>：喇叭四周垫软胶，背面只能压在泡棉/橡胶上，<strong>不允许硬压</strong>——否则振动直接传进塑料件。</li>
+        <li><strong>出音孔要够</strong>：<em>「Insufficient sound holes can cause more of the sound pressure to be transmitted into the plastic enclosure and cause a <strong>reduction in the perceived volume and increase the acoustic coupling</strong>.」</em> 孔不够是<strong>响度和回声一起变差</strong>，两本账同时输。</li>
+        <li><strong>塑料件要拧够螺丝</strong>：<em>「If the plastics do not have screw-down points, it can result in vibrations at specific audio frequencies. These vibrations result in <strong>high non-linear echo</strong> returning to the echo canceller and can greatly impact system performance.」</em></li>
+      </ul>
+      <br />
+      同一篇还给了算法救不了时的退路：<em>「If the LEM system is unable to reach 25–30 dB of ERLE,
+      <strong>redesigning the enclosure chambers to increase echo return loss</strong> will reduce the apparent
+      non-linearity of the system to the echo-canceller.」</em>——
+      也就是<a href="0003-aec-full-duplex-essentials.html">第 3 课</a>的 <a href="../reference/glossary.html#erl">ERL</a>：
+      <strong>ERL 是结构给的，ERLE 是算法给的，前者不够时后者补不上。</strong>
+    </div>
+
+    <h2>六、两本账并排看：四条路，符号不一样</h2>
+
+    <p>
+      现在可以回答「想让它更响，该做什么」了。四条路，每条在<strong>响度账</strong>和
+      <strong>回声账</strong>上分别是什么符号：
+    </p>
+
+    <table class="ref">
+      <thead>
+        <tr><th>做法</th><th>响度账</th><th>回声账（ERLE 上限）</th><th>代价</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>换更灵敏的喇叭</strong><br /><span class="meta">89 dB@10 cm → 95 dB@1 m</span></td>
+          <td><strong>+26 dB</strong>　最大</td>
+          <td><strong>变好</strong>：同样声压下驱动电平更低，THD 更小</td>
+          <td>体积、BOM、防水结构</td>
+        </tr>
+        <tr>
+          <td><strong>加腔体 / 改出音孔</strong></td>
+          <td>几个 dB<span class="meta">（必须实测，无通用值）</span></td>
+          <td><strong>变好</strong>：ERL 上升，机构非线性下降</td>
+          <td>体积；密闭盒会抬高 Fo，低频更少</td>
+        </tr>
+        <tr>
+          <td><strong>放开峰值（Smart Amp）</strong></td>
+          <td><strong>+9.5 dB</strong></td>
+          <td><strong>基本中性</strong>：平均功率没变，峰值失真略增</td>
+          <td>需喇叭表征、I/V 感测功放、算力</td>
+        </tr>
+        <tr>
+          <td><strong>提高供电电压</strong><br /><span class="meta">12 V → 24 V</span></td>
+          <td>+2.5 dB　最小</td>
+          <td><strong>变差</strong>：喇叭被推到额定附近，THD 上天花板</td>
+          <td>升压电路、EMC、散热</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout good">
+      <span class="label">这张表的读法</span>
+      直觉上最像「增强放音」的那一条（<strong>提高供电</strong>）排在最后：
+      <strong>响度收益最小，而且是唯一一条在回声账上是负号的。</strong>
+      <br /><br />
+      这就是<a href="0007-far-field-and-beamforming.html">第 7 课</a>那条主线的又一个实例——
+      <strong>同一个功能在不同条件下符号相反</strong>。
+      音量旋钮往右拧：安静的家里，是「更清楚」；吵闹的街边推到额定，是「对方开始听到自己的回声」。
+      <br /><br />
+      所以产品上正确的做法不是给用户一个 0–100 的音量条，而是
+      <strong>给一个由 THD 反推出来的上限，把旋钮的顶端钉在 ERLE 还剩 25 dB 的那个电平上。</strong>
+    </div>
+
+    <h2>练习 · 三道题，先想再点</h2>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 1 · 归一化"
+         data-prompt="供应商 A 报「SPL 92 dB @ 1 W / 10 cm」，供应商 B 报「SPL 74 dB @ 1 W / 1 m」。同样的功率下，哪一颗在 1 米处更响？"
+         data-options='["A 更响，比 B 高出十八分贝整","B 更响，比 A 高出两个分贝整","A 更响，比 B 高出两个分贝整","B 更响，比 A 高出十八分贝整"]'
+         data-answer="1"
+         data-explain-correct="对。A 归一到 1 米要减 20 dB（20·log₁₀(0.1) = −20），得 72 dB；B 本来就是 1 米，74 dB。B 高 2 dB。不归一化就会误判 18 dB。"
+         data-explain-wrong="先把两边挪到同一个距离再比。A 是在 10 cm 量的，挪到 1 米要减 20 dB → 72 dB。B 是 74 dB。差 2 dB，B 赢。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 · 找瓶颈"
+         data-prompt="12 V 供电、8 Ω 喇叭、额定功率 1 W。测下来 3 米处比目标低 5 dB。团队提出把供电提到 24 V。这个改动能拿到多少？"
+         data-options='["约六分贝，因为功放的能力翻了四倍","约二点五分贝，因为喇叭的热限接管","约十二分贝，因为电压和功率都翻倍","约零分贝，因为供电根本就不是瓶颈"]'
+         data-answer="1"
+         data-explain-correct="对。12 V 时功放先到（0.57 W 平均）；24 V 后功放放开到 2.27 W，但喇叭热限 1 W 接管，实际只从 0.57 W 走到 1.0 W —— 10·log₁₀(1.0/0.57) ≈ 2.5 dB。剩下的 3.5 dB 撞在喇叭上。"
+         data-explain-wrong="功放能力确实涨了 6 dB，但天花板换人了：喇叭的热限只有 1 W。可用平均功率从 0.57 W 只走到 1.0 W，也就是 +2.5 dB。多出来的部分兑现不了。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 · 两本账"
+         data-prompt="某方案商说「我们的 AEC 能做到 ERLE 30 dB」。你手上的喇叭在目标音量下实测 THD 为 8%。最该问的下一句是什么？"
+         data-options='["请问这个数是在多大的声压级下测出来的","请问贵司的自适应滤波器用的是哪种算法","请问这个数是用哪一段测试语音素材测的","请问收敛时间大概需要多少个毫秒才达到"]'
+         data-answer="0"
+         data-explain-correct="对。8% THD 给 ERLE 的上限是 −20·log₁₀(0.08) = 22 dB。对方报的 30 dB 只可能是在很小音量下测的——那个电平上喇叭失真还没起来。问清电平，30 dB 这个数就自己说明了它的适用范围。"
+         data-explain-wrong="算法细节、素材、收敛时间都是好问题，但都排在后面。8% THD 已经把 ERLE 的上限锁在 22 dB，对方报的 30 dB 与你的硬件矛盾——先问它是在多大声压级下测的，矛盾就解释清楚了。">
+    </div>
+
+    <div class="checklist">
+      <h3>放音侧条款 · 可直接抄进需求文档</h3>
+      <ul>
+        <li><strong>所有 SPL 指标统一归一到 1 W / 1 m</strong>，并在括号里注明 datasheet 原始条件。禁止不同距离的数字直接并列比较。</li>
+        <li><strong>响度指标写成场景式</strong>：「在 D 米、环境噪声 X dB(A) 的条件下，听音点 A 计权 SPL ≥ X + 10 dB」。不接受「喇叭 3 W」这种器件级指标。</li>
+        <li><strong>要 THD vs 驱动电平的曲线</strong>，不是一个 max 值。至少给 1/10 额定、1/2 额定、额定三个点，频率覆盖 300 Hz–4 kHz。</li>
+        <li><strong>音量上限由 ERLE 反推</strong>：把最大音量钉在「THD ≤ 5.6 %（对应 ERLE 上限 25 dB）」的电平上，写进固件常量并做防回退保护。</li>
+        <li><strong>Smart Amp 必须附表征结果</strong>：本机腔体下的 SOA 系数、峰值功率上限、音圈温度限。只写「支持 Smart Amp」不予验收。</li>
+        <li><strong>结构评审加三条</strong>：喇叭软安装（背面不得硬压）、出音孔开口面积、塑料件螺丝点位与整机异响扫频结果。</li>
+        <li><strong>低频缺口写成已知取舍</strong>：注明 Fo 与由此缺失的基频段，说明它影响音色不影响可懂度，避免后期被当缺陷返工。</li>
+        <li><strong>联动条款</strong>：音量档位改变后，AEC 需重新收敛的时间要给出实测值（音量变化会改变回声路径的非线性程度）。</li>
+      </ul>
+    </div>
+
+    <div class="callout good">
+      <span class="label">这些数怎么自己测（第 8 课立的规矩）</span>
+      <strong>响度</strong>：手机声压计 App 精度不够做绝对值，但<a href="0008-measurement-that-holds-up.html">第 8 课</a>说过——
+      <strong>你要的是差值</strong>。固定位置、固定素材，测「改动前 vs 改动后」，同场交替，差值可信。
+      要绝对值就买一支 <a href="https://www.minidsp.com/applications/acoustic-measurements/acoustic-measurements" target="_blank" rel="noopener">UMIK-1</a>（带出厂校准文件）配
+      <a href="https://www.roomeqwizard.com/" target="_blank" rel="noopener">REW</a>，千元级。
+      <br /><br />
+      <strong>THD</strong>：REW 的 distortion 测量直接给 THD vs 频率曲线，扫不同音量各测一遍，就得到上面那张表要的曲线。
+      房间反射会污染绝对值，但同一位置的<strong>音量之间的相对变化</strong>是可靠的——而你要的正是这个。
+      <br /><br />
+      <strong>ERLE</strong>：还是差值。放一段固定素材，录两次上行——一次 AEC 关、一次 AEC 开，
+      两段 dBFS 相减就是 ERLE 的近似（<a href="0003-aec-full-duplex-essentials.html">第 3 课</a>给过思路）。
+      在不同音量档各做一次，就能看见失真天花板压下来的那个拐点。
+      <span class="meta">诚实边界：以上都只能用于排序与回归防守，不能声称合规。</span>
+    </div>
+
+    <h2>本课术语</h2>
+    <table class="ref">
+      <thead><tr><th>术语</th><th>一句话</th></tr></thead>
+      <tbody>
+        <tr><td><span class="term">喇叭灵敏度</span> Speaker sensitivity</td><td>给定功率下能出多大声；微型喇叭常在 10 cm 量，比 1 m 高 20 dB</td></tr>
+        <tr><td><span class="term">共振频率</span> Fo</td><td>喇叭的频响下限；本颗 900 Hz，以下基本不发声</td></tr>
+        <tr><td><span class="term">峰均比</span> Crest factor</td><td>峰值比有效值高多少 dB；语音约 12 dB，即功率差 15.8 倍</td></tr>
+        <tr><td><span class="term">BTL</span> 桥接负载</td><td>喇叭两端反相驱动；最大功率 <code>Vcc²/(2R)</code></td></tr>
+        <tr><td><span class="term">THD</span> 总谐波失真</td><td>输出里非原信号谐波的占比；它给 ERLE 设上限</td></tr>
+        <tr><td><span class="term">Smart Amp</span></td><td>用 I/V 感测实时估音圈温度与振膜位移，把峰值上限从查表变成量出来</td></tr>
+        <tr><td><span class="term">Excursion</span> 振膜位移</td><td>振膜前后运动的幅度；超限会撞底、异响、永久变形</td></tr>
+        <tr><td><span class="term">SOA</span> 安全工作区</td><td>表征得出的温度/位移边界，Smart Amp 的护栏</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      完整释义见 <a href="../reference/glossary.html#speaker-sensitivity">术语表</a>；
+      换算式、天花板清单与结构条款见 <a href="../reference/playback-cheatsheet.html">放音侧速查</a>。
+    </p>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      最有价值的下一步：把你手上真实的喇叭 datasheet 和供电电压发我，我们一起跑一遍上面那十步，
+      看瓶颈落在哪一个天花板上、离目标差几 dB、ERLE 还剩多少空间。
+      也可以把方案商的放音规格书发我，我们一起看它有没有说清 SPL 的测试距离、THD 是在什么电平下量的、
+      Smart Amp 有没有附表征结果。
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://www.ti.com/lit/an/slaa857/slaa857.pdf" target="_blank" rel="noopener"><strong>TI SLAA857 · SmartPA Speaker Protection Algorithm</strong></a>
+        — 13 页，免费。<strong>不要通读公式</strong>，只读三处：
+        <strong>§1「Speaker Basics」</strong>（喇叭的电—机—声三段模型，两页看完，是理解位移和发热的底子）、
+        <strong>§4.2「Thermal Protection Algorithm」与 Table 4</strong>（那两个时间常数，本课第四节的全部依据）、
+        <strong>§4.1 最后一段</strong>（60 Hz 导频音怎么在线估直流电阻）。
+        <br />
+        它是一份写给手机的文档，但摄像机的微型喇叭面对的是同一套物理——
+        而<strong>它让你知道该向方案商要什么（表征结果），而不是要什么（一个 dB 数字）</strong>。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://support.microchip.com/s/article/Speaker-Design-Considerations-for-Acoustic-Echo-Cancellation" target="_blank" rel="noopener">Microchip · Speaker Design Considerations for AEC（ERLE ↔ THD 的对照）</a>
+        ·
+        <a href="https://www.lowellmfg.com/wp-content/uploads/LowellDSPR.pdf" target="_blank" rel="noopener">Lowell · Determining Speaker Power Requirements（9 页，SPL 三式与 +10 dB 判据）</a>
+        ·
+        <a href="https://www.sameskydevices.com/product/resource/ces-361811-18pm-67.pdf" target="_blank" rel="noopener">Same Sky CES-361811-18PM-67 datasheet（本课的那颗喇叭）</a>
+        ·
+        <a href="../reference/playback-cheatsheet.html">放音侧速查</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0008-measurement-that-holds-up.html">没有消声室，也能测出结论</a>
+        · 下一课预告：算力与 BOM —— 把 MIPS、码率、成本放进同一本预算
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/band-limit.js"></script>
+  <script defer src="../assets/playback-spl.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

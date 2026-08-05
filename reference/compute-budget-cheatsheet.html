@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查 · 算力、内存与 BOM 预算</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>算力与预算速查</h1>
+      <p class="lede">评审前扫这一页，或者打印带进会议室。数据源：TI TIDUE77 Table 5、TMS320C5517 datasheet、TI SPRABN1 Table 1、IJRRAS 2011（NLMS 复杂度）。</p>
+    </header>
+
+    <h2>一句话</h2>
+    <p><strong>按峰值配，不按平均配；先找出最紧的那本账，再决定往哪使劲。算力是按档买的，跨过一档才有钱可拿。</strong></p>
+
+    <h2>基线数字（背下来当锚点）</h2>
+    <p class="meta">TI TIDA-01589 参考设计实测：TMS320C5517、16 kHz 宽带、双麦、AEC 尾长 128 ms。</p>
+    <table class="ref">
+      <thead>
+        <tr><th>模块</th><th>平均 MIPS</th><th>峰值 MIPS</th><th>合计内存</th><th>占比</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>固定波束成形</td><td>9.2</td><td>9.3</td><td>9 908 B</td><td>算力 7 %</td></tr>
+        <tr><td>噪声抑制</td><td>13.2</td><td>13.5</td><td>19 127 B</td><td>算力 10 %</td></tr>
+        <tr class="key"><td><strong>HD AEC</strong>（128 ms）</td><td><strong>113.1</strong></td><td><strong>131.1</strong></td><td><strong>133 345 B</strong></td><td><strong>算力 83 %</strong></td></tr>
+        <tr><td>框架 / 驱动 / 缓冲</td><td>1.1</td><td>3.4</td><td>145 762 B</td><td><strong>内存 47 %</strong></td></tr>
+        <tr><td><strong>整套应用</strong></td><td><strong>136.6</strong></td><td><strong>157.3</strong></td><td><strong>308 142 B</strong></td><td>—</td></tr>
+        <tr class="derived"><td>芯片给的</td><td colspan="2">200 MIPS @200 MHz</td><td>327 680 B（320 KB）</td><td>—</td></tr>
+        <tr class="derived"><td><strong>用满度</strong></td><td colspan="2"><strong>78.7 %</strong></td><td><strong>94.0 %</strong></td><td>先撞内存</td></tr>
+      </tbody>
+    </table>
+
+    <h2>四条记账规矩</h2>
+    <table class="ref">
+      <thead><tr><th>规矩</th><th>为什么</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>1. 只认峰值</strong></td>
+          <td>音频按 10 ms 一帧交货，算不完就是丢帧（一声「咔」）。峰值 ÷ 平均 = 1.15×，而峰值出现在双讲、回声路径突变这些最要命的时刻。</td>
+        </tr>
+        <tr>
+          <td><strong>2. 模块之和 ≠ 系统总量</strong></td>
+          <td>框架、驱动、I/O 缓冲不属于任何模块，却占了内存的 47 %。把三个模块加起来当预算，会漏掉接近一半。</td>
+        </tr>
+        <tr>
+          <td><strong>3. 内存要拆三项</strong></td>
+          <td>程序段（共用一份）+ 数据段 + <strong>实例数据 × 路数</strong>。实例数据随尾长、随通道数乘出来，是最常漏的一项：HD AEC 的实例数据 67 KB，比它的代码段还大。</td>
+        </tr>
+        <tr>
+          <td><strong>4. 留 20 % 余量</strong></td>
+          <td>工程惯例，<strong>不是标准</strong>。写进规格书要注明是谁定的、留给什么用。200 MIPS 的芯片，可用的是 160。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>尾长 → 占用（外推规则）</h2>
+    <p>
+      AEC 的算力几乎全在自适应滤波器上，所以 <strong>MIPS 与实例内存都近似正比于尾长</strong>。
+      自查用的估算式（NLMS 每样本 <code>3N+1</code> 次乘法）：
+    </p>
+    <table class="ref">
+      <thead><tr><th>步骤</th><th>算式</th><th>128 ms @16 kHz</th></tr></thead>
+      <tbody>
+        <tr><td>抽头数</td><td><code>尾长(s) × 采样率</code></td><td>2 048</td></tr>
+        <tr><td>每样本乘法</td><td><code>3N + 1</code></td><td>6 145</td></tr>
+        <tr><td>每秒乘法</td><td><code>(3N+1) × 采样率</code></td><td>98.3 M</td></tr>
+        <tr class="key"><td>对照实测</td><td>估 98 vs 实测 113.1</td><td>差 15 %（双讲检测等附加件）</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      外推按线性走是<strong>保守上界</strong>：频域实现的成本约 <code>O(L log L)</code>，实际会比线性更省。
+      预算外推一律往坏的方向取整。
+    </p>
+
+    <h2>算力是按档卖的（C5517 为例）</h2>
+    <table class="ref">
+      <thead><tr><th>核心电压</th><th>频率</th><th>总功耗</th></tr></thead>
+      <tbody>
+        <tr><td>1.05 V</td><td>75 MHz</td><td>26.90 mW</td></tr>
+        <tr><td>1.3 V</td><td>100 MHz</td><td>65.08 mW</td></tr>
+        <tr><td>1.3 V</td><td>150 MHz</td><td>166.38 mW</td></tr>
+        <tr><td>1.4 V</td><td>200 MHz</td><td>248.39 mW</td></tr>
+      </tbody>
+    </table>
+    <p>
+      算力涨 2.67 倍，功耗涨 9.2 倍。<strong>省 5 MIPS 一分钱不省，跨过一档才有钱拿</strong>——
+      优化目标要定在某一档的下沿。（数字为 TI SPRABN1 的估算值，25 °C 典型场景。）
+    </p>
+
+    <h2>付款方式对照</h2>
+    <table class="ref">
+      <thead><tr><th>做法</th><th>省算力</th><th>省内存</th><th>省功耗</th><th>省钱</th><th>赔什么</th></tr></thead>
+      <tbody>
+        <tr><td>尾长 128 → 96 ms</td><td>32.8</td><td>16.4 KB</td><td>82 mW</td><td>0</td><td>长回声路径漏回声</td></tr>
+        <tr><td>宽带 → 窄带</td><td>一半</td><td>≈0</td><td>183 mW</td><td>0</td><td>整条链退回电话音质</td></tr>
+        <tr><td>关波束成形</td><td>9.3</td><td>9.7 KB</td><td>多半不跨档</td><td>一颗麦</td><td>远场信噪比与指向性</td></tr>
+        <tr><td>加协处理器</td><td>—</td><td>—</td><td>反而增加</td><td>反而花钱</td><td>钱、功耗、料号、双核软件</td></tr>
+        <tr><td>借主 SoC 空闲算力</td><td>看余量</td><td>看余量</td><td>看余量</td><td>0</td><td>跟视频抢资源的风险</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      注意前两行的「省钱」列都是 0：<strong>改配置在 BOM 上免费，但要用 dB 和听感付账</strong>。
+      反过来那颗麦在算力账上几乎免费，在 BOM 账上却是实打实的钱。<strong>先问缺的是哪一本账。</strong>
+    </p>
+
+    <h2>要数据时的四句话</h2>
+    <ul class="tight">
+      <li>「照 TIDUE77 Table 5 的格式给：<strong>逐模块、峰值列、实例数据列</strong>，在我们的采样率和帧长下。」</li>
+      <li>「尾长给<strong>三个点</strong>（32 / 64 / 128 ms）的曲线，不要单点——我要自己插值。」</li>
+      <li>「这份数据是在<strong>什么条件</strong>下测的？视频满码率和 AI 检测同时开了吗？」</li>
+      <li>「<strong>丢帧计数</strong>（xrun / frame overrun）是多少？只要不是 0，平均占用多低都不算数。」</li>
+    </ul>
+
+    <h2>自测最坏用例</h2>
+    <ul class="tight">
+      <li>双讲 + 高噪 + 视频满码率 + AI 检测全开，连续 ≥30 分钟。</li>
+      <li>记两个数：<strong>CPU 占用峰值</strong>（不是 top 的平均）与<strong>丢帧计数</strong>。</li>
+      <li>验收线：峰值 ≤ 可用算力的 80 %，丢帧计数 = 0。</li>
+      <li>内存按 程序 + 数据 + 实例 × 路数 + 框架缓冲 四项分别报。</li>
+    </ul>
+
+    <h2>默认追问</h2>
+    <ul class="tight">
+      <li>「这是平均还是峰值？」——对任何算力数字的第一反应。</li>
+      <li>「先撞的是哪面墙？算力、内存、功耗、BOM，四本账各用了百分之多少？」</li>
+      <li>「尾长配了多少？现场那条回声路径实际多长？」（接<a href="../lessons/0006-latency-budget.html">第 6 课</a>）</li>
+      <li>「这颗芯片的频率档位表长什么样？我们现在踩在哪一档？」</li>
+      <li>「跑在主 SoC 上的话，视频拉满时余量还剩多少？谁负责这个风险？」</li>
+    </ul>
+
+    <p class="meta">
+      <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课 · 算力与 BOM 预算</a>
+      · <a href="../lessons/0006-latency-budget.html">第 6 课 · 时延预算</a>
+      · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课 · AEC</a>
+      · <a href="latency-cheatsheet.html">时延预算速查</a>
+      · <a href="aec-cheatsheet.html">AEC 速查</a>
+      · <a href="measurement-cheatsheet.html">评测方法速查</a>
+      · <a href="playback-cheatsheet.html">放音侧速查</a>
+      · <a href="glossary.html">术语表</a>
+      · <a href="../RESOURCES.md">RESOURCES.md</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

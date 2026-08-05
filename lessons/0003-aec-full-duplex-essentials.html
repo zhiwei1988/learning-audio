@@ -251,6 +251,8 @@
     <div class="callout warn">
       <span class="label">别混</span>
       房间 <span class="term">RT60</span> 会把尾长拉长，但 RT60 ≠ 机内耦合尾长；规格书上的 40/128&nbsp;ms 是<strong>算法能覆盖的预算</strong>，不是你测到的真实拖尾。整机 mouth-to-ear 时延是另一回事。
+      <br />但两者有一条硬耦合：<strong>播放缓冲 + 空气路径 + 采集缓冲 必须小于尾长</strong>，否则回声整段跑出滤波器覆盖范围，AEC 完全失效。
+      见 <a href="0006-latency-budget.html">第 6 课 · 时延预算</a>。
     </div>
 
     <p>
@@ -564,11 +566,13 @@
     <nav class="footer-nav">
       <p>
         上一课：<a href="0002-read-mems-microphone-datasheet.html">MEMS Datasheet</a>
-        · 下一课预告：NS/ANR 与 AGC —— 各自失败听感，以及为何顺序通常是 AEC → NS → AGC
+        · 下一课：<a href="0004-ns-agc-and-chain-order.html">NS 与 AGC：顺序不是习惯，是约束</a>
       </p>
       <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
     </nav>
   </div>
-  <script type="module" src="../assets/quiz.js"></script>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
 </body>
 </html>

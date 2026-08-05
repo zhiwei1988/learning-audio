@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查 · 放音侧：喇叭、功放与 Smart Amp</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>放音侧速查</h1>
+      <p class="lede">评审前扫这一页，或者直接打印带进会议室。数据源：TI SLAA857 / SLAA625D、Microchip AEC 机构指引、Lowell Mfg、Same Sky datasheet、EDN Class-D。</p>
+    </header>
+
+    <h2>一句话</h2>
+    <p><strong>响度由「先到的那个天花板」决定，而不是功放；喇叭的 THD 给 ERLE 设了硬上限，所以音量旋钮同时是一个全双工旋钮。</strong></p>
+
+    <h2>四条式子</h2>
+
+    <div class="formula">
+      <strong>① 灵敏度归一到 1 m</strong>　S<sub>1m</sub> = S<sub>ref</sub> + 20·log₁₀(d<sub>ref</sub> ÷ 1 m)
+      <span class="meta">10 cm 量的数减 20 dB；30 cm 量的减 10.5 dB。<strong>比较竞品前必做的第一步。</strong></span>
+    </div>
+
+    <div class="formula">
+      <strong>② 功放的最大不失真功率（BTL）</strong>　P = Vcc² ÷ (2R)
+      <span class="meta">12 V / 8 Ω → 9 W；12 V / 4 Ω → 18 W；5 V / 8 Ω → 1.6 W。理想值，实际打八折（导通电阻、电感直流电阻、走线、电源内阻）。</span>
+    </div>
+
+    <div class="formula">
+      <strong>③ 听音点声压级</strong>　SPL = S<sub>1m</sub> + 10·log₁₀(P) − 20·log₁₀(D)
+      <span class="meta">功率翻倍 +3 dB；距离翻倍 −6 dB。<a href="https://www.lowellmfg.com/wp-content/uploads/LowellDSPR.pdf" target="_blank" rel="noopener">Lowell Mfg</a></span>
+    </div>
+
+    <div class="formula">
+      <strong>④ 失真给 ERLE 的天花板</strong>　ERLE<sub>max</sub> ≈ −20·log₁₀(THD)
+      <span class="meta">谐波不在参考信号里，AEC 无法消除。<a href="https://support.microchip.com/s/article/Speaker-Design-Considerations-for-Acoustic-Echo-Cancellation" target="_blank" rel="noopener">Microchip</a></span>
+    </div>
+
+    <h2>两把读数标尺</h2>
+
+    <table class="ref">
+      <thead><tr><th>问题</th><th>门槛</th><th>出处</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>听音点要多响才「听得清」</td>
+          <td><strong>环境噪声 + 10 dB</strong>（保守用 +15）</td>
+          <td>Lowell Mfg</td>
+        </tr>
+        <tr>
+          <td>ERLE 要多少才算「远场可用」</td>
+          <td><strong>25–30 dB</strong>，对应 THD+N <strong>5.6 %–3.1 %</strong></td>
+          <td>Microchip</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>THD ↔ ERLE 对照表</h2>
+
+    <table class="ref">
+      <thead><tr><th>THD</th><th>ERLE 上限</th><th>读数</th></tr></thead>
+      <tbody>
+        <tr><td>1 %</td><td>40 dB</td><td>失真已不是瓶颈</td></tr>
+        <tr><td>3.1 %</td><td>30 dB</td><td>业界「好」的上沿</td></tr>
+        <tr><td>5.6 %</td><td>25 dB</td><td>业界下限，刚好可用</td></tr>
+        <tr><td><strong>10 %</strong></td><td><strong>20 dB</strong></td><td>NLP 被迫加大压制 → 双讲被切 → P.340 Behaviour 3 风险</td></tr>
+        <tr><td>20 %</td><td>14 dB</td><td>回声明显，全双工不成立</td></tr>
+      </tbody>
+    </table>
+
+    <h2>天花板清单：谁先到</h2>
+
+    <p>把所有上限折算成<strong>允许的平均电功率</strong>再比大小。语音峰均比 12 dB → 峰值是平均的 <strong>15.8 倍</strong>。</p>
+
+    <table class="ref">
+      <thead><tr><th>天花板</th><th>怎么算</th><th>什么时候它先到</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>功放供电</strong>（怕峰值）</td>
+          <td>Vcc²/(2R) ÷ 15.8</td>
+          <td>低压供电（3.7 V / 5 V）、高阻抗喇叭、喇叭额定功率偏大时</td>
+        </tr>
+        <tr>
+          <td><strong>喇叭热限</strong>（怕平均）</td>
+          <td>额定功率（IEC-60268-5 连续）</td>
+          <td>供电充裕、喇叭偏小时。这是最常见的真瓶颈</td>
+        </tr>
+        <tr>
+          <td><strong>喇叭峰值 / 位移</strong></td>
+          <td>datasheet <strong>通常不给</strong>；保守时按「峰值 ≤ 额定」，即 额定 ÷ 15.8</td>
+          <td>不做表征时永远先到——保守假设比放开峰值低约 <strong>9.5 dB</strong></td>
+        </tr>
+        <tr>
+          <td><strong>失真门限</strong></td>
+          <td>由目标 ERLE 反推：THD ≤ 10<sup>−ERLE/20</sup></td>
+          <td>要保全双工时。它常常比前三个都低</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>四条路，两本账</h2>
+
+    <table class="ref">
+      <thead><tr><th>做法</th><th>响度账</th><th>回声账</th><th>代价</th></tr></thead>
+      <tbody>
+        <tr><td>换更灵敏的喇叭</td><td><strong>最大</strong>（灵敏度差多少就是多少 dB）</td><td>变好</td><td>体积、BOM、防水</td></tr>
+        <tr><td>加腔体 / 改出音孔</td><td>几个 dB（需实测）</td><td>变好（ERL 上升）</td><td>体积；密闭盒抬高 Fo</td></tr>
+        <tr><td>放开峰值（Smart Amp）</td><td>约 +9.5 dB</td><td>基本中性</td><td>需表征、I/V 感测功放、算力</td></tr>
+        <tr><td>提高供电电压</td><td><strong>最小</strong>（常只兑现 2–3 dB）</td><td><strong>变差</strong></td><td>升压、EMC、散热</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Smart Amp：它到底做了什么</h2>
+
+    <table class="ref">
+      <thead><tr><th>动作</th><th>怎么做到的</th></tr></thead>
+      <tbody>
+        <tr><td>估音圈温度</td><td>注入 60 Hz 导频音，由 V/I 求直流电阻 R<sub>E</sub>；铜电阻随温度线性上升，反推温度</td></tr>
+        <tr><td>估振膜位移</td><td>由 V − I·R<sub>E</sub> 得反电动势，配自适应滤波器在线更新喇叭阻抗模型，再由模型算位移</td></tr>
+        <tr><td>敢放开峰值</td><td>音圈热时间常数只有 <strong>4.22 秒</strong>（磁体 411.8 秒），而语音的峰只有几十毫秒——来不及加热</td></tr>
+        <tr><td>护栏</td><td>表征产出 SOA（安全工作区）系数：最大位移 + 最高音圈温度</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">数据源：<a href="https://www.ti.com/lit/an/slaa857/slaa857.pdf" target="_blank" rel="noopener">TI SLAA857</a> §4 与 Table 4（iPhone 7 喇叭实测表征）。</p>
+
+    <h2>结构评审三条（回声账）</h2>
+    <ul class="tight">
+      <li><strong>软安装</strong>：喇叭四周垫软胶，背面只压泡棉/橡胶，不得硬压——否则振动直接进塑料件。</li>
+      <li><strong>出音孔要够</strong>：孔不足会同时造成「感知音量下降」和「声耦合上升」——两本账一起输。</li>
+      <li><strong>塑料件螺丝点位</strong>：缺螺丝会在特定频率共振，产生高非线性回声，AEC 完全消不掉。</li>
+    </ul>
+    <p class="meta">
+      算法救不了时的退路：<strong>改腔体、提高 ERL</strong>。
+      ERL 是结构给的，ERLE 是算法给的，前者不够时后者补不上。
+      来源：<a href="https://onlinedocs.microchip.com/oxy/GUID-8A8101C4-6FEF-463A-8D5E-D83C5A884302-en-US-1/GUID-D1A0A43D-CE59-42A7-A5D9-2016A3C17829.html" target="_blank" rel="noopener">Microchip · Speaker Mechanical Design</a>
+    </p>
+
+    <h2>读 datasheet 的三个陷阱</h2>
+    <ol class="tight">
+      <li><strong>SPL 的测试距离</strong>：微型喇叭常写 10 cm，比 1 m 高 20 dB。先归一再比较。</li>
+      <li><strong>频响下限写的是 Fo</strong>：Fo 以下基本不发声。Fo = 900 Hz 意味着男女声基频全无（影响音色，不影响可懂度）。</li>
+      <li><strong>额定功率是断续测的</strong>（IEC-60268-5：60 s 开 / 120 s 关 × 10）；<strong>THD 是在额定功率下量的</strong>，即最难看的工况。</li>
+    </ol>
+
+    <h2>评审时该问的话</h2>
+    <ul class="tight">
+      <li>「这个 SPL 是在多远量的？」——对任何喇叭 SPL 数字的第一反应。</li>
+      <li>「THD 曲线呢？要 1/10 额定、1/2 额定、额定三个电平。」</li>
+      <li>「ERLE 那个数是在多大声压级下测的？」</li>
+      <li>「Smart Amp 的表征在我们自己的腔体里做过吗？SOA 系数给一下。」</li>
+      <li>「峰值功率上限是多少瓦？不是额定功率，是峰值。」</li>
+      <li>「现在的天花板是功放还是喇叭？改供电能兑现几 dB？」</li>
+      <li>「音量档位改变后 AEC 要重收敛多久？」</li>
+    </ul>
+
+    <p class="meta">
+      <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课 · 放音侧</a>
+      · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课 · AEC</a>
+      · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课 · 远场</a>
+      · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课 · 评测方法</a>
+      · <a href="aec-cheatsheet.html">AEC 速查</a>
+      · <a href="mems-datasheet-cheatsheet.html">麦指标速查</a>
+      · <a href="beamforming-cheatsheet.html">波束成形速查</a>
+      · <a href="measurement-cheatsheet.html">评测方法速查</a>
+      · <a href="glossary.html">术语表</a>
+      · <a href="../RESOURCES.md">RESOURCES.md</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

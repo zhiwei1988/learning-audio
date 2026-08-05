@@ -36,14 +36,14 @@
         <tr>
           <td>SNR</td>
           <td>dB(A)</td>
-          <td>94 dB SPL 参考 − 噪声底</td>
-          <td>安静/远场人声是否干净；越高越好（同价位优先）</td>
+          <td>94 dB SPL（1 Pa）@1 kHz 参考 <strong>−</strong> 自噪声<br /><span class="meta">器件指标，<strong>不是录音的信噪比</strong></span></td>
+          <td>安静/远场人声是否干净；越高越好（同价位优先）。<strong>横比先核对计权、带宽、时钟模式</strong></td>
         </tr>
         <tr>
           <td>EIN / Noise floor</td>
           <td>dB SPL</td>
           <td>≈ <code>94 − SNR</code></td>
-          <td>比该值更轻的声音会被自噪声盖住</td>
+          <td>比该值更轻的声音会被自噪声盖住。<strong>实际录音信噪比 = 到达声压 − EIN</strong></td>
         </tr>
         <tr>
           <td>AOP</td>
@@ -104,5 +104,7 @@
       <a href="https://community.infineon.com/t5/Knowledge-Base-Articles/Factors-to-consider-when-choosing-a-MEMS-microphone/ta-p/1210049">Infineon 选型</a>
     </p>
   </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
 </body>
 </html>

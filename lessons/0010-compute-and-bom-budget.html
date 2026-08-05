@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 10 课 · 算力、内存与钱：同一套算法的四张账单</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0010 · 约 20 分钟</p>
+      <h1>「我们支持 AEC」——这句话要多少算力</h1>
+      <p class="lede">前九课谈的都是<strong>要什么</strong>：多长的尾长、多宽的带宽、几颗麦、多大的 SPL。这一课谈<strong>付得起什么</strong>。你会看到同一套算法在四本账上同时记账——算力、内存、功耗、BOM——而<strong>先撞的那面墙常常不是你以为的那面</strong>。</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      MISSION 里写着要能「在跨职能评审中提出<strong>有证据的</strong>竞争力建议」。
+      前九课给了你要东西的底气，但评审桌的另一头坐着的人只会问一句：<strong>「跑得下吗？多少钱？」</strong>
+      这一课让你能当场回答，并且能反过来审：<strong>方案商说的「支持」，是在哪个配置下支持的。</strong>
+    </div>
+
+    <h2>本课技能</h2>
+    <p>
+      给定一份算法清单和一颗芯片的资源表，能算出<strong>跑不跑得下</strong>、<strong>先撞哪面墙</strong>，
+      并在不够时报出每一种省法的价格标签——<strong>赔多少 dB、省多少毫瓦、花多少钱</strong>。
+    </p>
+
+    <div class="callout warn">
+      <span class="label">三个新词，先各给一句</span>
+      <strong>MIPS</strong>（Million Instructions Per Second，百万条指令每秒）——衡量「这段代码每秒要芯片干多少活」的单位。
+      本课这颗 DSP 每个时钟周期执行一条指令，所以 <strong>200 MHz ≈ 200 MIPS</strong>，MHz 和 MIPS 可以当同一个数看
+      （<a href="https://www.ti.com/lit/ds/symlink/tms320c5517.pdf" target="_blank" rel="noopener">C5517 datasheet</a> 写的是「75- to 200-MHz Clock Rate，13.33- to 5-ns Instruction Cycle Time」）。
+      <br /><br />
+      <strong>平均 MIPS / 峰值 MIPS</strong>——同一段算法在一段时间里的<strong>均值</strong>与<strong>最忙那一帧</strong>的占用。
+      两个数都要，但只有一个能用来配硬件。第三节讲为什么。
+      <br /><br />
+      <strong>实例数据</strong>（instance data）——算法<strong>每跑一路就要独占一份</strong>的内存：滤波器系数、历史缓冲、状态量。
+      代码段全世界共用一份，实例数据是<strong>按路数乘出来</strong>的。它是内存账上最容易被漏掉的一项。
+    </div>
+
+    <h2>一、评审室里的那句话</h2>
+
+    <div class="scenario">
+      <div class="card">
+        <h3>方案商说</h3>
+        <p>「AEC 我们支持，尾长 128 ms；双麦波束成形、降噪、AGC 全开。跑在片上 DSP，200 MHz，算力充足。」</p>
+        <p class="pick">听起来：全都要，全都有</p>
+      </div>
+      <div class="card">
+        <h3>你要回答的</h3>
+        <p>这句话在这颗芯片上成立吗？如果成立，还剩多少余量？如果哪天要加一个功能，先撞的是哪面墙？</p>
+        <p class="pick">要答：跑得下 / 剩多少 / 谁先满</p>
+      </div>
+    </div>
+
+    <p>
+      本课的运气很好：TI 有一份摄像机品类的参考设计
+      （<a href="https://www.ti.com/tool/TIDA-01589" target="_blank" rel="noopener">TIDA-01589</a>，
+      应用列表里明确写着 IP Network Camera 与 Video Doorbell），
+      而它的文档<strong>把这套算法的实测占用整张表公布了</strong>。
+      业界很少有人公开这个数——多数方案商只会给你一句「算力充足」。
+      所以我们不猜，直接读表。
+    </p>
+
+    <h2>二、把一手数据摆出来</h2>
+
+    <p class="meta">
+      下表是 <a href="https://www.ti.com/lit/ug/tidue77/tidue77.pdf" target="_blank" rel="noopener">TIDUE77</a> §3.2.7 Table 5 的原始数字，
+      运行条件：<strong>TMS320C5517 DSP，16 kHz 宽带采样，双麦，AEC 尾长 128 ms</strong>。
+      灰色两行是我做的减法，不是原表内容。
+    </p>
+
+    <table class="ref">
+      <thead>
+        <tr><th>模块</th><th>平均 MIPS</th><th>峰值 MIPS</th><th>程序+数据</th><th>实例数据 × 路数</th><th>合计内存</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>固定波束成形 <span class="meta">Fixed Beamformer</span></td><td>9.2</td><td>9.3</td><td>7 188 B</td><td>1 360 × 2</td><td>9 908 B</td></tr>
+        <tr><td>噪声抑制 <span class="meta">Noise reduction</span></td><td>13.2</td><td>13.5</td><td>9 355 B</td><td>4 886 × 2</td><td>19 127 B</td></tr>
+        <tr><td><strong>HD AEC</strong>（尾长 128 ms）</td><td><strong>113.1</strong></td><td><strong>131.1</strong></td><td>66 225 B</td><td>67 120 × 1</td><td><strong>133 345 B</strong></td></tr>
+        <tr class="derived"><td class="meta">三个模块相加</td><td class="meta">135.5</td><td class="meta">153.9</td><td class="meta">—</td><td class="meta">—</td><td class="meta">162 380 B</td></tr>
+        <tr><td><strong>整套应用（实测）</strong></td><td><strong>136.6</strong></td><td><strong>157.3</strong></td><td colspan="2" class="meta">原表只给合计</td><td><strong>308 142 B</strong></td></tr>
+        <tr class="derived"><td class="meta">差额 = 框架 / 驱动 / 缓冲 / 其余</td><td class="meta">1.1</td><td class="meta">3.4</td><td class="meta">—</td><td class="meta">—</td><td class="meta">145 762 B</td></tr>
+      </tbody>
+    </table>
+
+    <p>这张表有四个观察，每一个都值一条评审时的提问：</p>
+
+    <table class="ref">
+      <thead><tr><th>观察</th><th>算式</th><th>怎么读</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>AEC 吃掉八成</strong></td>
+          <td><code>113.1 ÷ 136.6 = 82.8 %</code></td>
+          <td>算力预算里只有一个大项。要省，先看它；不看它，省别的都是零头。</td>
+        </tr>
+        <tr>
+          <td><strong>峰值比平均高 15 %</strong></td>
+          <td><code>157.3 ÷ 136.6 = 1.15×</code></td>
+          <td>算力也有<a href="0009-loudspeaker-amp-and-smart-amp.html">峰均比</a>。第 9 课语音信号的峰均比是 12 dB，这里是 1.15 倍。</td>
+        </tr>
+        <tr>
+          <td><strong>一半的内存不在模块账单上</strong></td>
+          <td><code>308 142 − 162 380 = 145 762 B</code><br /><code>145 762 ÷ 308 142 = 47.3 %</code></td>
+          <td>把三个模块的数字加起来当预算，会漏掉<strong>接近一半</strong>。框架、驱动、I/O 缓冲不属于任何一个模块，但它们真实占着 RAM。</td>
+        </tr>
+        <tr>
+          <td><strong>用满度：内存比算力紧得多</strong></td>
+          <td>算力 <code>157.3 ÷ 200 = 78.7 %</code><br />内存 <code>308 142 ÷ 327 680 = 94.0 %</code></td>
+          <td>这颗芯片有 320 KB 片上 RAM（64 KB DARAM + 256 KB SARAM）。算力还剩两成，<strong>内存只剩 6 %</strong>。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <span class="label">TI 自己在表下写了一句</span>
+      <em>「All program and data fits on the internal memory of the C5517 DSP.」</em>
+      ——这是一句报喜的话，但配上 94 % 这个数就是另一个意思：<strong>刚好塞下</strong>。
+      参考设计做到「刚好」是正常的（它要证明这颗芯片够用），
+      但你拿它当产品基线时，<strong>那 6 % 就是你未来所有新功能的全部空间</strong>。
+    </div>
+
+    <h2>三、第一条规矩：按峰值配，不按平均配</h2>
+
+    <p>
+      为什么不能用 136.6 这个平均数去配硬件？因为音频是<strong>按帧交货</strong>的。
+      <a href="0006-latency-budget.html">第 6 课</a>里 WebRTC 的一手文档写着：APM 只接受 <strong>10 ms 一帧</strong>的数据。
+      每 10 ms，这套算法必须把这一帧算完。<strong>算完了就没人知道你用了多久；算不完，就是一次丢帧</strong>——
+      听感上是「咔」的一声，或者一小段吞字。
+    </p>
+
+    <p>
+      平均 136.6 MIPS 的意思是「大多数帧很轻松」。但决定你听不听得到那声「咔」的，是<strong>最忙的那一帧</strong>：157.3。
+      更要命的是，最忙的那一帧不是随机出现的——<strong>它出现在双讲、回声路径突变、噪声突然变大的时候</strong>，
+      也就是<a href="0003-aec-full-duplex-essentials.html">第 3 课</a>里 AEC 最需要干活的那几秒。
+      <strong>算力的峰值和产品的关键时刻是对齐的。</strong>
+    </p>
+
+    <div class="callout bad">
+      <span class="label">评审时最常见的一句错话</span>
+      「平均占用 113 MIPS，芯片有 200，余量 43 %。」
+      <br />
+      正确的读法是：<strong>峰值 157.3，余量 21 %</strong>；而这 21 % 还要留给你没测到的那些帧、
+      未来的新功能、以及跟你抢 CPU 的所有别人。
+      工程上常见的做法是<strong>留 20 % 余量</strong>（这是惯例，不是标准——没有哪份文档规定它，
+      写进规格书时要说明是谁定的），那么可用的其实只有 160 MIPS，而你已经用了 157.3。
+      <strong>这套配置实际上是贴着线跑的。</strong>
+    </div>
+
+    <h2>四、第二条规矩：先撞的墙常常不是算力</h2>
+
+    <p>
+      算力 79 %，内存 94 %。<strong>先满的是内存。</strong>
+      这是<a href="0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a>那张「四个天花板取最小」的图在新账本上的重演，
+      也是<a href="0005-codec-bandwidth-and-latency.html">第 5 课</a>木桶效应的第三次出现——
+      前两次是带宽断在最短一环、功率撞在最先到的那个上限，这一次是<strong>资源撞在最先满的那一格</strong>。
+    </p>
+
+    <p>
+      内存为什么这么紧？看 HD AEC 那一行：<strong>实例数据 67 120 B，比它的代码段还大</strong>。
+      实例数据装的是自适应滤波器的系数和参考信号的历史——<strong>尾长有多长，这块内存就有多大</strong>。
+      所以尾长这个旋钮，<strong>同时拧动算力和内存两本账</strong>。
+    </p>
+
+    <h2>五、尾长为什么是唯一的大旋钮</h2>
+
+    <p>
+      你不必相信我，也不必相信方案商——这个量级可以自己估。
+      AEC 的核心是一个 NLMS 自适应滤波器
+      （<a href="0003-aec-full-duplex-essentials.html">第 3 课</a>那个「在线学习回声路径」的东西）。
+      它的复杂度有公开的一手表述：
+      <em>「Each iteration of the NLMS algorithm requires 3N+1 multiplications」</em>
+      （<a href="https://www.arpapress.com/files/volumes/vol7issue1/ijrras_7_1_05.pdf" target="_blank" rel="noopener">Chinaboina et al., IJRRAS 7(1), 2011</a>），
+      其中 <code>N</code> 是滤波器抽头数。
+    </p>
+
+    <table class="ref">
+      <thead><tr><th>步骤</th><th>算式</th><th>结果</th></tr></thead>
+      <tbody>
+        <tr><td>尾长换成抽头数</td><td><code>0.128 s × 16 000 样本/s</code></td><td>2 048 抽头</td></tr>
+        <tr><td>每个样本要做多少次乘法</td><td><code>3 × 2 048 + 1</code></td><td>6 145 次</td></tr>
+        <tr><td>每秒要做多少次</td><td><code>6 145 × 16 000</code></td><td>98.3 M 次/秒</td></tr>
+        <tr><td>折成 MIPS（一周期一次乘加）</td><td><code>≈ 98 MIPS</code></td><td>理论量级</td></tr>
+        <tr class="key"><td><strong>TI 实测 HD AEC 平均</strong></td><td>—</td><td><strong>113.1 MIPS</strong></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout good">
+      <span class="label">怎么读这个对照</span>
+      估出来 98，实测 113.1，<strong>高出 15 %</strong>。这 15 % 是双讲检测、非线性处理、收敛控制那些附加件。
+      结论不是「我算得准」，而是——<strong>AEC 的算力几乎全部在那个自适应滤波器上</strong>。
+      所以它<strong>近似正比于尾长</strong>：尾长砍一半，算力和实例内存都少一半。
+      <br /><br />
+      <strong>诚实边界</strong>：TI 只公布了 128 ms 这一档。本课后面所有别的尾长档位，
+      都是我按<strong>正比于尾长</strong>外推的，不是实测。真实实现多在频域做（成本约 <code>O(L log L)</code> 而非 <code>O(L)</code>），
+      所以<strong>线性外推是偏保守的上界</strong>——真实的省法会比表上更省一点。
+      预算外推要往坏的方向取整，这条习惯本身比这几个数字更值钱。
+    </div>
+
+    <h2>六、四本账，一起结算</h2>
+
+    <p>
+      下面这张表把四本账并排放在一起：<strong>算力、内存、功耗、BOM</strong>。
+      拨动任何一个配置，四个数同时变。你要看的不是某一个数，而是<strong>谁先到线</strong>。
+    </p>
+
+    <div class="mledger" data-mledger
+         data-title="拨一拨配置，看四本账同时动 —— 底色是 TIDUE77 Table 5 的实测值"
+         data-choices='[
+           {"name":"回声尾长","note":"AEC · 只有 128 ms 是实测，其余按正比外推","default":3,
+            "options":[
+              {"label":"32 ms","d":{"mips":32.8,"mem":81.1}},
+              {"label":"64 ms","d":{"mips":65.6,"mem":97.5}},
+              {"label":"96 ms","d":{"mips":98.3,"mem":113.8}},
+              {"label":"128 ms（实测）","d":{"mips":131.1,"mem":130.2}},
+              {"label":"160 ms","d":{"mips":163.9,"mem":146.6}},
+              {"label":"192 ms","d":{"mips":196.7,"mem":163.0}}
+            ]},
+           {"name":"噪声抑制 NS","note":"第 4 课","default":0,
+            "options":[
+              {"label":"开","d":{"mips":13.5,"mem":18.7}},
+              {"label":"关","d":{}}
+            ]},
+           {"name":"波束成形 + 第二颗麦","note":"第 7 课 · 唯一花钱的一行","default":0,
+            "options":[
+              {"label":"开（双麦）","d":{"mips":9.3,"mem":9.7,"usd":4.04}},
+              {"label":"关（单麦）","d":{"usd":2.02}}
+            ]},
+           {"name":"采样率","note":"第 5 课 · 窄带把算力对半砍","default":0,
+            "options":[
+              {"label":"16 kHz 宽带","d":{}},
+              {"label":"8 kHz 窄带","mul":{"mips":0.5}}
+            ]},
+           {"name":"框架 / 驱动 / 缓冲","note":"不属于任何模块，但真实占着","fixed":true,"default":0,
+            "options":[{"label":"固定开销","d":{"mips":3.4,"mem":142.3}}]}
+         ]'
+         data-ledgers='[
+           {"key":"mips","label":"算力（峰值）","unit":"MIPS","cap":200,"capLabel":"C5517 @200 MHz = 200 MIPS","soft":160,"softLabel":"留 20% 余量","decimals":1},
+           {"key":"mem","label":"片上内存","unit":"KB","cap":320,"capLabel":"320 KB 片上 RAM","decimals":1},
+           {"key":"usd","label":"BOM 增量（麦克风）","unit":"美元","decimals":2}
+         ]'
+         data-derived='[
+           {"label":"核心功耗","unit":"mW","from":"mips",
+            "steps":[
+              {"upto":75,"v":26.9,"note":"1.05 V · 75 MHz 档"},
+              {"upto":100,"v":65.1,"note":"1.3 V · 100 MHz 档"},
+              {"upto":150,"v":166.4,"note":"1.3 V · 150 MHz 档"},
+              {"upto":200,"v":248.4,"note":"1.4 V · 200 MHz 档 —— 最高档"}
+            ],
+            "over":"没有更高的档了，这颗 DSP 跑不动"}
+         ]'
+         data-presets='[
+           {"label":"方案商默认配置","pick":[3,0,0,0]},
+           {"label":"压进 150 MHz 档","pick":[2,0,0,0]},
+           {"label":"第 6 课那条 190 ms 回声路径","pick":[5,0,0,0]},
+           {"label":"改窄带救算力","pick":[3,0,0,1]}
+         ]'>
+    </div>
+
+    <p class="meta">
+      BOM 那一栏只有一个真实锚点：Infineon IM69D130 在
+      <a href="https://www.digikey.com/en/products/detail/infineon-technologies/IM69D130V01XTSA1/8030732" target="_blank" rel="noopener">Digi-Key 的单片价约 2.02 美元</a>——
+      <strong>这是单片零售价，不是你量产会拿到的价</strong>。换成你自己的报价，这一栏的结论可能完全不同。
+      功耗档位取自 <a href="https://www.ti.com/lit/an/sprabn1/sprabn1.pdf" target="_blank" rel="noopener">TI SPRABN1</a> Table 1（估算值，25 °C 典型场景）。
+      内存在窄带下按<strong>不打折</strong>处理（保守），真实会省下与采样点成正比的那部分。
+    </p>
+
+    <div class="callout warn">
+      <span class="label">四个预设按钮，各自要看的东西</span>
+      <strong>方案商默认</strong>：内存 94 %，算力 79 %——先撞内存，且算力已越过 20 % 余量线。
+      <br />
+      <strong>压进 150 MHz 档</strong>：尾长 128 → 96 ms，算力掉到 124.5，功耗从 248.4 掉到 166.4 mW。
+      <strong>尾长只砍了 25 %，功耗省了 33 %。</strong>
+      <br />
+      <strong>190 ms 回声路径</strong>：<a href="0006-latency-budget.html">第 6 课</a>算过，两侧抖动缓冲加上网络往返，
+      回声可以晚到 190 ms。要盖住它就要 192 ms 尾长——两本账<strong>同时爆表</strong>。这颗芯片买不起那条路径。
+      <br />
+      <strong>改窄带救算力</strong>：算力对半砍到 78.7，<strong>但内存纹丝不动，先撞的墙还是它</strong>。
+      省错了账本，一分钱好处都没有。
+    </div>
+
+    <h2>七、算力是按档买的，不是按需买的</h2>
+
+    <p>
+      上面那个功耗数字是查表来的，不是算出来的——因为<strong>芯片的算力是分档卖的</strong>。
+      C5517 的 datasheet 把频率和核心电压绑死：<strong>75 MHz 要 1.05 V，175 MHz 要 1.3 V，200 MHz 要 1.4 V</strong>。
+      而功耗大致随 <code>V² × f</code> 走，于是档与档之间是跳变的：
+    </p>
+
+    <table class="ref">
+      <thead><tr><th>核心电压</th><th>频率档</th><th>总功耗</th><th>每多买 1 MHz 的边际价格</th></tr></thead>
+      <tbody>
+        <tr><td>1.05 V</td><td>75 MHz</td><td>26.90 mW</td><td>—</td></tr>
+        <tr><td>1.3 V</td><td>100 MHz</td><td>65.08 mW</td><td><code>38.18 ÷ 25 = 1.53 mW</code></td></tr>
+        <tr><td>1.3 V</td><td>150 MHz</td><td>166.38 mW</td><td><code>101.30 ÷ 50 = 2.03 mW</code></td></tr>
+        <tr class="key"><td>1.4 V</td><td><strong>200 MHz</strong></td><td><strong>248.39 mW</strong></td><td><code>82.01 ÷ 50 = 1.64 mW</code></td></tr>
+      </tbody>
+    </table>
+
+    <p>
+      从 75 MHz 到 200 MHz，<strong>算力涨 2.67 倍，功耗涨 9.2 倍</strong>（<code>248.39 ÷ 26.90</code>）。
+      这条对角线是本节的全部内容：
+    </p>
+
+    <div class="callout good">
+      <span class="label">拿走这一条</span>
+      <strong>省 5 MIPS 通常一分钱不省；跨过一档才有钱可拿。</strong>
+      所以优化算力时，先去查芯片的档位表，<strong>把目标定在某一档的下沿</strong>，
+      而不是「能省一点是一点」。省到 151 MIPS 和省到 149 MIPS，功耗差 82 mW（一个是 248.4，一个是 166.4）。
+      <br /><br />
+      这和<a href="0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a>那 9.5 dB 是同一种东西：
+      <strong>收益不在连续的努力里，在跨过某条线的那一刻。</strong>
+    </div>
+
+    <p class="meta">
+      对摄像机来说这 82 mW 是真钱：PoE 供电的功率预算、球机云台的散热、电池门铃的续航，
+      三者都直接吃这个数。它还有一个隐藏账本——<strong>发热会改变结构件的形变与喇叭腔体的温度</strong>，
+      而<a href="0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a>说过，喇叭的热限本来就是那四个天花板之一。
+    </p>
+
+    <h2>八、不够用时，有几种付款方式</h2>
+
+    <p>每一种省法都不是免费的，只是付款方式不同。把它们摆在同一张表上，评审就不会变成吵架：</p>
+
+    <table class="ref">
+      <thead><tr><th>做法</th><th>算力</th><th>内存</th><th>功耗</th><th>BOM</th><th>真正的代价</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>尾长 128 → 96 ms</strong></td>
+          <td>−32.8</td><td>−16.4 KB</td><td>−82 mW</td><td>0</td>
+          <td>回声路径长于 96 ms 的房间会漏回声（<a href="0003-aec-full-duplex-essentials.html">第 3 课</a>）。<strong>先去量你的回声路径有多长，再决定砍到哪</strong>。</td>
+        </tr>
+        <tr>
+          <td><strong>宽带 → 窄带 8 kHz</strong></td>
+          <td>×0.5</td><td>≈0</td><td>−183 mW</td><td>0</td>
+          <td>整条链的带宽退回电话音质（<a href="0005-codec-bandwidth-and-latency.html">第 5 课</a>）。<strong>算力账上最划算，产品账上最贵</strong>——它动的是卖点。</td>
+        </tr>
+        <tr>
+          <td><strong>关掉波束成形</strong></td>
+          <td>−9.3</td><td>−9.7 KB</td><td>多半不跨档</td><td>−一颗麦</td>
+          <td>远场信噪比和指向性（<a href="0007-far-field-and-beamforming.html">第 7 课</a>）。省下的算力太少，<strong>为省算力而关它是亏的</strong>；为省 BOM 而关它才是一笔真交易。</td>
+        </tr>
+        <tr>
+          <td><strong>加一颗协处理器</strong></td>
+          <td>+200</td><td>+320 KB</td><td>+248 mW</td><td>+芯片 +板面积 +料号</td>
+          <td>钱、功耗、物料复杂度、以及一套要长期维护的双核软件。<strong>它买的是确定性</strong>：音频不跟视频抢资源。</td>
+        </tr>
+        <tr>
+          <td><strong>借主 SoC 的空闲算力</strong></td>
+          <td>看余量</td><td>看余量</td><td>看余量</td><td>0</td>
+          <td>BOM 上免费，风险记在别人账上：<strong>视频码率拉满 + AI 检测同时跑的时候，你的余量还在不在</strong>。这一条必须在最坏条件下实测，不能看空载数据。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <span class="label">这张表想教的姿势</span>
+      注意 BOM 那一列：<strong>前两行都是 0</strong>。
+      改算法配置在物料账上不花钱，但它在 dB 账、听感账、功耗账上都要付费。
+      反过来，那颗麦克风在算力账上几乎免费（9.3 MIPS），在 BOM 账上却是实打实的两美元。
+      <br /><br />
+      这就是<a href="0007-far-field-and-beamforming.html">第 7 课</a>那条主线的第三次出现——
+      <strong>同一个动作，在不同的账本上价值完全不同</strong>。评审时先问：<strong>我们现在缺的到底是哪一本？</strong>
+    </div>
+
+    <div class="quiz" data-quiz
+         data-title="练习 1 · 拆一句话"
+         data-prompt="方案商说：「AEC 平均占用 113 MIPS，芯片有 200 MIPS，余量充足。」这句话最大的问题是什么？"
+         data-options='[
+           "平均不是峰值，实时系统按峰值配",
+           "单位口径不同，两个数不能直接比",
+           "余量必须留满一半，两成远远不够",
+           "内存开销更大，算力从来不是瓶颈"
+         ]'
+         data-answer="0"
+         data-explain-correct="对。峰值 131.1，整套应用峰值 157.3，余量只有 21%——而峰值恰好出现在双讲、回声路径突变这些最要命的时刻。要数就要峰值那一列。"
+         data-explain-wrong="单位没错（这颗 DSP 上 MHz ≈ MIPS）；余量惯例是 20% 而非 50%；内存确实更紧，但那是第二个问题。这句话的第一个错在于——它报的是平均值。实时系统按峰值配，因为算不完就是丢帧。">
+    </div>
+
+    <div class="quiz" data-quiz
+         data-title="练习 2 · 省错账本"
+         data-prompt="为了省算力，你把采样率从 16 kHz 降到 8 kHz，峰值 MIPS 对半砍。在本课那四本账上，这一步的真实效果是什么？"
+         data-options='[
+           "内存几乎没省，先撞的墙还在原处",
+           "内存同步减半，两本账一起松开了",
+           "功耗保持不变，因为电压档没变化",
+           "尾长必须同步减半，回声更难消掉"
+         ]'
+         data-answer="0"
+         data-explain-correct="对。算力掉到 78.7 MIPS（并且掉进 100 MHz 档，功耗从 248 降到 65 mW），但内存的大头是代码段和固定缓冲，仍然停在 94%。先撞的墙没换人——你省的是那本还有余量的账。"
+         data-explain-wrong="功耗其实降了整整两档；尾长以毫秒计，采样率变了抽头数变、毫秒不变。关键在内存：它的大头是代码段与固定缓冲，不随采样率缩水，所以那面 94% 的墙原地不动。">
+    </div>
+
+    <h2>九、这些数怎么自己拿到</h2>
+
+    <p>
+      <a href="0008-measurement-that-holds-up.html">第 8 课</a>立的规矩是：<strong>给不出测法的验收条款只是漂亮话。</strong>
+      算力这本账的好消息是，它比声学量好测得多——坏消息是，几乎所有人都测错了条件。
+    </p>
+
+    <table class="ref">
+      <thead><tr><th>要什么</th><th>怎么要 / 怎么自己测</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>逐模块的峰值占用表</strong></td>
+          <td>向方案商索要「在<strong>我们的</strong>采样率、帧长、尾长下」的表，要<strong>峰值</strong>列和<strong>实例数据</strong>列。TIDUE77 Table 5 就是模板——把它发过去说「照这个格式给」，比说「给我算力数据」有效得多。</td>
+        </tr>
+        <tr>
+          <td><strong>尾长 vs 占用的曲线</strong></td>
+          <td>要三个点以上（如 32 / 64 / 128 ms），不要单点。有了曲线你才能自己插值，才能在评审现场算「加 32 ms 要多少钱」。</td>
+        </tr>
+        <tr>
+          <td><strong>最坏条件下的实测</strong></td>
+          <td>自己跑：<strong>双讲 + 高噪 + 视频满码率 + AI 检测全开</strong>，连续 30 分钟以上。看两个数——CPU 占用的<strong>峰值</strong>（不是 top 的平均），和<strong>丢帧计数</strong>（ALSA 的 xrun、DSP 的 frame overrun）。<strong>丢帧计数必须是 0</strong>；只要它不是 0，平均占用多低都不算数。</td>
+        </tr>
+        <tr>
+          <td><strong>余量的定义</strong></td>
+          <td>写进规格书时说清楚：<strong>「峰值占用 ≤ 可用算力的 80 %」</strong>，并注明这 20 % 是工程惯例而非标准，是谁定的、留给什么用。</td>
+        </tr>
+        <tr>
+          <td><strong>内存的完整口径</strong></td>
+          <td>要 <strong>程序 + 数据 + 实例数据 × 路数</strong> 三项分开，再加一项「框架与缓冲」。本课那张表告诉你，最后这一项能占到总量的 47 %。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="order-drill"
+         data-order-drill
+         data-title="练习 3 · 算力不够时的四步"
+         data-prompt="按正确的顺序点选。"
+         data-items='["量出最坏条件下的峰值占用","看四本账里谁先到线","先花不用钱的额度","最后才动硬件"]'
+         data-why='[
+           "先有数再讨论。平均值、空载值、供应商的 PPT 值都不算——要的是双讲 + 高噪 + 视频满码率下的峰值，以及丢帧计数。没有这个数，后面三步全是猜。",
+           "别急着优化算力。本课的例子里内存 94%、算力 79%——冲着算力使劲，撞墙的还是内存。先找出最紧的那本账，再决定往哪使劲。",
+           "改配置在 BOM 上是零成本：尾长、采样率、模块开关。它们要付的是 dB 和听感，不是钱。而且要瞄准档位下沿——跨过一档才有功耗可省。",
+           "加协处理器、换 SoC 是最后一步。它买的是确定性（不跟视频抢资源），代价是钱、功耗、板面积、料号和一套要长期维护的双核软件。"
+         ]'
+         data-done="全对。这个形状可以搬到任何资源紧张的场合：先量真数 → 找最紧的账 → 花免费额度 → 才动硬件。跳过第一步是最常见的错误，跳过第二步是最贵的错误。">
+    </div>
+
+    <h2>十、把三课接起来</h2>
+
+    <div class="callout bad">
+      <span class="label">本课最值得带走的一句</span>
+      <strong>尾长这个参数，是三本账的交点。</strong>
+      <br />
+      <a href="0006-latency-budget.html">第 6 课</a>从<strong>下面</strong>顶它：两侧抖动缓冲加网络往返，
+      回声可能晚到 190 ms，尾长必须盖得住。
+      <br />
+      本课从<strong>上面</strong>压它：128 ms 就吃掉八成算力和一半内存，192 ms 这颗芯片根本跑不下。
+      <br />
+      <a href="0003-aec-full-duplex-essentials.html">第 3 课</a>说的是<strong>盖不住的后果</strong>：残余回声漏出去，
+      而<a href="0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a>又给 ERLE 压了一个来自喇叭 THD 的天花板。
+      <br /><br />
+      所以当有人说「AEC 效果不好，让算法组再调调」时，你现在知道要先问三个问题：
+      <strong>回声路径实际多长？尾长配了多少？这颗芯片的算力和内存还剩多少？</strong>
+      三个数摆出来，问题往往根本不在算法组那里。
+    </div>
+
+    <h2>术语小结</h2>
+
+    <table class="ref">
+      <tbody>
+        <tr><td><span class="term">MIPS</span> 百万指令每秒</td><td>算力的记账单位；本课这颗 DSP 上 200 MHz ≈ 200 MIPS</td></tr>
+        <tr><td><span class="term">峰值 MIPS</span> Peak MIPS</td><td>最忙那一帧的占用；实时系统按它配硬件，平均值只用来看趋势</td></tr>
+        <tr><td><span class="term">实例数据</span> Instance data</td><td>每路独占的状态内存；按路数乘，尾长越长它越大</td></tr>
+        <tr><td><span class="term">电压频率档</span> Voltage-frequency tier</td><td>芯片按档卖算力（75/100/150/200 MHz），功耗在档间跳变</td></tr>
+        <tr><td><span class="term">算力余量</span> Headroom</td><td>峰值之外留下的比例；惯例 20 %，不是标准，要注明谁定的</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      完整释义见 <a href="../reference/glossary.html#mips">术语表</a>；
+      记账口径、外推规则与验收条款见 <a href="../reference/compute-budget-cheatsheet.html">算力与预算速查</a>。
+    </p>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      最有价值的下一步：把你项目那颗 SoC 的音频算力/内存规格发我（或者方案商给的那份占用表），
+      我们把它换进上面那张四账表，看默认配置下先撞哪面墙、还剩多少余量、
+      以及要盖住你现场那条回声路径需要多少尾长——这个数在评审桌上比任何形容词都管用。
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://www.ti.com/lit/ug/tidue77/tidue77.pdf" target="_blank" rel="noopener"><strong>TI TIDUE77 · High Fidelity, Near-Field Two-Way Audio Reference Design</strong></a>
+        — 只读三处，二十分钟够：
+        <strong>§3.2.7 与 Table 5</strong>（本课全部数字的来源，业界罕见的公开占用表）、
+        <strong>§2.2.5 与 §2.3.2</strong>（这套算法跑在什么硬件上、双麦怎么排）、
+        以及正文里那句关于 HD AEC 的话——
+        <em>「the HD AEC is customizable for shorter or longer tail lengths (based on available processing resources)」</em>。
+        <br />
+        最后这句是本课的种子：<strong>厂商自己就承认，尾长是被算力买断的</strong>。
+        下次谁跟你说「我们的 AEC 尾长可配」，你就知道该追问「配到 192 ms 时，峰值 MIPS 和内存是多少」。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://www.ti.com/lit/ds/symlink/tms320c5517.pdf" target="_blank" rel="noopener">TMS320C5517 datasheet（320 KB RAM、75–200 MHz 的电压档）</a>
+        ·
+        <a href="https://www.ti.com/lit/an/sprabn1/sprabn1.pdf" target="_blank" rel="noopener">TI SPRABN1 Table 1（四个频率档的功耗估算）</a>
+        ·
+        <a href="https://www.arpapress.com/files/volumes/vol7issue1/ijrras_7_1_05.pdf" target="_blank" rel="noopener">Chinaboina et al., IJRRAS 7(1) 2011（NLMS 的 3N+1 复杂度）</a>
+        ·
+        <a href="../reference/compute-budget-cheatsheet.html">算力与预算速查</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0009-loudspeaker-amp-and-smart-amp.html">喊话喊不远，一喊就断音</a>
+        · 下一课预告：AV 同步与唇音对齐 —— 音频这条链终于要和视频对表
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/order-drill.js"></script>
+  <script defer src="../assets/multi-ledger.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

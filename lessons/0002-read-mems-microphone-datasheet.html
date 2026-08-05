@@ -31,14 +31,21 @@
     </p>
     <div class="callout warn">
       <span class="label">比较规则</span>
-      两颗麦的 SNR 都写 65 dB，也要看脚注：是否 A 计权、测量带宽、模拟还是数字输出、供电模式。脚注不一致时，数字不可直接横比。
+      两颗麦的 SNR 都写 65 dB，也要看脚注：是否 A 计权、测量带宽、模拟还是数字输出、供电/时钟模式。脚注不一致时，数字不可直接横比。
+      <br /><br />
+      <strong>不是理论洁癖——同一颗麦就能差 5 dB。</strong>Infineon IM69D130 在时钟 3.072 MHz 下是 <strong>69 dB(A)</strong>，
+      切到 768 kHz 低功耗模式只剩 <strong>64 dB(A)</strong>，而且带宽从 20 kHz 缩到 8 kHz
+      （<a href="https://www.infineon.com/assets/row/public/documents/24/49/infineon-im69d130-datasheet-en.pdf" target="_blank" rel="noopener">datasheet</a> Table 1）。
+      供应商报哪个数，你就得问是哪个模式。
     </div>
 
     <h2>三个核心数字（按优先级）</h2>
 
     <h3>1. SNR — 安静与远场的天花板</h3>
     <p>
-      <strong>SNR</strong> = 94 dB SPL 参考信号 相对 麦克风自噪声 的比值（常见 A 计权，单位 dB(A)）。
+      <strong>SNR</strong> = <strong>94 dB SPL（1 Pa）@ 1 kHz 这个标准参考声压，与麦克风自噪声之间的差</strong>（常见 A 计权、20 kHz 带宽，单位 dB(A)）。
+      ADI 的原话：<em>「the difference between its inherent self noise level and a standard reference pressure, specifically 94 dB SPL (1 Pa) at 1 kHz」</em>
+      （<a href="https://www.analog.com/media/en/technical-documentation/technical-articles/Low-Self-Noise-The%20First-Step-to-High-Performance-MEMS-Microphone-Applications-MS-2348.pdf" target="_blank" rel="noopener">MS-2348</a>）。
       等价地：
     </p>
     <p><code>等效输入噪声 EIN ≈ 94 − SNR　（dB SPL）</code></p>
@@ -46,6 +53,17 @@
       例：SNR = 65 dB → EIN ≈ 29 dB SPL。比这更轻的声音，在理想条件下也会被自噪声淹没。
       ADI 明确：跨模拟/数字接口时，应用声学域的 SNR 与最大声压来比较，而不是输出格式。
     </p>
+
+    <div class="callout bad">
+      <span class="label">最容易读错的一句</span>
+      <strong>datasheet 上的 SNR 不是你录到的那段音频的信噪比。</strong>
+      它是<strong>器件固有的噪声底指标</strong>——测的是「拿 94 dB 的大声去喂它」时的成绩，而 94 dB SPL 相当于贴着耳朵大喊。
+      真实录音的信噪比要另算：<strong>声音到达麦时的 SPL − EIN</strong>。
+      一颗 69 dB(A) 的好麦（EIN 25 dB SPL），收 4 米外正常说话（到达约 48 dB SPL）时，实际只剩
+      <strong>23 dB</strong>——而且这还是安静房间。差了整整 46 dB。
+      <br /><br />
+      这一步在 <a href="0007-far-field-and-beamforming.html">第 7 课</a>的远场账里会反复用到。
+    </div>
     <p>
       <strong>摄像机含义：</strong> 客厅/走廊远场、夜间安静环境要「听清轻声说话」——先看 SNR。
       距离每翻倍约 −6 dB 声压（自由场），远场信号更弱，更容易掉进噪声底。
@@ -216,7 +234,9 @@
       <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
     </nav>
   </div>
-  <script type="module" src="../assets/quiz.js"></script>
-  <script type="module" src="../assets/mic-calc.js"></script>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/mic-calc.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
 </body>
 </html>

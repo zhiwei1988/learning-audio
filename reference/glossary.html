@@ -27,106 +27,460 @@
       <a href="#double-talk">Double-talk</a>
     </p>
 
+    <p class="meta" style="max-width: none; margin: 0 0 1.25rem;">
+      第 4 课相关：
+      <a href="#hpf">HPF</a> ·
+      <a href="#ns">NS / ANR</a> ·
+      <a href="#agc">AGC</a> ·
+      <a href="#chain-order">处理链顺序</a> ·
+      <a href="#musical-noise">Musical noise</a> ·
+      <a href="#aggressiveness">Aggressiveness</a> ·
+      <a href="#snri">SNRI / DSN</a> ·
+      <a href="#smos">S-MOS / N-MOS</a>
+    </p>
+
+    <p class="meta" style="max-width: none; margin: 0 0 1.25rem;">
+      第 5 课相关：
+      <a href="#nyquist">奈奎斯特</a> ·
+      <a href="#narrowband">窄带 / 宽带</a>
+      <a href="#sibilance"> · 齿擦音</a> ·
+      <a href="#codec">G.711 / G.726 / AAC</a> ·
+      <a href="#algo-delay">算法时延</a> ·
+      <a href="#onvif-audio">ONVIF 音频</a>
+    </p>
+
+    <p class="meta" style="max-width: none; margin: 0 0 1.25rem;">
+      第 6 课相关：
+      <a href="#mouth-to-ear">mouth-to-ear</a> ·
+      <a href="#g114">G.114 标尺</a> ·
+      <a href="#group-delay">Group delay</a> ·
+      <a href="#block-size">块长 / 帧长</a> ·
+      <a href="#ptime">ptime</a> ·
+      <a href="#jitter-buffer">抖动缓冲</a> ·
+      <a href="#tail-vs-delay">尾长 ≠ 时延</a>
+    </p>
+
+    <p class="meta" style="max-width: none; margin: 0 0 1.25rem;">
+      第 7 课相关：
+      <a href="#inverse-square">平方反比定律</a> ·
+      <a href="#beamforming">Beamforming</a> ·
+      <a href="#delay-and-sum">相加式 / 差分式</a> ·
+      <a href="#aperture">孔径</a> ·
+      <a href="#spatial-aliasing">空间混叠 / 栅瓣</a> ·
+      <a href="#di">DI</a> ·
+      <a href="#wng">WNG</a> ·
+      <a href="#mic-matching">麦克风一致性</a> ·
+      <a href="#critical-distance">混响半径</a>
+    </p>
+
+    <p class="meta" style="max-width: none; margin: 0 0 1.25rem;">
+      第 8 课相关：
+      <a href="#repeatability">可复现性</a> ·
+      <a href="#session-bias">场次偏置</a> ·
+      <a href="#error-bar">误差棒</a> ·
+      <a href="#paired-test">配对测试</a> ·
+      <a href="#dmos">MOS / DMOS</a> ·
+      <a href="#ccr">ACR / DCR / CCR</a> ·
+      <a href="#dbpa">dBPa</a> ·
+      <a href="#dt-attenuation">双讲衰减量</a> ·
+      <a href="#dnsmos">DNSMOS</a> ·
+      <a href="#p501">P.501 测试信号</a>
+    </p>
+
+    <p class="meta" style="max-width: none; margin: 0 0 1.25rem;">
+      第 9 课相关：
+      <a href="#speaker-sensitivity">喇叭灵敏度</a> ·
+      <a href="#fo">共振频率 Fo</a> ·
+      <a href="#crest-factor">峰均比</a> ·
+      <a href="#btl">BTL</a> ·
+      <a href="#thd">THD</a> ·
+      <a href="#smart-amp">Smart Amp</a> ·
+      <a href="#excursion">振膜位移</a> ·
+      <a href="#soa">SOA</a> ·
+      <a href="#thermal-time-constant">热时间常数</a>
+    </p>
+
+    <p class="meta" style="max-width: none; margin: 0 0 1.25rem;">
+      第 10 课相关：
+      <a href="#mips">MIPS</a> ·
+      <a href="#peak-mips">峰值 MIPS</a> ·
+      <a href="#instance-data">实例数据</a> ·
+      <a href="#voltage-frequency-tier">电压频率档</a> ·
+      <a href="#compute-headroom">算力余量</a>
+    </p>
+
     <dl>
-      <div class="glossary-item">
+      <div class="glossary-item" id="capture">
         <dt>拾音 / Capture · 放音 / Playback</dt>
-        <dd>摄像机麦克风采集环境声（上行）；喇叭播出远端语音/告警（下行）。双向对讲 = 同时或交替使用两者。</dd>
+        <dd>摄像机麦克风采集环境声（上行）；喇叭播出远端语音/告警（下行）。双向对讲 = 同时或交替使用两者。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="aec-cheatsheet.html">AEC 与全双工</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="spl">
         <dt>SPL · Sound Pressure Level</dt>
-        <dd>声压级，单位 dB SPL。0 dB SPL ≈ 人耳听阈；正常对话约 60–70 dB SPL（1 m）；94 dB SPL = 1 Pa，是麦克风灵敏度测试的标准参考声压。</dd>
+        <dd>声压级，单位 dB SPL。0 dB SPL ≈ 人耳听阈；正常对话约 60–70 dB SPL（1 m）；94 dB SPL = 1 Pa，是麦克风灵敏度测试的标准参考声压。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
-      <div class="glossary-item">
-        <dt>SNR · Signal-to-Noise Ratio</dt>
-        <dd>麦克风：参考 94 dB SPL 输入相对自身噪声的比值（常 A 计权）。更高 SNR → 安静环境/远场更干净。不是「灵敏度越高越好」。</dd>
+      <div class="glossary-item" id="snr">
+        <dt>SNR · Signal-to-Noise Ratio · 信噪比</dt>
+        <dd><strong>datasheet 上的 SNR 是器件固有的噪声底指标，不是你录到的那段音频的信噪比。</strong>
+        它的定义是<strong>标准参考声压与麦克风自噪声之间的差</strong>——ADI：<em>「the difference between its inherent self noise level and a standard reference pressure, specifically 94 dB SPL (1 Pa) at 1 kHz」</em>。通常按 <strong>A 计权、20 kHz 带宽</strong>给出。
+        <br />换算：<code>EIN = 94 − SNR</code>（见 <a href="#self-noise">EIN</a>）；而<strong>实际录音信噪比 = 声音到达麦时的 SPL − EIN</strong>。两者能差几十 dB——SNR 69 dB(A) 的麦，收 4 米外正常说话时实际只剩约 23 dB。
+        <br />量级参考：早期 MEMS 约 58–60 dB；<strong>65 dB(A) 已算好麦</strong>（ADI，2012）；Infineon IM69D130 为 <strong>69 dB(A)，EIN 25 dB SPL</strong>。
+        <br /><strong>横比前先核对口径。</strong>同一颗 IM69D130：时钟 3.072 MHz 时 69 dB(A)，切到 768 kHz 低功耗模式只剩 <strong>64 dB(A)</strong>（带宽也变成 20 Hz–8 kHz）。同一颗麦，数字差 5 dB。计权、带宽、供电/时钟模式不一致时，两颗麦的 SNR 不可直接横比。
+        <br />判断麦的品质，SNR 比<a href="#sensitivity">灵敏度</a>更有参考价值。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="aop">
         <dt>AOP · Acoustic Overload Point</dt>
-        <dd>声过载点：失真达到阈值（常 10% THD）时的声压级。门铃/门口大喊、关门声需要高 AOP，否则爆音失真。</dd>
+        <dd>声过载点：失真达到阈值（常 10% THD）时的声压级。门铃/门口大喊、关门声需要高 AOP，否则爆音失真。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="sensitivity">
         <dt>Sensitivity · 灵敏度</dt>
-        <dd>单位声压产生的输出大小。模拟麦：dBV；数字麦：dBFS。灵敏度高不代表音质好；远场可能需要更高有效增益，近场高灵敏度易削波。</dd>
+        <dd>单位声压产生的输出大小。模拟麦：dBV；数字麦：dBFS。灵敏度高不代表音质好；远场可能需要更高有效增益，近场高灵敏度易削波。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="dynamic-range">
         <dt>Dynamic Range · 动态范围</dt>
-        <dd>可线性再现的最强声与最弱声之差。麦克风上常 ≈ AOP − 噪声底。系统动态范围由最弱一环（麦/ADC/算法/编码）决定。</dd>
+        <dd>可线性再现的最强声与最弱声之差。麦克风上常 ≈ AOP − 噪声底。系统动态范围由最弱一环（麦/ADC/算法/编码）决定。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
       </div>
-      <div class="glossary-item">
-        <dt>EIN · Equivalent Input Noise</dt>
-        <dd>等效输入噪声，单位 dB SPL。麦克风自噪声折算回声学输入。常用近似：EIN ≈ 94 − SNR。远场轻声能否浮出底噪，先看它。</dd>
+      <div class="glossary-item" id="self-noise">
+        <dt>EIN · Equivalent Input Noise · 等效输入噪声（自噪声）</dt>
+        <dd>麦克风自身的电子噪声，换算成「相当于多大的声音」，单位 dB SPL：<code>EIN ≈ 94 − SNR</code>。SNR 65 dB(A) 的麦 → EIN 29 dB SPL，相当于机内永远开着一台 29 dB 的嘶嘶声。<strong>常见误读：把 datasheet 的 SNR 当成录音的信噪比。</strong>那个数是在 94 dB SPL（贴耳大喊）下测的；真实信噪比 = <strong>声音到达麦时的 SPL − EIN</strong>。4 米外的正常说话只有 48 dB SPL，减掉 29 只剩 19 dB。远场轻声能否浮出底噪，先看它。<span class="seen-in">出现在：<a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="thd">
         <dt>THD · Total Harmonic Distortion</dt>
-        <dd>总谐波失真。AOP 常定义为 THD 达到 10%（有的规格用 1%）时的声压。看 AOP 时务必核对 THD 判据。</dd>
+        <dd>总谐波失真：输出里非原信号谐波所占的比例。拾音侧，<a href="#aop">AOP</a> 常定义为 THD 达到 10%（有的规格用 1%）时的声压——看 AOP 时务必核对 THD 判据。
+        <br />放音侧它更关键：<strong>谐波在参考信号里不存在</strong>，线性 <a href="#aec">AEC</a> 无法预测它没见过的东西，于是这部分回声原封不动留在残差里。由此得到一条硬天花板：
+        <br /><code>ERLE上限 ≈ −20·log₁₀(THD)</code>　—　10% → 20 dB；5.6% → 25 dB；3.1% → 30 dB；1% → 40 dB。
+        <br />业界认为远场可用需 <a href="#erle">ERLE</a> 25–30 dB，正对应 THD+N 5.6%–3.1%。
+        <br /><strong>产品用法</strong>：要 THD <strong>vs 驱动电平</strong>的曲线，不是一个 max 值。把最大音量钉在 THD ≤ 5.6% 的电平上——<strong>音量旋钮同时是一个全双工旋钮</strong>。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="pdm">
         <dt>PDM / I²S</dt>
-        <dd>数字麦常见接口。PDM：脉冲密度调制，需时钟与抽滤；I²S：更接近 PCM 采样流。影响布线、抗扰与 SoC 对接，不直接等于音质优劣。</dd>
+        <dd>数字麦常见接口。PDM：脉冲密度调制，需时钟与抽滤；I²S：更接近 PCM 采样流。影响布线、抗扰与 SoC 对接，不直接等于音质优劣。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
       </div>
       <div class="glossary-item" id="aec">
         <dt>AEC · Acoustic Echo Cancellation</dt>
-        <dd>声学回声消除：估计喇叭→麦克风的声学路径，从拾音中减掉「自己刚播出去的声音」。全双工对讲的核心。失败听感：回音、啸叫、远端听到自己。</dd>
+        <dd>声学回声消除：估计喇叭→麦克风的声学路径，从拾音中减掉「自己刚播出去的声音」。全双工对讲的核心。失败听感：回音、啸叫、远端听到自己。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="aec-cheatsheet.html">AEC 与全双工</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="latency-cheatsheet.html">时延预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="reference">
         <dt>Reference · Far-end reference</dt>
-        <dd>AEC 用来建模回声的「已知播放信号」副本。没有可信参考（或延迟/音量与真实功放不一致），AEC 无法对齐。这是 AEC 与 NS 的分水岭。</dd>
+        <dd>AEC 用来建模回声的「已知播放信号」副本。没有可信参考（或延迟/音量与真实功放不一致），AEC 无法对齐。这是 AEC 与 NS 的分水岭。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="latency-cheatsheet.html">时延预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
       <div class="glossary-item" id="double-talk">
         <dt>Double-talk · 双讲</dt>
-        <dd>近端与远端同时说话。麦信号混有本端语音与回声；滤波器应减慢或暂停适应，否则会损伤本端语音。全双工真门槛用例。</dd>
+        <dd>近端与远端同时说话。麦信号混有本端语音与回声；滤波器应减慢或暂停适应，否则会损伤本端语音。全双工真门槛用例。<span class="seen-in">出现在：<a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="aec-cheatsheet.html">AEC 与全双工</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
       <div class="glossary-item" id="echo-tail">
         <dt>Echo tail · 回声尾长</dt>
-        <dd>喇叭→麦路径上，回声能量拖到可忽略的时长。量法：扫频反卷积得 h(t)，按峰值下 −40/−60 dB 或噪声底读时间；也可互相关粗测、看收敛 FIR 系数、或加长 taps 看 ERLE 拐点。贴硬墙往往比自由场更长（墙反射把中后段抬高）。算法规格里的 40/128 ms 是覆盖预算，不是测得值。门口反射、强耦合更吃算力与时延。</dd>
+        <dd>喇叭→麦路径上，回声能量拖到可忽略的时长。量法：扫频反卷积得 h(t)，按峰值下 −40/−60 dB 或噪声底读时间；也可互相关粗测、看收敛 FIR 系数、或加长 taps 看 ERLE 拐点。贴硬墙往往比自由场更长（墙反射把中后段抬高）。算法规格里的 40/128 ms 是覆盖预算，不是测得值。门口反射、强耦合更吃算力与时延。<span class="seen-in">出现在：<a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a></span></dd>
       </div>
       <div class="glossary-item" id="tap">
         <dt>Tap · 抽头</dt>
-        <dd>FIR / 自适应滤波器里一个延迟点上的可调系数。N taps = N 个系数 = 能「记住」过去 N 个采样；可覆盖尾长 ≈ N / f<sub>s</sub>（如 640 taps @16 kHz ≈ 40 ms）。taps 越多，尾长预算越长，算力也越高。</dd>
+        <dd>FIR / 自适应滤波器里一个延迟点上的可调系数。N taps = N 个系数 = 能「记住」过去 N 个采样；可覆盖尾长 ≈ N / f<sub>s</sub>（如 640 taps @16 kHz ≈ 40 ms）。taps 越多，尾长预算越长，算力也越高。<span class="seen-in">出现在：<a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a></span></dd>
       </div>
       <div class="glossary-item" id="fir">
         <dt>FIR · Finite Impulse Response（有限冲激响应）</dt>
-        <dd>有限冲激响应滤波器：输出 = 过去有限个输入采样的加权和。AEC 线性部分常用自适应 FIR 拟合喇叭→麦路径；长度（taps）决定可覆盖的 echo tail。</dd>
+        <dd>有限冲激响应滤波器：输出 = 过去有限个输入采样的加权和。AEC 线性部分常用自适应 FIR 拟合喇叭→麦路径；长度（taps）决定可覆盖的 echo tail。<span class="seen-in">出现在：<a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a></span></dd>
       </div>
       <div class="glossary-item" id="erl">
         <dt>ERL · Echo Return Loss（回声回损）</dt>
-        <dd>回声路径回损（AEC 关、近端静）：L_Rout − L_Sin（播放参考相对上行麦上的回声）。越大越好；免提大音量可为负。数字通路上常与「喇叭→麦隔离 dB」同一测法。测结构时必须关 AEC。</dd>
+        <dd>回声路径回损（AEC 关、近端静）：L_Rout − L_Sin（播放参考相对上行麦上的回声）。越大越好；免提大音量可为负。数字通路上常与「喇叭→麦隔离 dB」同一测法。测结构时必须关 AEC。<span class="seen-in">出现在：<a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="aec-cheatsheet.html">AEC 与全双工</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
       <div class="glossary-item" id="isolation">
         <dt>Isolation · 喇叭→麦隔离（dB）</dt>
-        <dd>只有喇叭响时，喇叭侧电平减去麦侧电平（dB）。越大耦合越弱。数字法用 reference vs raw mic；声学法用声级计两点。与 ERL 相关但不与声学 SPL 混比。</dd>
+        <dd>只有喇叭响时，喇叭侧电平减去麦侧电平（dB）。越大耦合越弱。数字法用 reference vs raw mic；声学法用声级计两点。与 ERL 相关但不与声学 SPL 混比。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a></span></dd>
       </div>
       <div class="glossary-item" id="erle">
         <dt>ERLE · Echo Return Loss Enhancement（回声回损改善）</dt>
-        <dd>AEC 额外提供的回声衰减（算法指标）：AEC 前/后回声功率比。别和结构 ERL 比大小。线性部分常见约 20–30 dB 量级；再高常靠 NLP。</dd>
+        <dd>AEC 额外提供的回声衰减（算法指标）：AEC 前/后回声功率比。别和结构 ERL 比大小。线性部分常见约 20–30 dB 量级；再高常靠 <a href="#nlp">NLP</a>。
+        <br /><strong>它有一个来自硬件的上限</strong>：喇叭的<a href="#thd">谐波失真</a>不在参考信号里，AEC 消不掉，所以 <code>ERLE ≤ −20·log₁₀(THD)</code>。算法再好也过不去这条线——这时该改的是腔体（提高 <a href="#erl">ERL</a>）或喇叭，不是滤波器。<span class="seen-in">出现在：<a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="aec-cheatsheet.html">AEC 与全双工</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
       <div class="glossary-item" id="nlp">
         <dt>RES / NLP · Residual / Non-linear processing（残差 / 非线性处理）</dt>
-        <dd>线性 AEC（FIR）之后对残余回声与非线性伪影（喇叭失真等）的抑制。过猛：语音断续、空洞；过弱：大音量仍回。此处 NLP ≠ 自然语言处理。</dd>
+        <dd>线性 AEC（FIR）之后对残余回声与非线性伪影（喇叭失真等）的抑制。过猛：语音断续、空洞；过弱：大音量仍回。此处 NLP ≠ 自然语言处理。<span class="seen-in">出现在：<a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="aec-cheatsheet.html">AEC 与全双工</a></span></dd>
       </div>
-      <div class="glossary-item">
-        <dt>ANR / NS · Noise Reduction / Suppression</dt>
-        <dd>降噪/噪声抑制：削弱稳态或非语音噪声（空调、风噪、马路）。过度则「机器人声」、辅音被削。与 AEC 不同：AEC 针对已知参考（播放信号）。</dd>
+      <div class="glossary-item" id="hpf">
+        <dt>HPF · High-pass Filter（高通滤波）</dt>
+        <dd>处理链最前一级，切掉两类无用低频：<strong>直流偏置</strong>（DC offset，0 Hz 的固定偏置，听不见但占动态范围）与<strong>低频隆隆声</strong>（rumble，几十 Hz 以下的一团能量）。来源包括风噪、云台马达与结构振动、以及经外壳固体传导的<strong>触碰噪声</strong>（handling noise：碰机器、擦拭、雨点打壳）。拐点定太高会让人声变薄。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
       </div>
-      <div class="glossary-item">
-        <dt>AGC · Automatic Gain Control</dt>
-        <dd>自动增益控制：把忽大忽小的语音电平拉到可用范围。过猛会放大噪声底、引入呼吸感（pumping）。</dd>
+      <div class="glossary-item" id="ns">
+        <dt>NS / ANR · Noise Suppression（噪声抑制）</dt>
+        <dd>削弱环境噪声（空调、风、马路）。无播放参考，靠谱域估计噪声底再逐频带衰减——这是它与 <a href="#aec">AEC</a> 的分水岭。本质是一笔交易：压噪越多，语音失真越大。位于 AEC 之后、AGC 之前。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="aec-cheatsheet.html">AEC 与全双工</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="latency-cheatsheet.html">时延预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="agc">
+        <dt>AGC · Automatic Gain Control（自动增益控制）</dt>
+        <dd>把忽大忽小的语音电平拉进目标窗口。由 attack（压下去多快）→ hold（保持多久）→ release（回升多慢）三个时间常数刻画，通常 release 比 attack 慢 2–3 个数量级。上行链放最后；无法还原采集端已削波的信号。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="latency-cheatsheet.html">时延预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+      <div class="glossary-item" id="chain-order">
+        <dt>处理链顺序 · Chain order</dt>
+        <dd>上行：HPF → AEC → NS → AGC。下行：AGC/限幅 → 分叉给喇叭与 AEC 参考。约束来自 AEC——它前面不能有非线性处理，也不能有会跳变的增益，否则滤波器把增益变化当成回声路径突变而反复重收敛。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+      <div class="glossary-item" id="musical-noise">
+        <dt>Musical noise · 音乐噪声</dt>
+        <dd>谱减类降噪的典型伪影：噪声被压后残留孤立、闪烁的谱峰，听感像金属「叮叮」声或水声。是 NS 开太猛的签名之一。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+      <div class="glossary-item" id="aggressiveness">
+        <dt>Aggressiveness · 降噪激进度</dt>
+        <dd>NS 在「压噪声」与「保语音」之间的那根滑杆。激进：噪声干净、语音削坏；保守：语音完整、噪声漏出。综合分相同的两台机可以坐在滑杆的两端——这就是必须成对报指标的原因。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+      <div class="glossary-item" id="snri">
+        <dt>SNRI / DSN · ITU-T G.160 降噪指标</dt>
+        <dd>SNRI = 信噪比改善；NPLR = 语音附近的噪声电平下降；DSN = 两者之差（压噪时有没有连语音一起压）；TNLR = 长停顿段总噪声下降。这套只衡量噪声，<strong>不衡量语音质量与失真</strong>。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="latency-cheatsheet.html">时延预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+      <div class="glossary-item" id="smos">
+        <dt>S-MOS / N-MOS / G-MOS · 3QUEST（ETSI EG 202 396-3）</dt>
+        <dd>带噪场景下把听感拆成三个分：S-MOS 语音质量、N-MOS 噪声残留质量、G-MOS 综合。必须成对读 S 与 N——只看 G-MOS 会把完全不同的取舍算成同一个分数。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+      <div class="glossary-item" id="pumping">
+        <dt>Pumping / Breathing · 呼吸感</dt>
+        <dd>AGC release 太快导致的伪影：语句间隙里增益迅速回升，底噪一波波涌上来，像有人在喘气。摄像机上典型投诉是「夜里安静时沙沙声一阵阵」。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+      <div class="glossary-item" id="full-duplex">
         <dt>Full-duplex / Half-duplex</dt>
-        <dd>全双工：双方可同时说听（依赖 AEC）。半双工：同一时刻只允许一个方向，用按住说话或 VAD 切换。竞品「自然对讲」通常指全双工。</dd>
+        <dd>全双工：双方可同时说听（依赖 AEC）。半双工：同一时刻只允许一个方向，用按住说话或 VAD 切换。竞品「自然对讲」通常指全双工。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="aec-cheatsheet.html">AEC 与全双工</a> · <a href="latency-cheatsheet.html">时延预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
-      <div class="glossary-item">
-        <dt>G.711 · AAC</dt>
-        <dd>G.711：8 kHz 窄带电话语音，低带宽低时延，安防机常见。AAC：更高采样率/码率，听感更宽，带宽与算力成本更高。ONVIF 常见枚举含二者。</dd>
+      <div class="glossary-item" id="nyquist">
+        <dt>奈奎斯特频率 · Nyquist frequency</dt>
+        <dd>采样率 ÷ 2 = 系统能记录的最高频率。8 kHz 采样 → 4 kHz 上限（实际电话带 300–3400 Hz）。这是一堵墙：任何后级算法都无法补回被采样率切掉的频段。<span class="seen-in">出现在：<a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a></span></dd>
       </div>
-      <div class="glossary-item">
+      <div class="glossary-item" id="narrowband">
+        <dt>窄带 / 宽带 · Narrowband / Wideband</dt>
+        <dd>窄带 = 300–3400 Hz（G.711 / G.726 @8 kHz 采样，安防行业默认）。宽带 = 50–7000 Hz（ITU-T G.722 定义，需 ≥16 kHz 采样）。差别不是「音质好一点」，是<a href="#sibilance">齿擦音</a>这一整类信息在不在。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a></span></dd>
+      </div>
+      <div class="glossary-item" id="sibilance">
+        <dt>齿擦音 · Sibilants /s/ /f/ /sh/</dt>
+        <dd>清擦音，能量主要在 4 kHz 以上。窄带下被整段切掉，于是元音全在、句子能懂，但<strong>念姓名、车牌、数字、验证码时开始出错</strong>。这是识别带宽问题最可靠的症状（区别于 SNR / AEC / AGC 问题）。<span class="seen-in">出现在：<a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a></span></dd>
+      </div>
+      <div class="glossary-item" id="codec">
+        <dt>G.711 · G.726 · AAC</dt>
+        <dd>G.711：8 kHz、8 bit 对数压扩、64 kbps，逐样本编码故<strong>算法时延≈0</strong>——安防对讲选它是拿音质换时延与互通性。G.726：ADPCM，16–40 kbps，同样窄带低时延。AAC：全带高音质，但见 <a href="#algo-delay">算法时延</a>。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="latency-cheatsheet.html">时延预算</a></span></dd>
+      </div>
+      <div class="glossary-item" id="algo-delay">
+        <dt>算法时延 · Algorithmic delay</dt>
+        <dd>编码器攒够一帧才能开始编所产生的固有延迟，<strong>换更快的 CPU 消不掉</strong>。AAC-LC ≥55 ms @48 kHz（Fraunhofer：对双向通信「clearly too high」）、AAC-LD 低至 20 ms、AAC-ELD 15 ms @64 kbps。交互式双向通信的<strong>系统</strong>时延建议 ≤50 ms。陷阱：AAC-LC 帧长固定 1024 samples，降采样率会让时延变长。<span class="seen-in">出现在：<a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="latency-cheatsheet.html">时延预算</a></span></dd>
+      </div>
+      <div class="glossary-item" id="onvif-audio">
+        <dt>ONVIF 音频 · Profile T audio</dt>
+        <dd>ONVIF 功能矩阵里音频全部是 <strong>C（Conditional）</strong>而非 M——<strong>不要求摄像机有音频</strong>。唯一约束：如果支持，G.711 与 AAC 至少其一。<code>AudioEncoderConfiguration</code> 只有 Encoding / Bitrate（kbps）/ SampleRate（kHz）/ SessionTimeout，且<strong>不区分 AAC-LC 与 LD/ELD</strong>。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a></span></dd>
+      </div>
+      <div class="glossary-item" id="far-field">
         <dt>Far-field · 远场</dt>
-        <dd>声源距离麦较远（房间对讲、走廊）。声压随距离约每翻倍 −6 dB。摄像机内置麦多半是远场难题：直达声弱、混响与噪声占比高。</dd>
+        <dd>声源距离麦较远（房间对讲、走廊）。直达声随距离每翻倍 −6 dB（<a href="#inverse-square">平方反比定律</a>）。摄像机内置麦多半是远场难题：直达声弱、混响与噪声占比高。<strong>远场做不好通常不是算法不聪明，是信噪比在进算法之前就已经不够了。</strong>可动的三处：装得更近、环境更安静、麦克风 SNR 更高；<a href="#beamforming">波束成形</a>只补其中一小块。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
       </div>
-      <div class="glossary-item">
-        <dt>Latency · 端到端时延</dt>
-        <dd>从说话到对方听到的总延迟（采集缓冲 + 算法 + 编码 + 网络 + 解码 + 播放）。对讲体验对时延极敏感；算法尾长/缓冲与 AEC 性能常需权衡。</dd>
+      <div class="glossary-item" id="mouth-to-ear">
+        <dt>Mouth-to-ear · 嘴到耳时延</dt>
+        <dd>从说话人张嘴到听话人耳朵听见，<strong>全部环节的单向总延迟</strong>：空气 + 麦/ADC + 采集缓冲 + 算法块 + 编解码 + 打包 + 网络单程 + 抖动缓冲 + 播放缓冲。<strong>这是唯一该写进规格书的时延指标。</strong>不是编码时延，不是 ping，也不是 ping 的一半。听到任何单个时延数字，第一句话都应该是「这一段是哪一段？」<span class="seen-in">出现在：<a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="latency-cheatsheet.html">时延预算</a></span></dd>
+      </div>
+      <div class="glossary-item" id="g114">
+        <dt>G.114 标尺 · One-way transmission time</dt>
+        <dd>ITU-T 定的全行业时延共同标尺（单向 mouth-to-ear）：<strong>≤150 ms</strong> 基本透明（<strong>消费级对讲的现实目标</strong>）；150–400 ms「可接受，但前提是使用方知情」；&gt;400 ms 规划上不应超过。另有常被忽略的一句：<strong>高交互性任务在约 100 ms 就已明显变难</strong>。对照 Fraunhofer 给交互式双向通信的高标 ≤50 ms——那是联网设备的地板，不是验收线。<span class="seen-in">出现在：<a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="latency-cheatsheet.html">时延预算</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
+      </div>
+      <div class="glossary-item" id="group-delay">
+        <dt>Group delay · 群延迟</dt>
+        <dd>器件本身引入的固有延迟。数字 MEMS 麦典型 <strong>6 µs @1 kHz</strong>（Infineon IM69D130）——比声音走过 1 米空气还小五百倍。结论：<strong>换更贵的麦克风对时延毫无帮助</strong>，时延几乎全在缓冲里。<span class="seen-in">出现在：<a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="latency-cheatsheet.html">时延预算</a></span></dd>
+      </div>
+      <div class="glossary-item" id="block-size">
+        <dt>块长 / 帧长 · Block size / Frame size</dt>
+        <dd>一次交给下一级多少音频。采集缓冲（DMA 块）常见 20 ms，改成 10 ms 直接白赚 10 ms，代价是中断频率翻倍。算法侧：WebRTC 的音频处理模块（APM）固定按 <strong>10 ms 帧</strong>处理。块长是时延账里最容易改、也最容易被忽略的一项。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="codec-cheatsheet.html">编码、带宽与时延</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="latency-cheatsheet.html">时延预算</a></span></dd>
+      </div>
+      <div class="glossary-item" id="ptime">
+        <dt>ptime · 打包时长</dt>
+        <dd>一个 RTP 包里装多少毫秒音频。VoIP 默认 <strong>20 ms</strong>（G.711 下即 50 包/秒）。调小能降时延，代价是包速率与头部开销上升。它还是抖动缓冲的计量单位——典型抖动缓冲取 <strong>3×ptime</strong>，所以减小 ptime 往往能连带压掉更大的一块。<span class="seen-in">出现在：<a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="latency-cheatsheet.html">时延预算</a></span></dd>
+      </div>
+      <div class="glossary-item" id="jitter-buffer">
+        <dt>Jitter buffer · 抖动缓冲</dt>
+        <dd>接收侧为了抹平网络包到达时间不均而攒的一段音频。<strong>时延账里通常最大的一项</strong>，典型 3×ptime ≈ 60 ms，弱网自适应可涨到上百毫秒。它是为抗抖动买的保险，保费直接记在时延上。规格书必须写明：静态还是自适应，以及<strong>弱网下的上限</strong>。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="latency-cheatsheet.html">时延预算</a></span></dd>
+      </div>
+      <div class="glossary-item" id="tail-vs-delay">
+        <dt>尾长 ≠ 时延 · Tail length is not delay</dt>
+        <dd>常见记账错误。<a href="#echo-tail">AEC 尾长</a>（典型 128 ms）说的是<strong>滤波器有多长</strong>，不是<strong>信号要等多久</strong>——它不进时延预算表。AEC 实际引入的时延只有处理帧长（10 ms）。但两者有硬耦合：<strong>播放缓冲 + 空气路径 + 采集缓冲 &lt; 尾长</strong>，否则回声跑出滤波器覆盖范围，AEC 完全失效。改任何缓冲前先检查这条不等式。<span class="seen-in">出现在：<a href="../lessons/0006-latency-budget.html">第 6 课</a></span></dd>
+      </div>
+      <div class="glossary-item" id="inverse-square">
+        <dt>Inverse square law · 平方反比定律</dt>
+        <dd>点声源的<strong>直达声</strong>随距离扩散，<strong>距离每翻一倍，声压级 −6 dB</strong>（<code>ΔL = 20·log₁₀(d₂/d₁)</code>）。从 1 m 走到 4 m 丢 12 dB。这是<a href="#far-field">远场</a>问题的全部起点，也是波束成形<strong>补不回来</strong>的那一部分。<span class="seen-in">出现在：<a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a></span></dd>
+      </div>
+      <div class="glossary-item" id="beamforming">
+        <dt>Beamforming · 波束成形</dt>
+        <dd>用多支麦克风之间<strong>声音到达时间的差别</strong>，把某个方向来的声音对齐相加（增强），其他方向的因对不齐而相消。产出是一个「只朝某方向听」的虚拟麦克风。<strong>它买的是方向，不是距离</strong>——把麦克风数量换算成拾音米数的说法都站不住。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
+      </div>
+      <div class="glossary-item" id="delay-and-sum">
+        <dt>相加式 Delay-and-sum · 差分式 Differential</dt>
+        <dd>两种做指向性的路子，失败方式相反。<strong>相加式</strong>：对齐后相加，对不相关噪声增益 <code>10·log₁₀(N)</code>（2 支 +3 dB），但要<strong>孔径</strong>——摄像机尺寸在语音频段上基本拿不到指向性。<strong>差分式</strong>（也叫超指向 superdirective）：相减再均衡，2 厘米间距就能做出心形指向，DI 稳定 4.8–6 dB，代价是低频 <a href="#wng">WNG</a> 严重为负。小设备只剩差分式这条路。<span class="seen-in">出现在：<a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a></span></dd>
+      </div>
+      <div class="glossary-item" id="aperture">
+        <dt>Aperture · 孔径</dt>
+        <dd>阵列最外两支麦之间的距离，<code>L = (N−1)·d</code>。它决定<strong>低频下限</strong>：想在频率 f 上有指向性，大致要求 <code>L ≳ c/2f</code>。300 Hz 需要 57 cm——这就是摄像机做不了低频指向的物理原因。<span class="seen-in">出现在：<a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a></span></dd>
+      </div>
+      <div class="glossary-item" id="spatial-aliasing">
+        <dt>Spatial aliasing · 空间混叠 / Grating lobe · 栅瓣</dt>
+        <dd>相邻间距超过半波长后，波束图上长出与主瓣一样高的<strong>假主瓣（栅瓣）</strong>，侧面噪声被原样收进来。起点 <code>f = c / 2d</code>：d=21.25 mm → 8.1 kHz，d=80 mm → 2.1 kHz。它决定<strong>高频上限</strong>，和<a href="#aperture">孔径</a>一头一尾夹住阵列的可用带宽。<span class="seen-in">出现在：<a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a></span></dd>
+      </div>
+      <div class="glossary-item" id="di">
+        <dt>DI · Directivity Index · 指向性指数</dt>
+        <dd>在四面八方均匀来噪声（弥散场）的环境里，阵列相对一支全向麦能压低多少 dB。一阶差分阵列上限约 <strong>4.8–6 dB</strong>（心形 4.8、超心形 6.0）。<strong>要按频率给曲线，不要单个数字</strong>——单个数字通常挑的是最好看的频点。<span class="seen-in">出现在：<a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="wng">
+        <dt>WNG · White Noise Gain · 白噪声增益</dt>
+        <dd>阵列对<strong>各路互不相关</strong>的噪声（主要是麦克风自噪声，也包括风噪）的增益。相加式 <code>+10·log₁₀(N)</code>，永远为正；差分式在低频<strong>严重为负</strong>（20 mm@500 Hz ≈ −12 dB），因为均衡器要把极小的差值拉平，顺带把底噪一起放大。<strong>只报 DI 不报 WNG，等于只报收入不报支出。</strong><span class="seen-in">出现在：<a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="mic-matching">
+        <dt>麦克风一致性 · Sensitivity &amp; phase matching</dt>
+        <dd>阵列级 MEMS 麦的标称匹配度：灵敏度 <strong>±1 dB</strong>、相位 <strong>±2°</strong>（Infineon IM69D130）。为什么这么苛刻：15 mm 间距在 400 Hz 上总共只有 <strong>6.3°</strong> 的相位差（Knowles AN-26），匹配误差必须远小于它。失配会填平零点、让指向图从心形跑向其他形状。<strong>物理尺寸受限时，相位匹配决定指向性的低频下限。</strong>结构上还要求两路音孔、腔深、防水膜、密封完全一致。<span class="seen-in">出现在：<a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a></span></dd>
+      </div>
+      <div class="glossary-item" id="reverberation">
+        <dt>Reverberation · 混响 · Dereverberation · 去混响</dt>
+        <dd><strong>混响不是噪声，是语音自己的回声</strong>——同一段话经墙面反射、晚几十毫秒再回来一次，频谱与原声相同。
+        数学上收到的信号是<strong>语音与房间冲激响应的卷积</strong>，冲激响应可拆成<strong>早期反射</strong>（无害，甚至提升响度）与<strong>晚期混响</strong>（有害）。
+        <br /><strong>为什么 <a href="#ns">NS</a> 治不了它</strong>：降噪假设噪声与语音无关、且相对稳定，可在说话间隙估出再减掉。混响三条全不满足——间隙里最响的正是上一个音节的尾巴。调狠了只会开始吃语音。
+        <br /><strong>被毁掉的是时间包络的起伏</strong>：音节间的空隙被前一音节的尾音填平，而辅音与词边界的信息就藏在空隙里。这是 STI（语音传输指数）度量的东西——混响拉低包络调制深度，可懂度随之下降。<strong>信息是被填掉的，不是被盖住的。</strong>
+        <br /><strong>去混响算法确实存在</strong>（如 WPE、神经网络方案），做法是估计并减掉<strong>晚期</strong>那部分。但假设噪声小、需要较长观测、声源移动即失效，且补不回已被填平的空隙。摄像机 SoC 上属奢侈品。
+        <br /><strong>产品结论：走出<a href="#critical-distance">混响半径</a>后能动的是物理</strong>——装近、加指向性、改房间，而不是换更强的降噪。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课</a> · <a href="../lessons/0006-latency-budget.html">第 6 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="latency-cheatsheet.html">时延预算</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="critical-distance">
+        <dt>Critical distance · 混响半径</dt>
+        <dd>房间里<strong>直达声与混响声一样大</strong>的那个距离。走到它以外，收到的主要不再是那个人的直达声，而是墙面反射（后果见 <a href="#reverberation">混响</a>）。指向性把它往外推 <strong>10<sup>DI/20</sup></strong> 倍——DI 4.8 dB → 1.7 倍。<strong>这才是 DI 的产品价值：可用范围推远了多少，而不是「增益几个 dB」。</strong><span class="seen-in">出现在：<a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a></span></dd>
+      </div>
+      <div class="glossary-item" id="repeatability">
+        <dt>Repeatability · 可复现性</dt>
+        <dd>同一件事重复做，能不能得到<strong>同一个数</strong>。注意它和「准确」是两回事：一把偏了 3 dB 但每次都偏 3 dB 的尺，做对比测试完全够用。
+        <br /><strong>消声室买的就是它，不是「真实」。</strong>ITU-T P.340 §5.4 开头就写着 <em>「<strong>For the repeatability of the tests</strong>, the environment … shall be free field (anechoic) down to … 200 Hz」</em>。
+        <br /><strong>推论：可复现性有第二条买法</strong>——把环境钉死（贵），或者减去<a href="#paired-test">同场的参照</a>（免费）。产品决策里 90% 的问题只需要后者。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="session-bias">
+        <dt>场次偏置 · Session bias</dt>
+        <dd><strong>整场一起偏的那个量</strong>：换了一天、挪了 2 cm、动过增益旋钮、空调开了、功放热了、换了一批评分的人。
+        <br />它的可怕之处是<strong>加测次数消不掉</strong>——重复 30 次只是把这一场的偏置测得更精确。能消掉它的只有<a href="#paired-test">配对</a>。
+        <br />对照：<strong>单次抖动</strong>是同一场内连测两次的差别，那个才是次数能压住的。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="error-bar">
+        <dt>误差棒 · Error bar · 最小可分辨差异</dt>
+        <dd>你测到的差值，<strong>真值有 95% 的可能落在这段区间里</strong>。规则只有一条：<strong>区间跨过 0，就不能说「B 比 A 好」</strong>——因为「一样好」也在区间里。
+        <br />配对测：半宽 = <strong>1.96 × 单次抖动 × √(2 / 次数)</strong>
+        <br />分开测：半宽 = <strong>1.96 × √(2 × <a href="#session-bias">场次偏置</a>² + 2 × 单次抖动² / 次数)</strong>
+        <br /><strong>第二式第一项没有「次数」，那是地板。</strong>要改的是设计，不是次数。
+        <br />「本次测不出差异」是<strong>合法且有用的结论</strong>：它告诉你这个改动不值得为它花钱。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="paired-test">
+        <dt>配对测试 · Paired comparison · 配对四规则</dt>
+        <dd>把 A 和 B 放进<strong>同一场</strong>测，让共同的漂移在相减时抵消。四条规则：
+        <br /><strong>① 同一场</strong>：同一次开机、同一房间、连续测完，绝不「今天 A 明天 B」。
+        <br /><strong>② 同一素材</strong>：同一个音频文件由喇叭播出——<strong>真人是不可复现的声源</strong>。
+        <br /><strong>③ 同一参照</strong>：每场都测一次不变的东西（未处理原声，或一台从不改动的基准机），它是这一场的零点。
+        <br /><strong>④ 报差值</strong>：写「B 比 A 好 1.8 dB」，不写「B 得了 3.4 分」。
+        <br />主观听音里对应的做法是 <a href="#ccr">CCR</a>；仪器测量里对应的是<a href="#dt-attenuation">双讲衰减量</a>这类天生的差值量。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="dmos">
+        <dt>MOS · 平均意见分 · DMOS · 差值分</dt>
+        <dd><strong>MOS</strong>（mean opinion score）：一群人给一段音频打 1–5 分的平均。行业通用语言，但<strong>绝对值不可跨场比较</strong>。
+        <br /><strong>DMOS</strong>：这段音频的分<strong>减去同一场里参照条件的分</strong>。
+        <br /><strong>实证</strong>：700 条同样素材、五个不同的日子、每天换一批人 —— 绝对 MOS 的五次一致性 <strong>ICC 0.719</strong>（勉强），DMOS <strong>0.907</strong>（可用）。原文：<em>「bias observed between MOS values in different runs is a well-known and common behavior… Using the DMOS successfully removed that offset.」</em>（Naderi &amp; Cutler 2020）
+        <br /><strong>ICC 读数</strong>：1.0 = 五次完全重合，0 = 毫无关系；0.9 以上可决策，0.7 上下意味着你看到的差别里有相当一部分只是「今天是星期几」。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="measurement-cheatsheet.html">评测方法</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+      <div class="glossary-item" id="ccr">
+        <dt>ACR · DCR · CCR · 三种听音测试范式</dt>
+        <dd><strong>ACR</strong>（absolute category rating）：单独放一段，打 1–5 绝对分。最常见，也最容易漂。
+        <br /><strong>DCR</strong>（degradation category rating）：先放原声再放处理后的，评「劣化到什么程度」。
+        <br /><strong>CCR</strong>（comparison category rating）：<strong>连着放 A 和 B，问「后一个比前一个好还是差」</strong>，−3 到 +3。
+        <br /><strong>做 A/B 选型就用 CCR</strong>——它天然是差值，抖动比打绝对分小得多。三者的众包实现见 <a href="https://github.com/microsoft/P.808" target="_blank" rel="noopener">microsoft/P.808</a>（ITU-T P.808 的开源实现，与实验室 P.800 结果相关性 PCC 0.962）。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="dbpa">
+        <dt>dBPa</dt>
+        <dd>以 <strong>1 帕斯卡（Pa）为 0 点</strong>的声压级刻度。而 1 Pa 就是麦克风 datasheet 里那个 <strong>94 dB SPL</strong>，所以换算只有一步：<code>dB SPL = 94 + dBPa</code>。
+        <br />电话与免提行业用它，是因为这类测试的电平天生都在 94 dB SPL 以下，写成负数比写 SPL 顺手。
+        <br />几个要认得的值：<strong>−4.7 dBPa</strong> = 89.3 dB SPL（P.340 人工嘴在唇前 25 mm 的校准电平）；<strong>−28.7 dBPa</strong> = 65.3 dB SPL（免提机在 50 cm 处收到的标准语音）；<strong>−70 dBPa(A)</strong> = 24 dB(A)（P.340 要求的房间本底噪声上限）。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="dt-attenuation">
+        <dt>双讲衰减量 · Attenuation range in double talk</dt>
+        <dd>本机说话人送出去的电平，<strong>在对方也在说话时</strong>比<strong>只有本机在说话时</strong>低了多少 dB。<strong>它天生是一个差值</strong>——两个电平的绝对刻度在相减时抵消，所以不需要校准过的绝对测量。
+        <br />ITU-T P.340 §8 用它给<a href="#full-duplex">全双工</a>分级（送话方向）：<strong>Behaviour 1 ≤3 dB = 真全双工</strong>；2a 3–6；2b 6–9；2c 9–12；<strong>Behaviour 3 &gt;12 dB = 实为半双工</strong>。受话方向门槛略严：3 / 5 / 8 / 10 dB。
+        <br />配套还有双讲时的回声衰减 <strong>TELR<sub>DT</sub></strong>：Behaviour 1 要求 ≥37 dB，Behaviour 3 是 &lt;21 dB。
+        <br /><strong>产品用法</strong>：不接受「支持全双工」这句话，要求对方给出衰减量 dB 与对应等级。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="dnsmos">
+        <dt>DNSMOS · SIG / BAK / OVRL · ViSQOL</dt>
+        <dd><strong>DNSMOS P.835</strong>（Microsoft）：不需要参考信号的神经网络打分，一次给三个数——<strong>SIG</strong>（语音本身的质量）、<strong>BAK</strong>（背景噪声有多碍事）、<strong>OVRL</strong>（综合）。与人耳评分相关性 0.94（SIG）/ 0.98（BAK、OVRL）。
+        <br />三个数正是 <a href="#smos">S-MOS / N-MOS / G-MOS</a> 那套「成对报数」思路的另一种实现：<strong>只看噪声降了多少而不看语音伤了多少，就是耍流氓。</strong>
+        <br /><strong>射程</strong>：训练数据是降噪场景，别拿去评回声或时延。
+        <br /><strong>ViSQOL v3</strong>（Google，开源）：要与干净原声比对，输出 MOS-LQO 1–5。适合编码与丢包，不适合带房间声学的录音。
+        <br /><strong>共同的坑</strong>：客观分只配当回归哨兵，不配当选型裁判——<em>「PESQ, SRMR, and P.563 … have a low correlation to listening opinion, and are not reliable replacements for listening opinion tests」</em>（Naderi &amp; Cutler 2020）。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="p501">
+        <dt>ITU-T P.501 · 测试信号</dt>
+        <dd>电话与语音应用的标准测试信号：真人语音素材、噪声序列、CSS 复合信号、扫频。<strong>ITU 官网免费下载。</strong>
+        <br />P.340 §5.5 规定免提测试的信号必须符合它——也就是说，实验室那四条昂贵的要求里，<strong>有一条你今天就能零成本满足</strong>。
+        <br /><strong>产品用法</strong>：全项目统一素材并版本入库。各测各的素材，等于每次都在换变量。<span class="seen-in">出现在：<a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="measurement-cheatsheet.html">评测方法</a></span></dd>
+      </div>
+      <div class="glossary-item" id="speaker-sensitivity">
+        <dt>喇叭灵敏度 · Speaker sensitivity</dt>
+        <dd>给定电功率下喇叭能出多大声。行业标准写法是 <strong>dB SPL @ 1 W / 1 m</strong>，但<strong>微型喇叭普遍在 10 cm 量</strong>——两者差 20 dB，条件栏不看就会误判整整一个数量级的产品力。
+        <br />归一化：<code>S₁ₘ = S_ref + 20·log₁₀(d_ref ÷ 1 m)</code>。10 cm 减 20 dB，30 cm 减 10.5 dB。
+        <br /><strong>产品用法</strong>：所有竞品 SPL 数字先归一到 1 W / 1 m 再并列。它也是<strong>提高响度性价比最高的一条路</strong>——灵敏度差多少 dB，用户就多听到多少 dB，且驱动电平更低、<a href="#thd">THD</a> 更小。<span class="seen-in">出现在：<a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a></span></dd>
+      </div>
+      <div class="glossary-item" id="fo">
+        <dt>共振频率 · Fo · Resonant frequency</dt>
+        <dd>喇叭振膜系统的自然共振点。<strong>Fo 以下辐射效率迅速塌掉</strong>，所以 datasheet 常把频响下限直接写成「Fo ~ 20 kHz」——意思是 Fo 以下基本不发声。
+        <br />摄像机用的密闭微型喇叭 Fo 常在 700–1000 Hz，意味着男女声<strong>基频整段缺失</strong>（85–255 Hz）。
+        <br /><strong>产品用法</strong>：基频缺失影响<strong>音色</strong>（薄、像从盒子里传出来），几乎不影响<strong>可懂度</strong>（语义在 300–3400 Hz 的共振峰上）。把它写成「已知取舍」，别当缺陷返工。降低 Fo 只能靠加腔体体积。<span class="seen-in">出现在：<a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a></span></dd>
+      </div>
+      <div class="glossary-item" id="crest-factor">
+        <dt>峰均比 · Crest factor</dt>
+        <dd>一段信号的<strong>峰值</strong>比它的<strong>有效值（RMS）</strong>高多少 dB。<strong>语音约 12 dB</strong>（压得死的流行乐约 6 dB，鼓组 15–20 dB），功率上是 <code>10^(12/10) ≈ 15.8 倍</code>。
+        <br />它决定了放音链上两个天花板要看不同的量：<strong>功放怕峰值</strong>（顶到供电就削波），<strong>喇叭音圈怕平均</strong>（发热是能量的积分）。
+        <br /><strong>产品用法</strong>：拿到任何一个「功率」数字，先问它是峰值还是平均——两者差 12 dB。<span class="seen-in">出现在：<a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
+      </div>
+      <div class="glossary-item" id="btl">
+        <dt>BTL · Bridge-tied load · 桥接负载</dt>
+        <dd>喇叭两端各接一个半桥、反相驱动的接法，摄像机功放的默认形态。相比单端接法电压翻倍、功率四倍，且不需要输出隔直电容。
+        <br />理想最大不削波正弦功率：<code>P = Vcc² / (2R)</code>。12 V / 8 Ω → 9 W；5 V / 8 Ω → 1.6 W。
+        <br /><strong>产品用法</strong>：这是<strong>功放天花板</strong>的算法。实际再打八折（MOS 导通电阻、电感直流电阻、走线、电源内阻）。判断「加供电值不值」时的第一步。<span class="seen-in">出现在：<a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
+      </div>
+      <div class="glossary-item" id="smart-amp">
+        <dt>Smart Amp · 智能功放</dt>
+        <dd>用<strong>实时电流/电压感测（I/V sensing）</strong>反推音圈温度与<a href="#excursion">振膜位移</a>，在两者未到限时允许远超「连续额定功率」的峰值输出。它把喇叭的峰值上限<strong>从查表变成量出来</strong>。
+        <br />估温：注入 60 Hz 导频音求直流电阻 R<sub>E</sub>，铜电阻随温度线性上升。估位移：由反电动势配自适应滤波器在线更新喇叭模型。
+        <br />敢这么做的依据是<a href="#thermal-time-constant">热时间常数</a>——音圈要数秒才热起来，而语音的峰只有几十毫秒。
+        <br /><strong>产品用法</strong>：典型能换来近 10 dB 响度，是纯算法收益。但<strong>只写「支持 Smart Amp」不可验收</strong>——必须索要本机腔体下的表征结果与 <a href="#soa">SOA</a> 系数。<span class="seen-in">出现在：<a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课</a> · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课</a> · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
+      </div>
+      <div class="glossary-item" id="excursion">
+        <dt>Excursion · 振膜位移</dt>
+        <dd>振膜前后运动的幅度（常记 X<sub>max</sub>）。超限会撞底、异响、悬边永久变形。位移在<strong>低频最大</strong>——同样声压，频率越低振膜跑得越远。
+        <br /><strong>产品用法</strong>：微型喇叭 datasheet <strong>通常不给 X<sub>max</sub></strong>，这正是保守设计要把峰值锁在额定功率、白白损失近 10 dB 的原因。也是给放音链加高通滤波（切掉 <a href="#fo">Fo</a> 以下）的理由——那段能量只产生位移，不产生声音。<span class="seen-in">出现在：<a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
+      </div>
+      <div class="glossary-item" id="soa">
+        <dt>SOA · Safe Operating Area · 安全工作区</dt>
+        <dd>由喇叭<strong>表征（characterization）</strong>得出的边界：最大<a href="#excursion">振膜位移</a>与最高音圈温度。<a href="#smart-amp">Smart Amp</a> 的护栏就是它。
+        <br /><strong>产品用法</strong>：SOA 是<strong>「这颗喇叭装在这个腔体里」</strong>的结果，换腔体就要重做。评审时的正确问法不是「Smart Amp 能大几 dB」（没人能答），而是「表征在我们自己的结构上做过吗？峰值功率上限多少瓦？」<span class="seen-in">出现在：<a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
+      </div>
+      <div class="glossary-item" id="thermal-time-constant">
+        <dt>热时间常数 · Thermal time constant</dt>
+        <dd>温度跟上功率变化所需的时间尺度，<code>τ = R<sub>t</sub> · C<sub>t</sub></code>（热阻 × 热容）。TI 对一颗手机微型喇叭的实测：<strong>音圈 4.22 秒，磁体 411.8 秒</strong>。
+        <br /><strong>产品用法</strong>：这是<a href="#smart-amp">Smart Amp</a> 敢放开峰值的物理依据——语音的峰只有几十毫秒，<strong>来不及把音圈加热</strong>。datasheet 那个「60 秒开 / 120 秒关」的额定功率测法，本身就是承认发热是个慢过程。所以「平均功率 ≤ 额定」是物理判据，「峰值功率 ≤ 额定」只是因为不知道而保守。<span class="seen-in">出现在：<a href="playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a></span></dd>
+      </div>
+      <div class="glossary-item" id="mips">
+        <dt>MIPS · 百万指令每秒</dt>
+        <dd>Million Instructions Per Second——算力的记账单位，衡量「这段代码每秒要芯片干多少活」。在每周期执行一条指令的 DSP 上（如 TMS320C5517，5 ns 指令周期），<strong>MHz 与 MIPS 可以当同一个数看</strong>，200 MHz ≈ 200 MIPS；在超标量或带向量扩展的核上则不成立，必须问清换算口径。
+        <br /><strong>产品用法</strong>：一手锚点（TI TIDUE77 Table 5，16 kHz 双麦、尾长 128 ms）——固定波束成形 9.2、噪声抑制 13.2、<strong>HD AEC 113.1</strong>、整套应用 136.6 平均。<strong>AEC 一项就吃掉 83 %</strong>，所以谈省算力只有一个大旋钮。<span class="seen-in">出现在：<a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课</a> · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课</a> · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课</a> · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="beamforming-cheatsheet.html">远场与波束成形</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a> · <a href="ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a></span></dd>
+      </div>
+
+      <div class="glossary-item" id="peak-mips">
+        <dt>峰值 MIPS · Peak MIPS</dt>
+        <dd>最忙那一帧的算力占用，区别于平均值。TIDUE77 实测整套应用 <strong>平均 136.6 / 峰值 157.3</strong>，比值 1.15×——这是<a href="#crest-factor">峰均比</a>这个概念从声音搬到算力上的样子。
+        <br /><strong>产品用法</strong>：<strong>实时系统按峰值配硬件，平均值只用来看趋势。</strong>音频按 10 ms 一帧交货，算不完就是一次丢帧（听感是「咔」的一声或吞字）。更要命的是峰值出现在双讲、回声路径突变、噪声突增的时刻——<strong>算力的峰值和产品的关键时刻是对齐的</strong>。评审时听到「平均占用 X」，第一句追问是「峰值多少」。<span class="seen-in">出现在：<a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a></span></dd>
+      </div>
+
+      <div class="glossary-item" id="instance-data">
+        <dt>实例数据 · Instance data</dt>
+        <dd>算法每跑一路就要独占一份的内存：滤波器系数、历史缓冲、状态量。代码段全世界共用一份，实例数据<strong>按路数乘出来</strong>。
+        <br /><strong>产品用法</strong>：内存账上最容易漏的一项。HD AEC 的实例数据 67 120 B，<strong>比它的代码段还大</strong>，且随<a href="#echo-tail">尾长</a>成正比增长——所以尾长这个旋钮同时拧动算力和内存两本账。索要占用数据时要求拆成「程序 + 数据 + 实例 × 路数」三列。<span class="seen-in">出现在：<a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a> · <a href="compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a></span></dd>
+      </div>
+
+      <div class="glossary-item" id="voltage-frequency-tier">
+        <dt>电压频率档 · Voltage-frequency tier</dt>
+        <dd>芯片的算力按档卖，每一档绑定一个核心电压。C5517 datasheet：<strong>75 MHz 要 1.05 V，175 MHz 要 1.3 V，200 MHz 要 1.4 V</strong>；功耗大致随 <code>V² × f</code> 走，于是档与档之间是跳变的。TI SPRABN1 实测估算：26.90 / 65.08 / 166.38 / 248.39 mW（75 / 100 / 150 / 200 MHz）。
+        <br /><strong>产品用法</strong>：<strong>省 5 MIPS 通常一分钱不省，跨过一档才有钱可拿。</strong>优化算力前先查档位表，把目标定在某一档的下沿。对摄像机来说这笔钱是真的：PoE 功率预算、云台散热、电池门铃续航都吃它。<span class="seen-in">出现在：<a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a></span></dd>
+      </div>
+
+      <div class="glossary-item" id="compute-headroom">
+        <dt>算力余量 · Compute headroom</dt>
+        <dd>峰值占用之外留下的比例。常见惯例是留 <strong>20 %</strong>（即峰值 ≤ 可用算力的 80 %）——<strong>这是工程惯例，不是任何标准的规定</strong>，写进规格书时要注明是谁定的、留给什么用。
+        <br /><strong>产品用法</strong>：它要覆盖三件事——你没测到的那些帧、未来要加的功能、以及跟你抢 CPU 的所有别人（视频编码、AI 检测）。验收要配一个可观测的硬判据：<strong>丢帧计数（ALSA xrun / DSP frame overrun）必须为 0</strong>，只要不是 0，平均占用多低都不算数。<span class="seen-in">出现在：<a href="../lessons/0010-compute-and-bom-budget.html">第 10 课</a></span></dd>
       </div>
     </dl>
 
@@ -134,8 +488,22 @@
       <a href="../lessons/0001-ip-camera-audio-signal-chain.html">第 1 课 · 信号链</a>
       · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课 · MEMS Datasheet</a>
       · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课 · AEC</a>
+      · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课 · NS / AGC</a>
+      · <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课 · 编码与带宽</a>
+      · <a href="../lessons/0006-latency-budget.html">第 6 课 · 时延预算</a>
+      · <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课 · 远场与波束成形</a>
+      · <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课 · 评测方法</a>
+      · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课 · 放音侧</a>
+      · <a href="../lessons/0010-compute-and-bom-budget.html">第 10 课 · 算力与预算</a>
       · <a href="mems-datasheet-cheatsheet.html">麦指标速查</a>
       · <a href="aec-cheatsheet.html">AEC 速查</a>
+      · <a href="ns-agc-cheatsheet.html">NS / AGC 速查</a>
+      · <a href="codec-cheatsheet.html">编码速查</a>
+      · <a href="latency-cheatsheet.html">时延预算速查</a>
+      · <a href="beamforming-cheatsheet.html">波束成形速查</a>
+      · <a href="measurement-cheatsheet.html">评测方法速查</a>
+      · <a href="playback-cheatsheet.html">放音侧速查</a>
+      · <a href="compute-budget-cheatsheet.html">算力与预算速查</a>
       · <a href="../RESOURCES.md">RESOURCES.md</a>
     </p>
   </div>

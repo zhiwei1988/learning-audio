@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查 · 远场与波束成形</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>远场与波束成形速查</h1>
+      <p class="lede">评审前扫这一页，或者直接打印带进会议室。数据源：Knowles AN-26、Buck IWAENC 2001、TI TIDUE77、Infineon IM69D130、audioXpress。</p>
+    </header>
+
+    <h2>一句话</h2>
+    <p><strong>波束成形买的是方向，不是距离。距离靠平方反比定律扣掉的 dB，只能靠更近、更安静、更好的麦克风补回来。</strong></p>
+
+    <h2>四个能当场算的公式</h2>
+    <table class="ref">
+      <thead>
+        <tr><th>要算什么</th><th>公式</th><th>代入一次</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>距离带来的损失</td>
+          <td><code>ΔL = 20·log₁₀(d₂/d₁)</code></td>
+          <td>1 m → 4 m 丢 <strong>12 dB</strong>；3 m → 10 m 丢 <strong>10.5 dB</strong></td>
+        </tr>
+        <tr>
+          <td>相加式阵列的增益</td>
+          <td><code>G = 10·log₁₀(N)</code></td>
+          <td>2 支 +3、4 支 +6、8 支 +9、<strong>16 支才 +12</strong></td>
+        </tr>
+        <tr>
+          <td>空间混叠（栅瓣）起点</td>
+          <td><code>f = c / 2d</code></td>
+          <td>d=21.25 mm → <strong>8.1 kHz</strong>；d=40 mm → 4.3 kHz；d=80 mm → 2.1 kHz</td>
+        </tr>
+        <tr>
+          <td>差分式的频率上限</td>
+          <td><code>f = c / 4d</code></td>
+          <td>d=21.25 mm → <strong>4.0 kHz</strong>，超过后图形开始变形</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">c = 343 m/s。孔径 <code>L = (N−1)·d</code>；想在频率 f 上有指向性，大致要求 <code>L ≳ c/2f</code>——300 Hz 需要 57 cm。</p>
+
+    <h2>远场信噪比账（安静房间，不含环境噪声）</h2>
+    <div class="formula">
+      实际信噪比 = <strong>声音到达麦时的 SPL</strong> − <strong>麦自噪声 EIN</strong>，其中 <code>EIN ≈ 94 − SNR</code><br />
+      <span class="meta">SNR 65 dB(A) → EIN 29 dB SPL　·　SNR 70 dB(A) → EIN 24 dB SPL</span>
+    </div>
+    <table class="ref">
+      <thead>
+        <tr><th>距离</th><th>直达声 SPL</th><th>SNR 65 dB(A) 的麦<br /><span class="meta">减 29 dB</span></th><th>SNR 70 dB(A) 的麦<br /><span class="meta">减 24 dB</span></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0.5 m</td><td>66 dB</td><td>37 dB</td><td>42 dB</td></tr>
+        <tr><td>1 m</td><td>60 dB</td><td>31 dB</td><td>36 dB</td></tr>
+        <tr><td>2 m</td><td>54 dB</td><td>25 dB</td><td>30 dB</td></tr>
+        <tr><td><strong>4 m</strong></td><td>48 dB</td><td><strong>19 dB</strong></td><td><strong>24 dB</strong></td></tr>
+        <tr><td>8 m</td><td>42 dB</td><td>13 dB</td><td>18 dB</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      正常交谈 ≈60 dB SPL @1 m。<strong>datasheet 的 SNR 不是录音信噪比</strong>——它是在 94 dB SPL（贴耳大喊）下测的，必须先换成 EIN 再相减。
+      <strong>真实门口场景环境噪声 45–55 dB(A)，把它填进去再看一遍。</strong>
+      读数参考：30 dB 以上干净，20 dB 能用但有底噪，10 dB 语音发虚，0 dB 不可用。
+      注意最后一列：<strong>换一颗 SNR 高 5 dB 的麦 = 白得 5 dB，比加两支麦（+3 dB）更划算，也更便宜。</strong>
+    </p>
+
+    <h2>两种阵列，两种失败方式</h2>
+    <table class="ref">
+      <thead>
+        <tr><th></th><th>相加式 delay-and-sum</th><th>差分式 differential / 超指向</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>做法</td><td>对齐后相加</td><td>相减，再用均衡器拉平频响</td></tr>
+        <tr><td>典型指向</td><td>边射 broadside（听侧面）</td><td>端射 endfire（听轴线），心形</td></tr>
+        <tr><td>要什么</td><td><strong>孔径</strong>——尺寸换指向性</td><td><strong>一致性</strong>——器件精度换指向性</td></tr>
+        <tr><td>DI</td><td>随频率上升，低频几乎为 0</td><td><strong>4.8–6 dB，基本不随频率变</strong></td></tr>
+        <tr><td>WNG</td><td><strong>+10·log₁₀(N)，永远为正</strong></td><td>低频严重为负（20 mm@500 Hz ≈ −12 dB）</td></tr>
+        <tr><td>怎么崩</td><td>高频长栅瓣；低频没指向性</td><td>低频自噪声爆炸；失配填平零点</td></tr>
+        <tr><td>摄像机能用吗</td><td><strong>基本不能</strong>，外壳装不下孔径</td><td>能，业界小设备的实际选择</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      交互版本见 <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课的波束图</a>（可切换类型、数量、间距、频率）。
+      DI 上限出自 <a href="https://www.iwaenc.org/proceedings/2001/main/data/buck.pdf" target="_blank" rel="noopener">Buck, IWAENC 2001</a> Fig. 4b（一阶差分 4.5–6 dB）。
+    </p>
+
+    <h2>DI 到底换来什么</h2>
+    <div class="formula">
+      混响半径（critical distance）被拉远 <strong>10<sup>DI/20</sup></strong> 倍
+      &nbsp;·&nbsp; DI 4.8 dB → <strong>1.7 倍</strong>　DI 6 dB → 2.0 倍　DI 10 dB → 3.2 倍
+    </div>
+    <p class="meta">
+      混响半径 = 房间里直达声与混响声一样大的那个距离。走出去以后收到的主要不再是直达声，而是墙面反射——
+      所以指向性真正的产品价值是<strong>「可用范围往外推了多少」</strong>，不是「增益几个 dB」。
+    </p>
+    <div class="callout warn">
+      <span class="label">「走出去就救不回来」到底指什么</span>
+      混响<strong>不是噪声，是语音自己的回声</strong>，频谱与原声相同，间隙里最响的就是上一个音节的尾巴——
+      所以<strong>降噪治不了它</strong>（NS 假设噪声与语音无关且稳定，三条全不满足）。
+      被毁掉的是<strong>时间包络的起伏</strong>：音节空隙被尾音填平，而辅音与词边界的信息就在那些空隙里。<strong>信息是被填掉的，不是被盖住的。</strong>
+      <br /><br />
+      去混响算法（WPE、神经网络）确实存在，压的是<strong>晚期混响</strong>，但假设噪声小、需较长观测、声源一动就失效，且补不回已填平的空隙。
+      <strong>准确说法：丢掉的信息拿不回来，只能部分压掉尾巴，代价还很大。走出混响半径后能动的是物理——装近、加指向性、改房间。</strong>
+    </div>
+
+    <h2>代价清单</h2>
+    <table class="ref">
+      <thead>
+        <tr><th>项</th><th>量级 / 出处</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>算力</td><td><strong>不是问题</strong>：固定波束 9.2 MIPS vs HD AEC 113.1 MIPS，整套 136.6（TI TIDUE77 Table 5）</td></tr>
+        <tr><td>麦克风灵敏度匹配</td><td>阵列级器件标称 <strong>±1 dB</strong>（Infineon IM69D130）</td></tr>
+        <tr><td>麦克风相位匹配</td><td><strong>±2°</strong>（IM69D130）；Knowles 分档卷带 ≤1.5°@200 Hz（100 支窗口）</td></tr>
+        <tr><td>相位裕度参考</td><td>15 mm 间距在 400 Hz 上总共只有 <strong>6.3°</strong> 的相位差——匹配误差必须远小于它（Knowles AN-26）</td></tr>
+        <tr><td>结构音孔</td><td>开孔、腔深、防水膜、密封必须两路一致。<strong>最常见的真实故障点。</strong></td></tr>
+        <tr><td>风噪</td><td>两支麦上的湍流噪声互不相关，正落在 WNG 为负那一格——差分阵列会放大风噪</td></tr>
+        <tr><td>指向谁</td><td>固定波束靠产品定义押方向；自适应要先做声源定位，而远场就是定位最不准的场景</td></tr>
+      </tbody>
+    </table>
+
+    <h2>链上位置</h2>
+    <div class="formula">
+      逐路 HPF &nbsp;→&nbsp; <strong>波束成形 BF（合并点）</strong> &nbsp;→&nbsp; AEC &nbsp;→&nbsp; NS &nbsp;→&nbsp; AGC
+    </div>
+    <ul class="tight">
+      <li><strong>BF 在 AEC 之前</strong>（TI 参考设计的选择）：AEC 只跑一路，省算力。代价是 AEC 要同时建模回声路径与波束向量，<em>「slows the convergence of AEC」</em>（VOCAL）。</li>
+      <li><strong>BF 在 AEC 之后</strong>：AEC 每路各跑一份，回声路径干净、收敛快，但算力 ×N。</li>
+      <li><strong>NS 永远最后</strong>：谱减法是非线性的，放在自适应线性滤波器前面会让 AEC 收敛不了。</li>
+      <li><strong>方向切换 = AEC 重新收敛</strong>：典型 1–2 秒，期间可能漏回声。症状「转个身说话就有回声」，调 AEC 参数无解。</li>
+    </ul>
+    <p class="meta">与 <a href="ns-agc-cheatsheet.html">NS / AGC 速查</a>、<a href="aec-cheatsheet.html">AEC 速查</a> 对照读。</p>
+
+    <h2>规格书写法</h2>
+    <ul class="tight">
+      <li><strong>禁用「拾音距离 X 米」</strong>。改成：在 X 米、环境噪声 Y dB(A) 下的 S-MOS / N-MOS。</li>
+      <li><strong>要几何</strong>：数量、间距 mm、排布、指向类型（相加/差分）、固定还是自适应。</li>
+      <li><strong>要 DI 曲线</strong>（不是单个数字），覆盖 300 Hz–4 kHz。</li>
+      <li><strong>要 WNG 曲线</strong>，或等效的「阵列输出本底噪声 vs 单支麦」。</li>
+      <li><strong>一致性写进 BOM</strong>：灵敏度 ≤±1 dB，相位容差写明角度与测试频率，禁止中途换非匹配料。</li>
+      <li><strong>结构评审看实物</strong>：两路音孔与密封一致性。</li>
+      <li><strong>联动条款</strong>：自适应波束须说明方向切换时 AEC 的处理与收敛时间。</li>
+      <li><strong>室外加一条</strong>：≥3 m/s 风速下开关波束成形的对比录音。</li>
+    </ul>
+
+    <h2>评审提问清单</h2>
+    <ul class="tight">
+      <li>「间距多少毫米？孔径多少？」——两个数就能封住大半的空话。</li>
+      <li>「DI 按频率画出来给我看。300 Hz 上是多少？」</li>
+      <li>「WNG 呢？差分阵列的低频代价你们怎么处理的？」</li>
+      <li>「麦克风是匹配料吗？灵敏度和相位容差各是多少？」</li>
+      <li>「固定波束还是自适应？固定的话押的是哪个方向，为什么？」</li>
+      <li>「自适应切换方向时，AEC 怎么办？收敛要多久？」</li>
+      <li>「两路音孔的结构一样吗？给我看装配图。」</li>
+      <li>「关掉波束成形录一段、开着录一段，同一场景，给我两个文件。」</li>
+    </ul>
+
+    <div class="callout bad">
+      <span class="label">最容易被绕过去的一句</span>
+      「我们用的是 AI 波束成形。」——AI 不改变孔径、不改变波长、不改变平方反比定律。
+      深度学习能做的是更好的<strong>后处理</strong>（分离、去混响、降噪），那属于 NS 那一格，
+      该用 <a href="ns-agc-cheatsheet.html">S-MOS / N-MOS 成对报数</a>来验，不是用米数来吹。
+    </div>
+
+    <p class="meta">
+      <a href="../lessons/0007-far-field-and-beamforming.html">第 7 课 · 远场与波束成形</a>
+      · <a href="../lessons/0002-read-mems-microphone-datasheet.html">第 2 课 · 麦 datasheet</a>
+      · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课 · 处理链顺序</a>
+      · <a href="mems-datasheet-cheatsheet.html">麦指标速查</a>
+      · <a href="ns-agc-cheatsheet.html">NS / AGC 速查</a>
+      · <a href="aec-cheatsheet.html">AEC 速查</a>
+      · <a href="latency-cheatsheet.html">时延速查</a>
+      · <a href="glossary.html">术语表</a>
+      · <a href="../RESOURCES.md">RESOURCES.md</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

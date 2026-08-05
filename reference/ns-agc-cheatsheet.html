@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查 · NS / AGC 与处理链顺序</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>NS / AGC 与处理链顺序速查</h1>
+      <p class="lede">评审降噪与增益卖点时扫这一页。用语对齐 WebRTC APM、Q-SYS AEC 白皮书、ITU-T G.160 与 ETSI 3QUEST。</p>
+    </header>
+
+    <h2>一句话</h2>
+    <p><strong>上行：HPF → AEC → NS → AGC。下行：AGC / 限幅 → 分叉（喇叭 + AEC 参考）。</strong> 参考必须取自最终送到功放的那一点。</p>
+
+    <h2>顺序与理由</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>位置</th>
+          <th>模块</th>
+          <th>为什么在这</th>
+          <th>放错的听感</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>HPF 高通</td>
+          <td>先扔掉直流偏置与低频隆隆声（风、云台马达、触碰噪声），后级少扛无用能量</td>
+          <td>不做：风噪吃满动态；拐点过高：人声变薄</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>AEC</td>
+          <td>需要线性、未动过增益的麦信号才能拟合回声路径</td>
+          <td>放后面：回声被前级揉过，收敛不了</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>NS / ANR</td>
+          <td>收尾清洁 AEC 与波束成形留下的环境噪声</td>
+          <td>放 AEC 前：谱减非线性拖垮自适应滤波</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>AGC</td>
+          <td>非线性/时变增益必须在 AEC 输出侧</td>
+          <td>放 AEC 前：AEC 追着 AGC 跑，回音时好时坏</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      收敛量级（Q-SYS）：初始收敛约 1–2 s，完全收敛约 10 s 不间断远端语音。
+      每隔几秒动一次的增益 = AEC 永远收敛不完。
+    </p>
+
+    <h2>NS：必须成对报的两个数</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>指标族</th>
+          <th>出处</th>
+          <th>量什么</th>
+          <th>不量什么</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SNRI / NPLR / DSN / TNLR</td>
+          <td>ITU-T G.160</td>
+          <td>信噪比改善、噪声电平下降、两者一致性</td>
+          <td><strong>不量语音质量与语音失真</strong></td>
+        </tr>
+        <tr>
+          <td>S-MOS / N-MOS / G-MOS</td>
+          <td>ETSI EG 202 396-3（3QUEST）</td>
+          <td>语音质量 / 噪声质量 / 综合，带噪场景</td>
+          <td>单看 G-MOS 会掩盖取舍</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <span class="label">滑杆效应（实测）</span>
+      两台机 G-MOS 2.2 vs 2.3 几乎相同，但 S-MOS 1.3 / 2.4、N-MOS 4.7 / 3.2 天差地别——
+      差异来自降噪 <strong>aggressiveness</strong> 的实现：激进 = 噪声干净但语音削坏；保守 = 语音保住但噪声漏出。
+      <strong>只给一个数字的降噪规格 = 没有规格。</strong>
+    </div>
+
+    <h2>AGC：三个时间常数</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>作用</th>
+          <th>锚点（MAX9814）</th>
+          <th>调错的听感</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>attack</td>
+          <td>信号变大时压下去的速度</td>
+          <td>约 1.1 ms</td>
+          <td>太慢 → 起音瞬间过冲/削波</td>
+        </tr>
+        <tr>
+          <td>hold</td>
+          <td>压住后保持的时间</td>
+          <td>固定 30 ms</td>
+          <td>太短 → 词间隙就开始回升</td>
+        </tr>
+        <tr>
+          <td>release</td>
+          <td>信号变小后增益回升的速度</td>
+          <td>attack∶release = 1∶500 / 1∶2000 / 1∶4000</td>
+          <td>太快 → pumping / breathing，底噪一波波涌</td>
+        </tr>
+        <tr>
+          <td>增益范围</td>
+          <td>可调节的总量</td>
+          <td>最大 AGC 衰减 20 dB</td>
+          <td>范围过大 → 静音段把底噪抬到刺耳</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">口诀：<strong>压得快、放得慢</strong>。release 通常比 attack 慢 2–3 个数量级。</p>
+
+    <div class="callout bad">
+      <span class="label">AGC 救不回来的</span>
+      采集端已削波（超 <a href="glossary.html#aop">AOP</a> 或 ADC 满量程）→ 信息已丢，数字 AGC 只是放大失真。
+    </div>
+
+    <h2>模拟增益 vs 数字增益</h2>
+    <table class="ref">
+      <thead>
+        <tr><th></th><th>模拟增益（PGA）</th><th>数字增益</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>位置</td><td>ADC 之前</td><td>ADC 之后</td></tr>
+        <tr><td>改变 SNR</td><td>会（决定占满 ADC 量程多少）</td><td>不会（信号与底噪同步放大）</td></tr>
+        <tr><td>买到什么</td><td>动态范围的<strong>位置</strong></td><td>只是<strong>响度</strong></td></tr>
+        <tr><td>该怎么用</td><td>设计时<strong>静态标定一次</strong>，之后不动</td><td>运行时的那个 AGC，放 AEC 之后</td></tr>
+      </tbody>
+    </table>
+    <ul class="tight">
+      <li><strong>数字 MEMS 麦（PDM/I²S）</strong>：ADC 在麦壳内，主控没有模拟增益可调——灵敏度在选型时锁死，AGC 必然纯数字。</li>
+      <li><strong>模拟麦 + codec PGA</strong>：有模拟增益，也正是风险所在。运行时动它 = 回声路径幅度变 = AEC 追着 AGC 跑。</li>
+      <li><strong>要动就必须让 AEC 知道</strong>：WebRTC APM 的做法是 <code>set_stream_analog_level()</code> 先告知当前硬件电平，<code>recommended_stream_analog_level()</code> 取回建议值。变化对 AEC <strong>可见</strong>，而非偷偷改。</li>
+      <li><strong>评审三问</strong>：① 麦是数字还是模拟、模拟增益谁在调？② 增益变化有没有告知 AEC？③ codec/驱动层的硬件 AGC 关了没有？</li>
+    </ul>
+    <p class="meta">典型症状：「刚接通几秒有回音，然后好了，对方一大声又回来」= 模拟 AGC 与 AEC 打架的正反馈。</p>
+
+    <h2>失败听感 → 先查什么</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>听感</th>
+          <th>优先怀疑</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>安静时沙沙一阵阵</td><td>AGC release 太快 / 无噪声门</td></tr>
+        <tr><td>人声发闷、辅音丢</td><td>NS 过激进（S-MOS 差）</td></tr>
+        <tr><td>金属「叮叮」、水声</td><td>musical noise（谱减孤立谱峰）</td></tr>
+        <tr><td>开降噪后回音更明显</td><td>顺序/参考错位（NS 或增益跑到 AEC 前）</td></tr>
+        <tr><td>音量忽大忽小</td><td>AGC 目标电平 / 时间常数，或未启用</td></tr>
+        <tr><td>大喊时爆音</td><td>器件 AOP / ADC 削波，不是算法问题</td></tr>
+        <tr><td>只有回音、噪声正常</td><td>回 <a href="aec-cheatsheet.html">AEC 速查</a>：参考、耦合、双讲</td></tr>
+      </tbody>
+    </table>
+
+    <h2>算力量级（TIDA-01589 实测，C5517）</h2>
+    <table class="ref">
+      <thead>
+        <tr><th>算法</th><th>MIPS 平均 / 峰值</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>固定波束成形</td><td>9.2 / 9.3</td></tr>
+        <tr><td>噪声抑制 ASNR</td><td>13.2 / 13.5</td></tr>
+        <tr><td>HD AEC</td><td>113.1 / 131.1</td></tr>
+        <tr><td>整套 DSP 应用</td><td>136.6 / 157.3</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">读法：AEC ≈ NS 的 8 倍算力，独占约 80% 预算。「加降噪」几乎免费，「加真全双工」很贵——这解释了大量低成本机型的取舍。</p>
+
+    <h2>评测最小矩阵</h2>
+    <ul class="tight">
+      <li><strong>噪声</strong>：≥1 种稳态（空调/风机）+ ≥2 种非稳态（车流、雨、人声嘈杂）。非稳态最难，必测。</li>
+      <li><strong>条件</strong>：噪声电平、说话距离、音量档（对讲默认 + 最大驱离）全部写进报告。</li>
+      <li><strong>陷阱</strong>：安静房间成绩不预测带噪成绩——别用静室 MOS 代替带噪评测。</li>
+      <li><strong>联测</strong>：算法指标在 AEC 开启下测；结构指标（ERL / 尾长）按 <a href="aec-cheatsheet.html">AEC 速查</a> 关算法测。</li>
+    </ul>
+
+    <p class="meta">
+      <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课 · NS 与 AGC</a>
+      · <a href="../lessons/0003-aec-full-duplex-essentials.html">第 3 课 · AEC</a>
+      · <a href="aec-cheatsheet.html">AEC 速查</a>
+      · <a href="mems-datasheet-cheatsheet.html">麦指标速查</a>
+      · <a href="glossary.html">术语表</a>
+      · <a href="../RESOURCES.md">RESOURCES.md</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

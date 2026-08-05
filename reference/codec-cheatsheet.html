@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查 · 编码、带宽与时延</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>编码 / 带宽 / 时延速查</h1>
+      <p class="lede">选编码或拆音质卖点时扫这一页。数据源：Fraunhofer AES-122、ITU-R BS.2161、ONVIF 规范。</p>
+    </header>
+
+    <h2>一句话</h2>
+    <p><strong>带宽决定「听不听得清」，时延决定「能不能对讲」，两者方向相反。所以单向路与对讲路应该用不同的编码。</strong></p>
+
+    <h2>选型表</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>编码</th>
+          <th>带宽</th>
+          <th>算法时延</th>
+          <th>码率</th>
+          <th>用在哪</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>G.711（µ-law / A-law）</td>
+          <td>300–3400 Hz @8 kHz</td>
+          <td><strong>≈ 0</strong>（逐样本压扩）</td>
+          <td>64 kbps</td>
+          <td>对讲默认；互通性最好</td>
+        </tr>
+        <tr>
+          <td>G.726（ADPCM）</td>
+          <td>300–3400 Hz @8 kHz</td>
+          <td>极低</td>
+          <td>16–40 kbps</td>
+          <td>带宽受限的对讲</td>
+        </tr>
+        <tr>
+          <td>AAC-LC</td>
+          <td>全带</td>
+          <td><strong>≥ 55 ms</strong> @48 kHz</td>
+          <td>32 kbps 起，≈64 kbps 近透明</td>
+          <td><strong>只用于单向</strong>监听 / 录像</td>
+        </tr>
+        <tr>
+          <td>AAC-LD</td>
+          <td>全带</td>
+          <td>低至 20 ms（1 490 samples ≈ 31 ms 典型）</td>
+          <td>48 kbps/声道起</td>
+          <td>双向且要音质</td>
+        </tr>
+        <tr>
+          <td>AAC-ELD</td>
+          <td>全带</td>
+          <td>15 ms @64 kbps</td>
+          <td>比 AAC-LD 省 25–33%</td>
+          <td>双向，音质 + 低码率</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      锚点：交互式双向通信的<strong>系统</strong>时延建议 ≤ <strong>50 ms</strong>（Fraunhofer）。编码只是其中一段，别拿它当总数。
+    </p>
+
+    <h2>采样率砍掉了什么</h2>
+    <table class="ref">
+      <thead>
+        <tr><th>频段</th><th>装的是什么</th><th>8 kHz 采样下</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>85–255 Hz</td><td>基频 F0（男/女声）</td><td>保留</td></tr>
+        <tr><td>300–3400 Hz</td><td>元音与共振峰（可懂度主体）</td><td>保留</td></tr>
+        <tr><td>4–8 kHz</td><td><strong>齿擦音 /s/ /f/ /sh/</strong></td><td><strong>整段丢失</strong></td></tr>
+        <tr><td>8 kHz 以上</td><td>空气感 / 自然度</td><td>整段丢失</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <span class="label">症状识别</span>
+      <strong>整句能懂、念姓名/车牌/数字出错</strong> = 带宽问题（4 kHz 以上被切），不是 SNR、AEC 或 AGC 问题。
+      门铃/访客对讲的高频用例恰好全在这里。
+    </div>
+
+    <div class="callout bad">
+      <span class="label">反直觉陷阱</span>
+      AAC-LC 帧长固定 <strong>1024 个采样</strong>，不是固定毫秒数。
+      为省带宽把采样率从 48 kHz 降到 16 kHz → 音质降了，<strong>时延涨到约三倍</strong>。
+    </div>
+
+    <h2>ONVIF 对音频承诺了什么</h2>
+    <ul class="tight">
+      <li>Profile Feature Overview 里 Audio Streaming / Audio Output Streaming 全部是 <strong>C = Conditional</strong>，不是 M。<strong>ONVIF 不要求摄像机有音频。</strong></li>
+      <li>唯一约束（脚注 6）：<em>「If supported, Device/client must support at least one of G.711 and AAC」</em>。</li>
+      <li><code>AudioEncoderConfiguration</code> 只有 Encoding（G.711/G.726/AAC）、Bitrate（kbps）、SampleRate（kHz）、SessionTimeout。</li>
+      <li><strong>ONVIF 不区分 AAC-LC / LD / ELD</strong>——枚举里只有一个「AAC」。要低时延档必须在 ONVIF 之外单独确认。</li>
+      <li>走自家 App 私有协议的对讲不受这套枚举限制，可以直接上 AAC-LD / Opus。</li>
+    </ul>
+
+    <h2>木桶效应：链上每一环的采样率</h2>
+    <p>麦克风频响 → 算法带宽 → 编码采样率 → 网络 → 解码 → 喇叭频响。任一环是 8 kHz，整条链就是 8 kHz。</p>
+    <table class="ref">
+      <thead>
+        <tr><th>断点</th><th>表现</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>断在编码（最常见）</td><td>宽带麦 + G.711 → 前面全白做</td></tr>
+        <tr><td>断在算法（最隐蔽）</td><td>AAC@48k，但 AEC/NS 内部跑 16 kHz，或 NS 把高频当噪声削了</td></tr>
+        <tr><td>断在器件</td><td>麦或喇叭本身高频就滚降（见 <a href="mems-datasheet-cheatsheet.html">麦指标速查</a>）</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      评审杀手锏一句话：<strong>「从麦克风到 RTSP 输出，这条链上每一环的采样率分别是多少？」</strong>
+      答不上来 = 中间一定有一环在偷偷降采样。
+    </p>
+
+    <h2>规格书写法</h2>
+    <ul class="tight">
+      <li><strong>分路写</strong>：监听/录像路与对讲路分别指定编码。</li>
+      <li><strong>写全三元组</strong>：编码 + 采样率 + 码率。只写「支持 AAC」等于没写。</li>
+      <li><strong>AAC 写明 profile</strong>：LC / LD / ELD。</li>
+      <li><strong>时延</strong>：报 mouth-to-ear 总时延与测法，不是编码时延。</li>
+      <li><strong>可懂度</strong>：用念姓名 / 车牌 / 数字串的错误率验收，直接测 4 kHz 以上那段。</li>
+      <li><strong>ONVIF</strong>：写「Profile T <strong>且</strong>支持音频流，G.711 与 AAC 至少其一」。</li>
+    </ul>
+
+    <p class="meta">
+      <a href="../lessons/0005-codec-bandwidth-and-latency.html">第 5 课 · 编码与带宽</a>
+      · <a href="../lessons/0004-ns-agc-and-chain-order.html">第 4 课 · NS / AGC</a>
+      · <a href="../lessons/0006-latency-budget.html">第 6 课 · 时延预算</a>
+      · <a href="latency-cheatsheet.html">时延预算速查</a>
+      · <a href="ns-agc-cheatsheet.html">NS / AGC 速查</a>
+      · <a href="aec-cheatsheet.html">AEC 速查</a>
+      · <a href="mems-datasheet-cheatsheet.html">麦指标速查</a>
+      · <a href="glossary.html">术语表</a>
+      · <a href="../RESOURCES.md">RESOURCES.md</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

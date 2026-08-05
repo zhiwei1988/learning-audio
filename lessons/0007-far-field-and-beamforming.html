@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 7 课 · 远场与波束成形</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0007 · 约 20 分钟</p>
+      <h1>波束成形买到的是方向，不是距离</h1>
+      <p class="lede">「四麦阵列 + AI 波束成形，10 米远场拾音」——这句话里有一个能算的数，和三个不能算的数。这一课教你把它拆开。</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      MISSION 里写着「远场可用」，但前六课一直没碰它。
+      <a href="0002-read-mems-microphone-datasheet.html">第 2 课</a>教你读单支麦的指标，
+      <a href="0004-ns-agc-and-chain-order.html">第 4 课</a>教你排处理链的顺序——
+      这一课补上最后一块：<strong>多支麦克风摆在一起，能买到什么，买不到什么，用什么换。</strong>
+      远场是竞品页面上最爱吹、最难验的一栏。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>
+      给定一台摄像机的<strong>外壳尺寸、麦克风数量与间距</strong>，能估出波束成形<strong>大约能给几个 dB</strong>、
+      它的<strong>频率上下限在哪</strong>，并把「10 米拾音」翻译成三个供应商必须回答的问题。
+    </p>
+
+    <h2>一、先把距离这笔账算完</h2>
+    <p>
+      远场的问题从来不是「听不见」，而是<strong>信噪比不够</strong>。而信噪比在你做任何算法之前，已经被物理定律扣掉了一大截。
+    </p>
+
+    <div class="callout warn">
+      <span class="label">先说清楚一个词</span>
+      <strong><span class="term">inverse square law</span>（平方反比定律）</strong>：
+      点声源发出的声音向四面八方扩散，距离每翻一倍，声压级下降 <strong>6 dB</strong>。
+      这里说的是<strong>直达声</strong>——从嘴直线到达麦克风的那一份，不含墙面反射。
+    </div>
+
+    <div class="callout warn">
+      <span class="label">再说清楚一个词（第 2 课学过，这里要用）</span>
+      <strong><a href="../reference/glossary.html#self-noise"><span class="term">EIN</span></a>（equivalent input noise，等效输入噪声，也叫自噪声）</strong>：
+      麦克风自己的电子噪声，换算成「相当于多大的声音」。<code>EIN ≈ 94 − SNR</code>。
+      <br /><br />
+      为什么是 94：datasheet 上的 SNR <strong>是在 94 dB SPL 下测的</strong>——那相当于贴着耳朵大喊。
+      「SNR 65 dB」的意思是<strong>喂 94 dB 进去</strong>时，信号比自噪声高 65 dB。
+      所以自噪声本身 = 94 − 65 = <strong>29 dB SPL</strong>：
+      这支麦体内永远开着一台 29 dB 的嘶嘶声，房间再安静也关不掉（29 dB 大约是深夜卧室的安静程度）。
+      <br /><br />
+      <strong>坑就在这里：datasheet 上的 65 dB 不是你录音的信噪比。</strong>
+      它是对着麦大喊时的成绩。真实语音要先按距离衰减，再跟这 29 dB 相减，才是你实际拿到的信噪比。
+    </div>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>说话人距离</th>
+          <th>直达声到达麦克风<br /><span class="meta">60 dB @1 m 起算</span></th>
+          <th>相对 1 m</th>
+          <th>减去麦自噪声<br /><span class="meta">SNR 65 dB(A) → 固定 29 dB</span></th>
+          <th>= 实际信噪比<br /><span class="meta">安静房间</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0.5 m（举着门铃说话）</td><td>66 dB SPL</td><td>+6 dB</td><td>− 29 dB</td><td>37 dB</td></tr>
+        <tr><td>1 m（正常交谈基准）</td><td>60 dB SPL</td><td>0</td><td>− 29 dB</td><td>31 dB</td></tr>
+        <tr><td>2 m</td><td>54 dB SPL</td><td>−6 dB</td><td>− 29 dB</td><td>25 dB</td></tr>
+        <tr><td><strong>4 m（门口台阶到摄像机）</strong></td><td><strong>48 dB SPL</strong></td><td><strong>−12 dB</strong></td><td>− 29 dB</td><td><strong>19 dB</strong></td></tr>
+        <tr><td>8 m（院子对面）</td><td>42 dB SPL</td><td>−18 dB</td><td>− 29 dB</td><td>13 dB</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      最后一列大致怎么读（粗略定位，不是标准）：<strong>30 dB 以上干净</strong>；<strong>20 dB 左右</strong>能用但听得出底噪；
+      <strong>10 dB</strong> 语音开始发虚、降噪一开就伤音质；<strong>0 dB</strong> 语音和噪声一样大，基本不可用。
+      正常交谈 60 dB SPL @1 m；EIN 定义与更多例子见
+      <a href="0002-read-mems-microphone-datasheet.html">第 2 课</a>与<a href="../reference/mems-datasheet-cheatsheet.html">麦指标速查</a>。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">这张表最狠的地方</span>
+      最后一列是<strong>安静房间</strong>的数字——不含空调、马路、雨声，也不含房间混响。
+      真实的门口场景，环境噪声轻松就有 45–55 dB(A)。
+      也就是说 4 米处的信噪比往往是<strong>个位数甚至负数</strong>。
+      <strong>远场做不好，十次有九次是这一格出了问题，而不是算法不够聪明。</strong>
+    </div>
+
+    <h2>二、波束成形能补回多少？</h2>
+    <p>
+      <strong><span class="term">beamforming</span>（波束成形）</strong>：用多支麦克风之间<strong>声音到达时间的差别</strong>，
+      把某一个方向来的声音对齐后相加（互相增强），其他方向来的声音则因为对不齐而互相抵消。
+      结果是一个「只朝某个方向听」的虚拟麦克风。
+    </p>
+    <p>
+      最基础的做法叫 <strong><span class="term">delay-and-sum</span>（延迟求和，本课称「相加式」）</strong>：
+      给每一路加一个延迟补偿，然后直接相加。它的收益有一个非常干净的公式——
+    </p>
+
+    <div class="formula">
+      对<strong>互不相关</strong>的噪声，N 支麦克风的增益 = <strong>10 · log₁₀(N) dB</strong><br />
+      <span class="meta">2 支 → +3 dB　4 支 → +6 dB　8 支 → +9 dB　16 支 → +12 dB</span>
+    </div>
+
+    <p class="meta">
+      来源：<a href="https://audioxpress.com/article/microphone-array-beamforming-with-optical-mems-microphones" target="_blank" rel="noopener">audioXpress · Microphone Array Beamforming</a>——
+      <em>「a two-microphone Delay-and-Sum beamformer results in a 3dB increase of the system SNR… This +3dB improvement continues for every doubling in number of microphones used.」</em>
+      （相干信号相加 +6 dB，不相关噪声相加 +3 dB，净得 +3 dB。）
+    </p>
+
+    <div class="callout bad">
+      <span class="label">把两张表并排放</span>
+      从 1 米走到 4 米，你丢了 <strong>12 dB</strong>。
+      要靠相加式波束成形把它挣回来，需要 <strong>16 支麦克风</strong>——而且还得摆得足够开（下一节讲为什么）。
+      <br /><br />
+      <strong>所以：波束成形买的是「方向」，不是「距离」。</strong>
+      任何把麦克风数量直接换算成拾音米数的说法，都可以当场用这一行算术拆掉。
+    </div>
+
+    <p>
+      那它到底买到了什么？一个词：<strong><span class="term">DI</span>（directivity index，指向性指数）</strong>——
+      在四面八方均匀来噪声的环境里，这套阵列相对一支全向麦能压低多少 dB。
+      DI 还有一个很实用的换算：它把<strong><span class="term">critical distance</span>（混响半径）</strong>——
+      房间里直达声与混响声一样大的那个距离——往外推 <strong>10<sup>DI/20</sup></strong> 倍。
+      走出混响半径，你收到的主要不再是那个人的直达声，而是墙面反射。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">为什么走出混响半径就难救了</span>
+      <strong>混响不是噪声，是语音自己的回声。</strong>同一段话经墙面反射、晚几十毫秒又回来一次，频谱和原声一模一样。
+      而降噪（<a href="../reference/glossary.html#ns">NS</a>）能工作的前提是噪声<strong>与语音无关、且相对稳定</strong>，可以在说话间隙估出来再减掉——
+      混响三条全不满足：间隙里最响的恰恰就是上一个音节的尾巴。所以 NS 对它基本无效，调狠了只会开始吃语音。
+      <br /><br />
+      <strong>真正被毁掉的是时间包络的起伏。</strong>音节之间的空隙被前一个音节的尾音填平，
+      而辅音和词边界的信息就藏在那些空隙里。这正是 <span class="term">STI</span>（speech transmission index，语音传输指数）度量的东西——
+      混响拉低包络的调制深度，可懂度随之下降（<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2639724/" target="_blank" rel="noopener">MTF 与语音可懂度</a>）。
+      <strong>信息是被填掉了，不是被盖住了</strong>——盖住的能揭开，填掉的没有原始数据可还原。
+      <br /><br />
+      <strong>那能不能算回来？</strong>专门的<strong>去混响（dereverberation）</strong>算法确实存在且有效。
+      数学上收到的信号是<strong>语音与房间冲激响应的卷积</strong>，把冲激响应拆成<strong>早期反射 + 晚期混响</strong>，
+      算法去估计并减掉晚期那部分（<a href="https://arxiv.org/pdf/2110.02144" target="_blank" rel="noopener">León &amp; Tobar, 2021</a>）。
+      但它假设噪声很小、需要较长观测、声源一移动就失效，而且只压得住<strong>晚期尾巴</strong>——已经被填平的空隙补不回来。
+      放在摄像机 SoC 上更是奢侈品。
+      <br /><br />
+      <strong>所以「拉不回来」的准确说法是：丢掉的信息拿不回来，只能部分压掉尾巴，代价还很大。
+      走出混响半径之后，能动的是物理——装近一点、加指向性把混响半径推远、或者改房间——不是换个更强的降噪。</strong>
+    </div>
+
+    <h2>三、可是摄像机太小了</h2>
+    <p>
+      阵列的能力被两个尺寸卡死，而且卡的是<strong>两头</strong>：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr><th>被谁卡住</th><th>卡在哪一头</th><th>为什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong><span class="term">aperture</span>（孔径）</strong><br /><span class="meta">= 最外两支麦的距离</span></td>
+          <td><strong>低频下限</strong></td>
+          <td>阵列要「看见」一个波，自己得跟波长可比。300 Hz 的波长是 1.14 m——想在这个频率上形成波束，孔径得是半米量级。摄像机没有这个尺寸。</td>
+        </tr>
+        <tr>
+          <td><strong>相邻间距 d</strong></td>
+          <td><strong>高频上限</strong></td>
+          <td>间距超过半波长后出现 <span class="term">spatial aliasing</span>（空间混叠）：图上会长出与主瓣一样高的假瓣（<span class="term">grating lobe</span>，栅瓣），侧面的噪声被原样收进来。临界点 <code>f = c / 2d</code>。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      还有一个方向上的区分，看图时要用到：<strong><span class="term">broadside</span>（边射）</strong>是听阵列<strong>侧面</strong>（垂直于麦克风连线）的方向，
+      <strong><span class="term">endfire</span>（端射）</strong>是听阵列<strong>轴线</strong>（沿着麦克风连线）的方向。
+    </p>
+
+    <p>
+      下面这张图把上面所有的话变成一个可以点的东西。按顺序试这四步：
+    </p>
+    <ol>
+      <li>默认就是 <strong>相加式 · 2 支 · 21.25 mm · 500 Hz</strong>——这是 TI 给 IP 摄像机的参考设计实际用的间距。看 DI。</li>
+      <li>把频率点到 <strong>8 kHz</strong>：终于有指向性了，但语音的能量不在那儿。</li>
+      <li>切到 <strong>8 支 · 80 mm · 1 kHz</strong>：28° 的漂亮窄波束——代价是 56 cm 的孔径，那是会议室吊麦或声吧的尺寸，不是摄像机。</li>
+      <li>切到 <strong>差分式</strong>，回到 21.25 mm、500 Hz：心形指向出现了。然后看 WNG 那一行。</li>
+    </ol>
+
+    <div class="beam"
+         data-beam
+         data-title="波束图 · 换几何、换频率，看它到底指向了谁"
+         data-modes='[{"id":"sum","label":"相加式 delay-and-sum"},{"id":"diff","label":"差分式 differential"}]'
+         data-counts='[2,4,8]'
+         data-spacings='[10,21.25,40,80]'
+         data-freqs='[300,500,1000,2000,4000,8000]'
+         data-preset='{"mode":"sum","count":2,"spacing":21.25,"freq":500}'>
+    </div>
+    <p class="meta">
+      21.25 mm 不是我编的：TI 的 <a href="https://www.ti.com/tool/TIDA-01589" target="_blank" rel="noopener">TIDA-01589</a>
+      近场全双工参考设计（应用列表里明确写着 IP Network Camera）用的就是这个数——
+      <em>「Two analog microphones are mounted at a distance of 21.25 mm in a linear geometry on the MIC board」</em>
+      （<a href="https://www.ti.com/lit/ug/tidue77/tidue77.pdf" target="_blank" rel="noopener">TIDUE77</a> §2.3.2）。
+      <code>c/2d</code> 正好落在 8 kHz。
+    </p>
+
+    <div class="callout warn">
+      <span class="label">于是小设备只剩一条路</span>
+      相加式在摄像机尺寸上对语音频段基本无效，所以业界改用
+      <strong><span class="term">differential array</span>（差分式阵列，也叫超指向 superdirective）</strong>：
+      不是把两路相加，而是<strong>相减</strong>，再补一个均衡器把频响拉平。
+      它能用 2 厘米的间距做出心形指向，DI 稳定在 <strong>4.8–6 dB</strong>，而且几乎不随频率变。
+      听起来是免费的午餐——但账在下面。
+    </div>
+
+    <h2>四、差分式的账单：WNG</h2>
+    <p>
+      两路相减，得到的差值信号在低频非常小（波长越长，两支麦收到的越像，差越接近零）。
+      要把频响拉平，均衡器必须在低频施加<strong>巨大的增益</strong>——而它放大的不只是信号，还有麦克风自己的底噪。
+      这笔账有名字：
+    </p>
+
+    <div class="formula">
+      <strong><span class="term">WNG</span>（white noise gain，白噪声增益）</strong>：阵列对<strong>各路互不相关</strong>的噪声（主要是麦克风自噪声）的增益。<br />
+      <span class="meta">相加式：+10·log₁₀(N) dB，永远是正的。　差分式：低频严重为负——数值就是自噪声被放大的量。</span>
+    </div>
+
+    <p>
+      回到上面那张图，切到差分式、21.25 mm、500 Hz：DI 是 4.8 dB，WNG 大约是 <strong>−11 dB</strong>。
+      翻译成人话：<strong>你压低了 4.8 dB 的环境噪声，同时把麦克风自己的底噪抬高了 11 dB。</strong>
+      净结果在安静环境里是<strong>更差</strong>。频率再往下走到 300 Hz，惩罚还要再重 4–5 dB。
+    </p>
+
+    <p class="meta">
+      理论出处：Buck,
+      <a href="https://www.iwaenc.org/proceedings/2001/main/data/buck.pdf" target="_blank" rel="noopener"><em>First Order Differential Microphone Arrays for Automotive Applications</em></a>（IWAENC 2001）——
+      <em>「For low frequencies ω → 0 the equalization filter W<sub>eq</sub> assumes very high values. That means that any disturbance of the signals is strongly amplified.」</em>
+      同一篇还给了实测：一对<strong>未校准</strong>的麦做 5 cm 心形阵列，理想 DI 应是 6 dB，实测在 1 kHz 以下一路掉到接近 0。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">所以「换更好的麦」在这里是真有用的</span>
+      注意这跟<a href="0006-latency-budget.html">第 6 课</a>的结论正好相反——在时延账上换麦毫无意义（6 µs），
+      但在差分阵列上，麦克风的 <strong>SNR 和一致性直接决定阵列能往下用到多少赫兹</strong>。
+      Knowles 的应用笔记把这句话说死了：
+      <em>「When physical space constraints limit array size, phase-matching sets the low frequency limit for directional performance.」</em>
+      （<a href="https://www.knowles.com/docs/default-source/default-document-library/an-26-phase-sequenced-mems-microphones.pdf?sfvrsn=cce94cb1_6" target="_blank" rel="noopener">Knowles AN-26</a>）
+      ADI 说的是同一件事的另一半：
+      <em>「Beamforming algorithms often result in a higher system noise level, as compared with a single microphone in the array. Therefore, it becomes critical for each mic in the array to have a high SNR.」</em>
+      （<a href="https://www.analog.com/media/en/technical-documentation/technical-articles/Low-Self-Noise-The%20First-Step-to-High-Performance-MEMS-Microphone-Applications-MS-2348.pdf" target="_blank" rel="noopener">MS-2348</a>）——
+      两家厂商，一个说相位、一个说噪声，指向同一个结论。
+      <br /><br />
+      <strong>同一个动作在不同的账上，可能是零收益，也可能是全部。先问在哪本账上算。</strong>
+    </div>
+
+    <h2>五、那它到底减不减噪声？</h2>
+    <p>
+      到这里 DI 和 WNG 都有了，可以正面回答这个问题了。答案是：
+      <strong>能，但只对某一类噪声；在摄像机尺寸上，它同时会把另一类放大。</strong>
+      所以「减不减噪声」这个问题本身问错了——要先问<strong>哪一类噪声</strong>。
+    </p>
+
+    <table class="ref">
+      <thead>
+        <tr><th>噪声类型</th><th>波束成形</th><th>量级</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>方向性干扰</strong><br /><span class="meta">电视、空调外机、侧面车流、旁边说话的人</span></td>
+          <td><strong>最有效</strong></td>
+          <td>落进零点可压 <strong>10–20 dB</strong>。这是它真正的本行——按<strong>方向</strong>筛，是降噪（按频谱筛）做不到的事</td>
+        </tr>
+        <tr>
+          <td><strong>弥散噪声</strong><br /><span class="meta">房间底噪、雨声、远处交通</span></td>
+          <td>有限</td>
+          <td>这就是 DI 量的东西，摄像机尺寸上限约 <strong>5 dB</strong></td>
+        </tr>
+        <tr>
+          <td><strong>麦克风自噪声</strong></td>
+          <td><strong>反而更糟</strong></td>
+          <td>差分式 WNG <strong>−11 dB</strong>——自噪声被放大 11 dB</td>
+        </tr>
+        <tr>
+          <td><strong>风噪</strong></td>
+          <td><strong>反而更糟</strong></td>
+          <td>两支麦上的湍流互不相关，正落在 WNG 那一格</td>
+        </tr>
+        <tr>
+          <td>回声</td>
+          <td>无效</td>
+          <td>那是 <a href="0003-aec-full-duplex-essentials.html">AEC</a> 的活。BF 放它前面还会让 AEC 收敛更慢</td>
+        </tr>
+        <tr>
+          <td>混响</td>
+          <td>部分</td>
+          <td>混响半径推远约 <strong>1.7 倍</strong>，但已被填平的空隙补不回来（见上一节）</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      前两类是「减小」，第三、四类是「放大」。<strong>净效果取决于哪一类占主导——而这由环境有多吵决定。</strong>
+    </p>
+
+    <div class="crossover"
+         data-crossover
+         data-title="同一台设备，加不加波束成形，谁赢取决于环境噪声"
+         data-signal="48"
+         data-x='{"from":20,"to":65,"label":"环境噪声","unit":"dB(A)"}'
+         data-y='{"label":"实际信噪比","unit":"dB"}'
+         data-series='[
+           {"label":"单支麦","diffuse":0,"fixed":25},
+           {"label":"加差分式波束成形","diffuse":-4.7,"fixed":36.3}
+         ]'
+         data-note="配置：2 支 / 21.25 mm 差分式 @500 Hz（DI 4.7 dB、WNG −11.3 dB），麦 SNR 69 dB(A)（EIN 25 dB SPL），说话人在 4 米外（到达 48 dB SPL）。这是按上述假设的推演，不是实测——换麦、换几何，翻转点就移动，但形状是稳的。">
+    </div>
+
+    <div class="callout bad">
+      <span class="label">这条曲线最反直觉的一段</span>
+      <strong>越安静，波束成形越帮倒忙。</strong>
+      因为安静时限制你的根本不是环境噪声，而是<a href="../reference/glossary.html#self-noise">麦克风自己的底噪</a>——
+      而差分式恰恰放大它。
+      「夜里听清院子里的轻声说话」这种场景，常开波束成形是<strong>负收益</strong>。
+      <br /><br />
+      你可能会想：那用相加式不就行了？相加式的 WNG 是 <strong>+3 dB</strong>，确实不放大自噪声。
+      但它在 21 mm 间距上的 DI 是 <strong>0.0 dB</strong>——什么都不指向。
+      <br /><br />
+      <strong>所以摄像机尺寸下只有两个选项：要么没有指向性，要么放大自噪声。</strong>
+      这就是为什么这一课的代价清单里，贵的不是算力而是器件——
+      只有把麦的自噪声压得足够低（高 SNR、严格一致性），差分式那 11 dB 的惩罚才付得起。
+      也是为什么不少室外机干脆只用一支麦。
+    </div>
+
+    <div class="callout good">
+      <span class="label">落到决策上</span>
+      <ul class="tight" style="margin: 0.4rem 0 0;">
+        <li>主场景是<strong>门口 / 临街</strong>（45–55 dB(A)）→ 波束成形值得做，净收益 <strong>4 dB</strong> 量级。</li>
+        <li>主场景是<strong>夜间室内听轻声</strong>（30 dB(A) 上下）→ 常开波束成形<strong>净损失 5 dB</strong>。</li>
+        <li>两种场景都要覆盖 → <strong>波束成形应该可开关或随环境自适应，而不是常开。</strong></li>
+      </ul>
+      <br />
+      直接变成评审问题：<strong>「安静环境下你们关不关波束成形？依据是什么？」</strong>
+      供应商如果从没想过这件事，说明他们只在吵的场景里调过音。
+    </div>
+
+    <h2>六、代价清单：贵的不是算力</h2>
+    <table class="ref">
+      <thead>
+        <tr><th>代价项</th><th>量级</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>算力</td>
+          <td><strong>很便宜</strong></td>
+          <td>TI 实测：固定波束成形 <strong>9.2 MIPS</strong>，而 HD AEC 是 <strong>113.1 MIPS</strong>、整套应用 136.6 MIPS（TIDUE77 Table 5）。波束成形只占 <strong>7%</strong>。谁要是说「加不了波束成形，算力不够」，先让他看这张表。</td>
+        </tr>
+        <tr>
+          <td><strong>麦克风一致性</strong></td>
+          <td>灵敏度 ±1 dB<br />相位 ±2°</td>
+          <td>这是 Infineon IM69D130 的标称匹配度，专为阵列设计（<a href="https://www.infineon.com/assets/row/public/documents/24/49/infineon-im69d130-datasheet-en.pdf" target="_blank" rel="noopener">datasheet</a>）。Knowles 则提供按相位分档的卷带（<a href="https://www.knowles.com/docs/default-source/default-document-library/an-26-phase-sequenced-mems-microphones.pdf?sfvrsn=cce94cb1_6" target="_blank" rel="noopener">AN-26</a>：100 支窗口内相位差 ≤1.5°@200 Hz）。<strong>不匹配 = 零点填平 = 指向性消失。</strong></td>
+        </tr>
+        <tr>
+          <td><strong>结构与音孔</strong></td>
+          <td>常是真正的杀手</td>
+          <td>两个音孔的开孔尺寸、腔体深度、防水膜、密封垫必须一致。一侧漏气或被胶挡住，前面所有的匹配全部白做。这是评审时最该去看实物的一项。</td>
+        </tr>
+        <tr>
+          <td>风噪</td>
+          <td>室外场景恶化</td>
+          <td>风在两支麦上产生的是<strong>互不相关</strong>的湍流噪声——正好落在 WNG 为负的那一格，差分阵列会把它放大。</td>
+        </tr>
+        <tr>
+          <td><strong>指向谁</strong></td>
+          <td>产品问题，不是算法问题</td>
+          <td>门铃知道人在正前方；180° 全景摄像机不知道。固定波束（fixed）要靠产品定义押一个方向；自适应波束（adaptive）要先做声源定位，而定位在低信噪比下本身就不准——远场恰恰就是低信噪比。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>七、它在链上的位置（回到第 3、4 课）</h2>
+    <p>
+      波束成形是多路变一路的<strong>合并点</strong>，所以它插在哪里，会改变后面所有模块的处境。行业里这是一个有明确取舍的选择：
+    </p>
+    <p class="meta">
+      VOCAL 把这个取舍写得很直白：
+      <em>「the primary debate is whether the acoustic echo cancellation (AEC) or the beamforming should come first」</em>；
+      若波束成形在前，<em>「not only does the AEC have to model echo path but the beamforming vector as well… slows the convergence of AEC」</em>
+      （<a href="https://vocal.com/beamforming-2/aec-noise-suppression/" target="_blank" rel="noopener">VOCAL</a>）。
+      TI 的参考设计选的是<strong>波束成形在前</strong>——两路 ADC 数据进 DSP 后先做 BF，再跑 HD AEC（TIDUE77 §2.2）。
+      原因很实际：AEC 是最贵的模块，先合并成一路等于只跑一份。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">主线第三次出现：一个改动跨模块伤人</span>
+      <a href="0004-ns-agc-and-chain-order.html">第 4 课</a>是 AEC 参考取点，
+      <a href="0006-latency-budget.html">第 6 课</a>是播放缓冲把回声推出尾长。这一课是第三个：
+      <strong>波束一转向，从喇叭到「虚拟麦克风」的传递路径就换了一条，AEC 必须重新收敛。</strong>
+      收敛期典型 1–2 秒，期间对方会听见自己的声音漏回去。
+      症状是「转个身说话就有回声」，而调 AEC 参数永远调不好——因为动的是波束。
+      <br /><br />
+      <strong>评审提问：波束是固定的还是自适应的？如果是自适应，切换方向时 AEC 怎么处理？</strong>
+    </div>
+
+    <div class="checklist">
+      <h3>远场条款 · 可直接抄进需求文档</h3>
+      <ul>
+        <li><strong>不接受「拾音距离 X 米」</strong>作为指标。要求改成：<strong>在 X 米、环境噪声 Y dB(A) 下的 S-MOS / N-MOS</strong>（见 <a href="../reference/ns-agc-cheatsheet.html">NS/AGC 速查</a>）。</li>
+        <li><strong>要几何参数</strong>：麦克风数量、间距 mm、排布（线阵/三角）、指向类型（相加式 / 差分式）、固定还是自适应。</li>
+        <li><strong>要 DI 曲线</strong>，而不是一个 DI 数字——按频率给，至少覆盖 300 Hz–4 kHz。一个数字通常是最好看的那个频点。</li>
+        <li><strong>要 WNG 曲线</strong>（或等效：阵列输出的本底噪声 vs 单支麦）。差分阵列不给 WNG，等于只报收入不报支出。</li>
+        <li><strong>麦克风一致性写进 BOM</strong>：灵敏度容差 ≤±1 dB，相位容差写明角度与测试频率。禁止中途换非匹配料。</li>
+        <li><strong>要求实物结构评审</strong>：两路音孔尺寸、腔深、防水膜、密封是否一致。</li>
+        <li><strong>联动条款</strong>：自适应波束需说明方向切换时 AEC 的处理策略与收敛时间。</li>
+        <li><strong>室外产品加一条</strong>：风噪场景（≥3 m/s）下开关波束成形的对比录音。</li>
+      </ul>
+    </div>
+
+    <h2>练习 1 · 把波束成形插进处理链</h2>
+    <p>第 4 课的顺序你已经排过一次。现在多了一个模块，重排一遍——先想，再点。</p>
+
+    <div class="order-drill"
+         data-order-drill
+         data-title="练习 · 多麦摄像机的上行（拾音）处理链"
+         data-prompt="按信号流经的正确顺序点选。"
+         data-items='["高通滤波 HPF","波束成形 BF","回声消除 AEC","降噪 NS","自动增益 AGC"]'
+         data-why='[
+           "高通滤波逐路做，只切直流偏置与低频隆隆（风噪、云台振动）。它对每一路的处理完全相同，不破坏各路之间的相位关系——这正是阵列赖以工作的东西——所以放在合并之前最省事。",
+           "波束成形是多路变一路的合并点。放在这里，后面的 AEC、NS、AGC 都只需要处理一路信号。TI 的 IP 摄像机参考设计就是这个顺序：BF 先，HD AEC 后。代价是 AEC 要同时建模回声路径和波束向量，收敛更慢。",
+           "AEC 必须在降噪之前。它是自适应线性滤波器，前面塞谱域降噪会引入非线性，让它永远收敛不了（VOCAL）。",
+           "降噪是后处理，清理 AEC 与波束成形留下的残渣。注意它和波束成形是互补的两件事：波束成形按方向筛，降噪按频谱筛。",
+           "AGC 永远最后。它要对最终干净的信号定电平；放在 AEC 前面，AEC 会去追一个不断变化的增益，永远收敛不了（Q-SYS）。"
+         ]'
+         data-done="全对。第 4 课的四步一个没变，只是最前面多插了一个合并点。记住这个形状：逐路处理 → 合并 → 消回声 → 降噪 → 定电平。">
+    </div>
+
+    <h2>练习 2 · 判断题</h2>
+    <p>选项字数对齐。点选后立刻反馈。</p>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 5"
+         data-prompt="供应商说：「升级到 4 麦波束成形，拾音距离从 3 米提升到 10 米。」你的判断？"
+         data-options='["存疑，四麦对不相关噪声只值六分贝","可信，四麦阵列刚好能提供十二分贝","可信，波束成形会提升麦克风灵敏度","存疑，但换更高声压级的麦就能做到"]'
+         data-answer="0"
+         data-explain-correct="正确。相加式的增益是 10·log₁₀(N)：4 支 = +6 dB。而距离从 3 米到 10 米，直达声下降 20·log₁₀(10/3) ≈ 10.5 dB。6 dB 补不上 10.5 dB，还没算环境噪声和混响。要求他给出「X 米、Y dB(A) 噪声下的 S-MOS」，而不是一个米数。"
+         data-explain-wrong="再想：麦克风数量翻倍只值 +3 dB，4 支就是 +6 dB。灵敏度是单支麦的电声转换效率，波束成形动不了它；AOP（声学过载点）管的是大声不失真，和远场没关系。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 5"
+         data-prompt="外壳只放得下两支麦、间距 20 mm。用相加式波束成形，在 500 Hz 上大约有多少指向性？"
+         data-options='["接近零，孔径远不到该频率半波长","约三分贝，两支麦总是给出三分贝","约五分贝，正好等于心形指向图案","约九分贝，因为间距越小效果越强"]'
+         data-answer="0"
+         data-explain-correct="正确。500 Hz 的波长是 686 mm，半波长 343 mm——而孔径只有 20 mm，两支麦收到的几乎是同一个波形，相加之后还是全向。那个 +3 dB 是对「互不相关噪声」的增益（等效于两支麦平均降噪），不是指向性。两件事，两笔账。"
+         data-explain-wrong="再想：10·log₁₀(2) = 3 dB 说的是不相关噪声被平均掉了，与「朝哪个方向听」无关。指向性要求孔径与波长可比——20 mm 对 686 mm 的波长，什么也做不了。回到上面的波束图，选相加式 / 2 支 / 10 mm / 500 Hz 看一眼。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 4 / 5"
+         data-prompt="同样两支麦、20 mm，改用差分式做出心形指向。它最主要的代价是什么？"
+         data-options='["低频端底噪被放大，信噪比反而变差","高频端出现栅瓣，侧面噪声被收进来","算力开销大幅上升，超过回声消除器","编码带宽必须提高，否则指向性失效"]'
+         data-answer="0"
+         data-explain-correct="正确。差分式靠相减取得指向性，低频的差值极小，均衡器必须施加巨大增益，把麦克风自噪声一起放大——这就是 WNG 为负。20 mm、500 Hz 时约 −12 dB：换来 4.8 dB 的 DI，赔进去 12 dB 的自噪声。这也是为什么小阵列对麦克风的 SNR 和一致性要求特别苛刻。"
+         data-explain-wrong="再想：栅瓣是相加式在高频、间距超过半波长时的毛病，方向反了；固定波束成形只要 9.2 MIPS，是 AEC 的十二分之一，算力不是问题；编码在链的更后面，与阵列无关。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 5 / 5"
+         data-prompt="产品要同时覆盖「白天门口对讲」和「夜间听院子里的动静」。波束成形该怎么配？"
+         data-options='["随环境自适应或可开关，不要常开着","常开即可，两种场景都能提升信噪比","常关更稳妥，指向性收益本来就很小","改用相加式，它在两种场景下都更好"]'
+         data-answer="0"
+         data-explain-correct="正确。吵的时候（45–55 dB(A)）差分式净赚约 4 dB；安静的时候（30 dB(A) 上下）它放大麦克风自噪声，净损失约 5 dB——翻转点在 38 dB(A) 附近。所以正确做法是可开关或随环境自适应。评审时就问这一句：「安静环境下你们关不关波束成形？」"
+         data-explain-wrong="再想：翻转曲线两端的符号是相反的。常开会在安静场景赔 5 dB，常关会在吵的场景丢 4 dB，都只对了一半。相加式在 21 mm 间距上 DI 是 0.0 dB，两种场景都不指向任何方向，不是出路。">
+    </div>
+
+    <h2>本课关键术语（速查）</h2>
+    <table class="ref">
+      <thead>
+        <tr><th>术语</th><th>一句话</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="term">beamforming</span> 波束成形</td><td>用多支麦的到达时间差，只朝一个方向听</td></tr>
+        <tr><td><span class="term">DI</span> 指向性指数</td><td>对四面八方来的噪声能压低多少 dB；小阵列上限约 5–6 dB</td></tr>
+        <tr><td><span class="term">WNG</span> 白噪声增益</td><td>对麦克风自噪声的增益；差分式低频为负，就是代价</td></tr>
+        <tr><td><span class="term">aperture</span> 孔径</td><td>最外两支麦的距离；决定低频下限</td></tr>
+        <tr><td><span class="term">grating lobe</span> 栅瓣</td><td>间距超半波长时长出的假主瓣；<code>f &gt; c/2d</code> 就有</td></tr>
+        <tr><td>相加式 / 差分式</td><td>相加要孔径，差分要一致性；摄像机尺寸只剩差分式</td></tr>
+        <tr><td>平方反比定律</td><td>距离翻倍 −6 dB；这是波束成形补不回来的那一部分</td></tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      完整释义见 <a href="../reference/glossary.html#beamforming">术语表</a>；
+      几何、验收条款与提问清单见 <a href="../reference/beamforming-cheatsheet.html">波束成形速查</a>。
+    </p>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      最有价值的下一步：把你手上这台机器的<strong>麦克风数量、间距、外壳尺寸</strong>告诉我，
+      我们一起算它的孔径、混叠频率和 DI 上限，看看规格书上那个「远场」到底站不站得住。
+      也可以问我：三麦三角阵列和两麦线阵差别在哪？固定波束该押哪个方向？为什么室外机很多干脆只用一支麦？
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://www.knowles.com/docs/default-source/default-document-library/an-26-phase-sequenced-mems-microphones.pdf?sfvrsn=cce94cb1_6" target="_blank" rel="noopener"><strong>Knowles Application Note AN-26 · Phase Sequenced MEMS Microphones for Beam-Forming Applications</strong></a>
+        — 只有 4 页，读 <strong>「Phase and Spacing」与「Directivity」</strong>两节。
+        它用一个 15 mm 间距的例子把整件事讲透：44 µs 的到达时间差，在 400 Hz 上只有 6.3° 的相位差——
+        <strong>你的麦克风匹配误差必须远小于这个数，指向性才成立。</strong>
+        这是一份写给<strong>选料和量产</strong>的人看的文档，正好是你的位置。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://audioxpress.com/article/microphone-array-beamforming-with-optical-mems-microphones" target="_blank" rel="noopener">audioXpress · 阵列入门（边射/端射/混叠）</a>
+        ·
+        <a href="https://www.iwaenc.org/proceedings/2001/main/data/buck.pdf" target="_blank" rel="noopener">Buck IWAENC 2001 · 差分阵列的 DI 与失配实测</a>
+        ·
+        <a href="https://www.ti.com/lit/ug/tidue77/tidue77.pdf" target="_blank" rel="noopener">TI TIDUE77 · 21.25 mm 与 MIPS 实测</a>
+        ·
+        <a href="../reference/beamforming-cheatsheet.html">波束成形速查</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0006-latency-budget.html">时延预算</a>
+        · 下一课：<a href="0008-measurement-that-holds-up.html">没有消声室，也能测出结论</a>（把「听感」变成可复现的数）
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/order-drill.js"></script>
+  <script defer src="../assets/beam-pattern.js"></script>
+  <script defer src="../assets/crossover-chart.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

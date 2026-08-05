@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 5 课 · 编码、带宽与时延</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0005 · 约 20 分钟</p>
+      <h1>「高清拾音」断在哪一环</h1>
+      <p class="lede">采样率是一堵墙，编码时延是另一堵。这一课让你能判断一条音质卖点是真是假，并且知道为什么整个安防行业明知 G.711 难听还在用它。</p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      前四课都在讲「怎么把声音采好、处理好」。但信号最后要<strong>穿过编码器</strong>才能到用户耳朵。
+      这一环有两个硬约束——<strong>带宽</strong>与<strong>时延</strong>——而且它们互相打架。
+      能把这层讲清楚，你才能判断「高清拾音」「高清对讲」这类卖点到底成不成立，以及该往哪投钱。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>
+      拿到一份编码规格（<span class="term">G.711</span> / <span class="term">G.726</span> / <span class="term">AAC</span>、采样率、码率），
+      能说出它<strong>砍掉了哪一类信息</strong>、<strong>吃掉多少时延预算</strong>，并据此判断该给单向监听和双向对讲分别配什么编码。
+    </p>
+
+    <h2>一、采样率是一堵墙</h2>
+    <p>
+      采样率决定能记录的最高频率上限（<strong>奈奎斯特频率</strong> = 采样率 ÷ 2）。安防行业的 G.711 / G.726 惯例是
+      <strong>8 kHz 采样</strong>（<a href="https://vivotek.zendesk.com/hc/en-001/articles/17432485748121--All-cameras-What-is-the-camera-audio-sample-rate-for-G-711-and-G-726-audio-format" target="_blank" rel="noopener">VIVOTEK</a>），
+      理论上限 4 kHz，实际电话带是 <strong>300–3400 Hz</strong>。
+      对照 ITU-T G.722 定义的宽带语音是 <strong>50–7000 Hz</strong>。
+    </p>
+    <p>
+      问题不在于「音质差一点」，而在于<strong>被切掉的是一类特定的信息</strong>。点下面的按钮看：
+    </p>
+
+    <div class="band-limit"
+         data-band-limit
+         data-title="选一种编码，看它砍掉了什么（对数频率轴）"
+         data-options='[{"label":"G.711 / G.726 @ 8 kHz","cut":3400,"note":"安防行业默认。这是「听得懂」而不是「听得清」的档位。"},{"label":"宽带语音 @ 16 kHz","cut":7000,"note":"G.722 级别。齿擦音大部分回来了，念字母与数字的错误率明显下降。"},{"label":"AAC @ 48 kHz","cut":20000,"note":"语音相关频段全保留，代价在码率与时延——见下一节。"}]'
+         data-features='[{"lo":85,"hi":255,"label":"基频 F0（男/女声）"},{"lo":300,"hi":3400,"label":"元音与共振峰"},{"lo":4000,"hi":8000,"label":"齿擦音 /s/ /f/"},{"lo":8000,"hi":16000,"label":"空气感 / 自然度"}]'>
+    </div>
+
+    <div class="callout warn">
+      <span class="label">这才是重点</span>
+      <strong>/s/ /f/ /sh/ 这类清擦音的能量主要在 4 kHz 以上</strong>，在 8 kHz 采样下被整段切掉。
+      元音全部活着，所以句子「大致能懂」——但区分 s 和 f 的信息基本没了。
+      产品上的表现就是：<strong>连续说话听得懂，念姓名、车牌、数字、验证码时开始出错。</strong>
+      这也是电话里报名字要一个字一个字拼的原因。
+    </div>
+
+    <p>
+      门口场景里这恰恰是最高频的用例——「你是哪位？」「快递单号是多少？」「车牌尾号几号？」。
+      所以「8 kHz 够用了，反正能听懂」这个论断，在监控摄像机上成立，在<strong>门铃/访客对讲</strong>上不成立。
+    </p>
+
+    <h2>二、时延是另一堵墙，而且方向相反</h2>
+    <p>
+      直觉是「上 AAC 音质更好」。但编码器要攒够一帧才能开始编，这个等待就是<strong>算法时延</strong>，无法用更快的 CPU 消除。
+    </p>
+    <p>
+      Fraunhofer（AAC 的发明方）在 AAC-ELD 的论文里说得非常直接：
+      <em>「While AAC-LC provides high audio quality, its algorithmic delay of at least 55 ms (1024 samples per frame, 48 kHz) is clearly too high for bi-directional communication.」</em>
+      同一段还给了行业阈值：<em>「Generally, the system delay for interactive two way communication should not exceed 50 ms.」</em>
+      （<a href="https://www.iis.fraunhofer.de/content/dam/iis/de/doc/ame/conference/AES-122-Convention_AAC-ELD_LowBitrateHighQualityCommunication_AES6998.pdf" target="_blank" rel="noopener">AES 122nd Convention · Enhanced Low Delay AAC</a>）
+    </p>
+
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>编码</th>
+          <th>带宽</th>
+          <th>算法时延</th>
+          <th>码率</th>
+          <th>适合</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">G.711</span></td>
+          <td>300–3400 Hz</td>
+          <td><strong>≈ 0</strong>（逐样本压扩，一个采样）</td>
+          <td>64 kbps</td>
+          <td>双向对讲、最大互通性</td>
+        </tr>
+        <tr>
+          <td><span class="term">G.726</span></td>
+          <td>300–3400 Hz</td>
+          <td>极低（ADPCM 逐样本）</td>
+          <td>16–40 kbps</td>
+          <td>带宽受限的对讲</td>
+        </tr>
+        <tr>
+          <td><span class="term">AAC-LC</span></td>
+          <td>全带（取决于采样率）</td>
+          <td><strong>≥ 55 ms</strong> @48 kHz</td>
+          <td>32 kbps 起可用，≈64 kbps 近透明</td>
+          <td><strong>单向</strong>监听 / 录像回放</td>
+        </tr>
+        <tr>
+          <td><span class="term">AAC-LD</span></td>
+          <td>全带</td>
+          <td>低至 20 ms</td>
+          <td>48 kbps/声道起</td>
+          <td>双向，且要音质</td>
+        </tr>
+        <tr>
+          <td><span class="term">AAC-ELD</span></td>
+          <td>全带</td>
+          <td>15 ms @64 kbps</td>
+          <td>比 AAC-LD 省 25–33%</td>
+          <td>双向，音质 + 低码率</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">
+      AAC-LD / ELD 时延数据：<a href="https://www.itu.int/dms_pub/itu-r/opb/rep/R-REP-BS.2161-2009-PDF-E.pdf" target="_blank" rel="noopener">ITU-R Report BS.2161</a> 表 2
+      （AAC-ELD 15 ms vs AAC-LD 20 ms @64 kbit/s；AAC-LD 整体算法时延 1 490 samples ≈ 31 ms）。
+    </p>
+
+    <div class="callout bad">
+      <span class="label">一个反直觉的陷阱</span>
+      AAC-LC 的帧长固定是 <strong>1024 个采样</strong>——不是固定的毫秒数。
+      采样率<strong>越低</strong>，同样的帧数换算成时间<strong>越长</strong>。
+      也就是说，为了省带宽把 AAC 从 48 kHz 降到 16 kHz，音质降了，<strong>时延反而涨到约三倍</strong>。
+      这是「既要省带宽又要上 AAC」时最容易踩的坑。
+    </div>
+
+    <h2>三、所以行业用 G.711 不是懒</h2>
+    <p>
+      G.711 是 <strong>8 kHz 采样、8 bit 对数压扩、64 kbps</strong> 的逐样本编码。它没有「帧」的概念，所以<strong>算法时延约等于零</strong>。
+      安防行业选它，是在拿<strong>音质</strong>换<strong>时延 + 简单 + 互通性</strong>——对讲体验里时延的权重远高于音色。
+    </p>
+    <p>
+      把它接回第 3 课：全双工对讲的总时延预算里，编码只是其中一段。
+      算上采集缓冲、AEC/NS/AGC 的处理块、网络抖动缓冲、解码、播放缓冲——
+      Fraunhofer 那条「交互式双向通信<strong>系统</strong>时延不应超过 50 ms」的线，光是 AAC-LC 一个编码器就已经吃穿了。
+      整张账怎么拆、每一项典型多少、哪一项才值得动，见
+      <a href="0006-latency-budget.html"><strong>第 6 课 · 时延预算</strong></a>。
+    </p>
+
+    <div class="callout good">
+      <span class="label">最有用的产品结论</span>
+      <strong>一台机器可以对两条路用不同的编码。</strong>
+      单向监听 / 录像回放 → 上 AAC（时延不敏感，音质是纯收益）；
+      双向对讲 → G.711，或者上 AAC-LD / ELD（如果 SoC 与对端支持）。
+      很多产品讨论一上来就问「我们该用 G.711 还是 AAC」——这问题本身就问错了，它不是二选一。
+    </div>
+
+    <h2>四、ONVIF 对音频到底承诺了什么</h2>
+    <p>
+      规格书上常见「符合 ONVIF Profile T」。对音频而言，这句话的实际保证比想象中弱得多。
+    </p>
+    <p>
+      在 <a href="https://www.onvif.org/wp-content/uploads/2022/04/onvif-profile-feature-overview.pdf" target="_blank" rel="noopener">ONVIF Profile Feature Overview</a> 的功能矩阵里，
+      Audio Streaming（G.711 / AAC / G.726）与 Audio Output Streaming 全部标记为 <strong>C = Conditional（条件性）</strong>，
+      不是 M = Mandatory。也就是说 <strong>ONVIF 根本不要求摄像机有音频</strong>。
+      只有一条约束（脚注 6）：<em>「If supported, Device/client must support at least one of G.711 and AAC」</em>——
+      <strong>如果</strong>支持，那么 G.711 和 AAC 至少要支持其一。
+    </p>
+    <p>
+      配置层面，<a href="https://www.onvif.org/specs/srv/media/ONVIF-Media-Service-Spec-v1606.pdf" target="_blank" rel="noopener">ONVIF Media Service</a> 的
+      <span class="term">AudioEncoderConfiguration</span> 只有四个可谈的字段：
+      <span class="term">Encoding</span>（G.711 / G.726 / AAC）、<span class="term">Bitrate</span>（kbps）、
+      <span class="term">SampleRate</span>（kHz）、<span class="term">SessionTimeout</span>。
+      注意：<strong>ONVIF 不区分 AAC-LC 与 AAC-LD/ELD</strong>——枚举值只有一个「AAC」。
+      要低时延 AAC，得在 ONVIF 之外单独跟供应商确认 profile。
+    </p>
+
+    <div class="checklist">
+      <h3>编码规格 · 可直接抄进需求文档</h3>
+      <ul>
+        <li><strong>分路指定</strong>：监听/录像路与对讲路分别写编码，不要合并成一行。</li>
+        <li><strong>写全三元组</strong>：编码 + 采样率 + 码率。只写「支持 AAC」等于没写。</li>
+        <li><strong>AAC 必须写明 profile</strong>：LC / LD / ELD。ONVIF 枚举里区分不出来，要单独问。</li>
+        <li><strong>时延验收</strong>：报 mouth-to-ear 总时延（不是编码时延），并写明测法与网络条件。完整条款见<a href="0006-latency-budget.html">第 6 课</a>。</li>
+        <li><strong>可懂度验收</strong>：用<strong>念姓名 / 车牌 / 数字串</strong>的错误率，而不是「听着清楚」。这直接测 4 kHz 以上那段。</li>
+        <li><strong>ONVIF 措辞</strong>：写「Profile T <strong>且</strong>支持音频流，G.711 与 AAC 至少其一」——只写 Profile T 不构成音频承诺。</li>
+      </ul>
+    </div>
+
+    <h2>五、木桶效应：卖点会断在最短的那块</h2>
+    <p>
+      带宽是一条链：<strong>麦克风频响 → 算法带宽 → 编码采样率 → 网络 → 解码 → 喇叭频响</strong>。
+      任何一环是 8 kHz，整条链就是 8 kHz。常见的断点：
+    </p>
+    <div class="scenario">
+      <div class="card">
+        <h3>断在编码</h3>
+        <ul>
+          <li>宣传「高清拾音」</li>
+          <li>麦是宽带 MEMS</li>
+          <li>但编码是 G.711 @ 8 kHz</li>
+        </ul>
+        <p class="pick">→ 最常见。前面全白做</p>
+      </div>
+      <div class="card">
+        <h3>断在算法</h3>
+        <ul>
+          <li>编码上了 AAC @ 48 kHz</li>
+          <li>但 AEC/NS 内部跑 16 kHz</li>
+          <li>或 NS 把高频当噪声削了</li>
+        </ul>
+        <p class="pick">→ 隐蔽。要看算法采样率</p>
+      </div>
+    </div>
+    <p>
+      问供应商的那一句话：<strong>「从麦克风到 RTSP 输出，这条链上每一环的采样率分别是多少？」</strong>
+      能立刻答上来的，说明这条链真的有人负责；答不上来的，基本可以确定中间有一环在偷偷降采样。
+    </p>
+
+    <h2>练习 · 编码选型判断</h2>
+    <p>选项字数对齐。点选后立刻反馈。</p>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 1 / 3"
+         data-prompt="用户投诉：门口访客报姓名和单号时经常听错，但整句话大致能懂。最可能断在哪？"
+         data-options='["采样率过低，齿擦音被整段切掉","麦克风的信噪比不足以支撑远场","回声消除把近端语音误当成回声","自动增益的释放时间设置得过快"]'
+         data-answer="0"
+         data-explain-correct="正确。元音在 3.4 kHz 以下都活着，所以句子能懂；但 /s/ /f/ 这类清擦音能量在 4 kHz 以上，8 kHz 采样下被整段切掉，念字母与数字就开始出错。"
+         data-explain-wrong="再想：整句能懂说明元音与共振峰是完好的，问题只出在需要高频细节的音——那是带宽问题，不是 SNR、AEC 或 AGC。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 3"
+         data-prompt="为了「提升对讲音质」，团队打算把对讲路从 G.711 换成 AAC-LC。你的判断？"
+         data-options='["支持，音质提升是一笔纯粹收益","反对，编码时延会吃穿对讲预算","支持，顺便还能省下一半的码率","反对，这个编码的互通性太差了"]'
+         data-answer="1"
+         data-explain-correct="正确。Fraunhofer 自己写明 AAC-LC 算法时延至少 55 ms @48 kHz，「clearly too high for bi-directional communication」，而交互式双向通信的系统时延建议不超过 50 ms。要音质应选 AAC-LD / ELD。"
+         data-explain-wrong="再想：对讲的第一约束是时延不是音色。AAC-LC 一个编码器就能吃掉整个双向通信的时延预算。">
+    </div>
+
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 3"
+         data-prompt="供应商说「我们通过了 ONVIF Profile T」。关于音频，这句话保证了什么？"
+         data-options='["保证支持双向音频与宽带编码档","几乎不保证，音频是条件性要求","保证至少支持一种低时延的编码","保证音频采样率不低于十六千赫"]'
+         data-answer="1"
+         data-explain-correct="正确。Profile Feature Overview 里 Audio 全部标记为 C（Conditional）而非 M。唯一约束是脚注 6：如果支持，G.711 与 AAC 至少支持其一。ONVIF 也不区分 AAC 的 LC / LD / ELD。"
+         data-explain-wrong="再想：ONVIF 的功能矩阵里音频是条件性的——它连「有没有音频」都不强制，更不承诺带宽或时延档位。">
+    </div>
+
+    <h2>本课关键术语（速查）</h2>
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>术语</th>
+          <th>一句话</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>奈奎斯特频率</td>
+          <td>采样率 ÷ 2 = 可记录的最高频率；8 kHz 采样 → 4 kHz 上限</td>
+        </tr>
+        <tr>
+          <td>窄带 / 宽带</td>
+          <td>300–3400 Hz vs 50–7000 Hz（G.722 定义）</td>
+        </tr>
+        <tr>
+          <td><span class="term">算法时延</span></td>
+          <td>编码器攒帧等待的固有延迟；换更快 CPU 消不掉</td>
+        </tr>
+        <tr>
+          <td><span class="term">AAC-LC / LD / ELD</span></td>
+          <td>≥55 ms / 20 ms / 15 ms —— ONVIF 枚举里区分不出来</td>
+        </tr>
+        <tr>
+          <td>齿擦音 /s/ /f/</td>
+          <td>能量主要在 4 kHz 以上；决定字母与数字的可懂度</td>
+        </tr>
+        <tr>
+          <td>mouth-to-ear</td>
+          <td>端到端总时延；编码只是其中一段，别拿它当总数</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">完整释义见 <a href="../reference/glossary.html#nyquist">术语表</a>；选型速查见 <a href="../reference/codec-cheatsheet.html">编码速查</a>。</p>
+
+    <div class="ask-teacher">
+      <strong>有疑问？直接问我。</strong><br />
+      例如：你们的对讲是走 ONVIF backchannel 还是自家 App 私有协议？后者其实不受 ONVIF 编码枚举限制，可以直接上 AAC-LD / Opus。
+      把现有的编码配置贴给我，我们一起算一遍时延预算。
+    </div>
+
+    <section class="primary-source">
+      <h2>本课主文献（建议精读）</h2>
+      <p>
+        <a href="https://www.iis.fraunhofer.de/content/dam/iis/de/doc/ame/conference/AES-122-Convention_AAC-ELD_LowBitrateHighQualityCommunication_AES6998.pdf" target="_blank" rel="noopener"><strong>Fraunhofer · Enhanced MPEG-4 Low Delay AAC（AES 122nd Convention）</strong></a>
+        — 重点读第 2 节（AAC-LC / AAC-LD / HE-AAC 各自的时延来源与数值）。这是编码方自己写的时延账，比任何二手对比表都可靠。第 3 节之后的滤波器组细节可略过。
+      </p>
+      <p class="meta">辅助：
+        <a href="https://www.onvif.org/wp-content/uploads/2022/04/onvif-profile-feature-overview.pdf" target="_blank" rel="noopener">ONVIF Profile Feature Overview（音频是 Conditional）</a>
+        ·
+        <a href="https://www.itu.int/dms_pub/itu-r/opb/rep/R-REP-BS.2161-2009-PDF-E.pdf" target="_blank" rel="noopener">ITU-R BS.2161（低时延编码时延表）</a>
+        ·
+        <a href="../reference/codec-cheatsheet.html">编码速查</a>
+        ·
+        <a href="../reference/latency-cheatsheet.html">时延预算速查</a>
+        ·
+        <a href="../reference/glossary.html">术语表</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0004-ns-agc-and-chain-order.html">NS 与 AGC</a>
+        · 下一课：<a href="0006-latency-budget.html">时延预算 —— 把 mouth-to-ear 拆成可分配、可验收的几段</a>
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/band-limit.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>
