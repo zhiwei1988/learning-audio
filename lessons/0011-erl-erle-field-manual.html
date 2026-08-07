@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 11 课 · ERL / ERLE / 双讲衰减低成本实测手册</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Lesson 0011 · 约 25 分钟 · 实操手册</p>
+      <h1>三个回声数，自己测：ERL / ERLE / 双讲衰减</h1>
+      <p class="lede">第 3 课给了 dBFS 相减的思路，第 8 课给了可复现性的框架，但两边一直没合成一份<strong>可照做</strong>的流程——而且手工对齐的误差比要判定的档宽还大。这一课把流程合上、把对齐交给脚本，并且回答最关键的一问：<strong>这套自制近似，凭什么可信？</strong></p>
+    </header>
+
+    <div class="mission-box">
+      <strong>与 Mission 的关系</strong><br />
+      双讲条款（ERLE、P.340 等级）目前的测法等级是「暂不可测」——不是没有思路，是<strong>误差棒大于要判定的量</strong>。
+      本手册的目标就是把误差棒压进 3 dB 档宽以内，让双讲条款对内升级为「能自测」；
+      对外声称仍走举证或第三方实验室，这条红线本课最后一节会再钉一次。
+    </div>
+
+    <h2>本课技能</h2>
+    <p>
+      给你一台在手样机，不花钱跑出 <span class="term">ERL</span>、<span class="term">ERLE</span>、双讲衰减量三个数，
+      每个数带条件行与波动范围；并能说清哪个数已有同行印证、哪个还是自制近似、离「能写进对外文件」还差哪一步。
+    </p>
+
+    <h2>一、三个数、三本账——先分清谁是谁</h2>
+    <p>
+      三个数都叫「回声相关」，但记在三本不同的账上。前课都讲过（第 3 课、第 8 课），按间隔重复的惯例重述一遍再用：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr><th>量</th><th>它是什么</th><th>记在哪本账</th><th>参照什么读</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="term">ERL</span><br /><span class="meta">Echo Return Loss · 回声返回损耗</span></td>
+          <td>喇叭放出去的声音回到自家麦上时损失了多少——<strong>算法全关</strong>时量的结构耦合</td>
+          <td>结构账（腔体、布局、密封）</td>
+          <td>第 3 课档位表：+6～+15 dB 算「可干活」，负值常见于共腔大音量</td>
+        </tr>
+        <tr>
+          <td><span class="term">ERLE</span><br /><span class="meta">Echo Return Loss Enhancement · 回声消除增益</span></td>
+          <td>AEC 在 ERL 之外<strong>额外</strong>消掉多少回声——算法指标</td>
+          <td>算法账（尾长、收敛、非线性）</td>
+          <td>20–30 dB 是免提行业「好用户体验」锚点（Microchip）；上限被喇叭 THD 锁死（第 9 课：≤ −20·log₁₀(THD)）</td>
+        </tr>
+        <tr>
+          <td>双讲衰减量 a<sub>H,S,DT</sub><br /><span class="meta">attenuation during double-talk</span></td>
+          <td>对方也在说话时，你的声音被额外压掉多少——<strong>整机行为</strong>指标</td>
+          <td>行为账（双讲策略、NLP）</td>
+          <td>P.340 分级：≤3 dB 全双工，>12 dB 实为半双工（3 dB 一档）</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <span class="label">老规矩</span>
+      三个数<strong>不许互比大小</strong>（第 3 课讲过：一个硬件、一个算法、一个行为）。
+      也不许混着报——报告里每个数前面写清是哪一个，后面写清测量条件。
+    </div>
+
+    <h2>二、内部轨凭什么可信：同行印证到哪一步了</h2>
+    <p>
+      我们的内部轨是「dBFS 相减 + 声学环回」的自制近似。查证结果：<strong>其中 ERLE 的算法有一手同行印证，双讲衰减的流程仍是自制</strong>——两者可信度不同，要拆开说。
+    </p>
+    <p>
+      Microsoft 的 ICASSP 2021 AEC Challenge（在 2500+ 台真实设备的录音上评测回声消除）用的 ERLE 定义正是能量比：
+    </p>
+    <blockquote class="quote">
+      「ERLE ≈ 10 log₁₀ ( E[y²(n)] / E[e²(n)] )，其中 y(n) 是麦克风信号，e(n) 是消除后的残余回声。
+      ERLE is only appropriate when measured in a quiet room with no background noise and only for single talk scenarios (not double talk).」
+      <span class="meta">—— ICASSP 2021 AEC Challenge 论文 §1，公式出处标注为 ITU-T G.168 与 Enzner 等《Acoustic Echo Control》</span>
+    </blockquote>
+    <p>
+      两个功率取对数再相减，就是两个 dBFS 电平相减——<strong>我们的做法与文献同构</strong>。同一篇论文也把边界钉死了：
+      ERLE 只在<strong>安静房间 + 远端单讲</strong>下有意义，且与主观听感分数相关性低（他们实测 Pearson 相关只有 0.3 上下）——
+      所以它只能用来<strong>排序与回归</strong>，不能用来声称「听感好」。这恰好就是双轨测法给内部轨划的射程，现在有了一手出处。
+    </p>
+    <table class="ref">
+      <thead>
+        <tr><th>内部轨组成</th><th>可信度现状</th><th>还差什么</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ERLE = 能量比（dBFS 相减）</td>
+          <td><strong>已有同行印证</strong>：G.168 定义、AEC Challenge 在真实设备录音上沿用</td>
+          <td>无——在「安静房间 + 远端单讲 + 只做排序回归」边界内可放心用</td>
+        </tr>
+        <tr>
+          <td>双讲衰减 a<sub>H,S,DT</sub> 的喇叭+录音笔流程</td>
+          <td>仍是<strong>依据 P.340 定义自行推导的近似</strong>，未见等价公开流程；AEC Challenge 在双讲段干脆放弃客观指标、改用主观听音</td>
+          <td>交叉标定（本课第七节）；完成前不得写进对外文件</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>三、开测前：把口径钉死</h2>
+    <p>
+      第 8 课的可复现性三问，第一问就是「口径钉得死吗」。下面每一行开测前写进记录，测完随数报出——少一行，这场数据就和下一场比不了：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr><th>要钉死的口径</th><th>怎么钉</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>算法开关状态</td><td>测 ERL：AEC / NS / AGC <strong>全关</strong>；测 ERLE：只开 AEC，NS / AGC 关；测 a<sub>H,S,DT</sub>：全开（量的就是整机行为）</td></tr>
+        <tr><td>音量档</td><td>对讲默认档一组，最大驱离档一组，分开报——第 3 课讲过：不能用默认档的漂亮数代替大音量验收</td></tr>
+        <tr><td>安装面</td><td>贴墙 / 自由架空，写死并拍照；换安装面 = 新的一场</td></tr>
+        <tr><td>几何</td><td>「本地说话人」喇叭在被测机正前方 0.5 m、约 65 dB SPL——直接抄 P.340 的 HFRP 条件，省掉自己定标准</td></tr>
+        <tr><td>录音增益</td><td>基准参照录完后<strong>从此不许动</strong>（第 8 课配对四规则）</td></tr>
+        <tr><td>采样率 / 带宽</td><td>全链统一（如 16 kHz / 100 Hz–8 kHz）；不一致先重采样，脚本会拒绝采样率不同的输入</td></tr>
+        <tr><td>素材</td><td>P.501 测试语音（ITU 电子附件免费）；同一场内素材逐字节不变</td></tr>
+        <tr><td>房间底噪</td><td>开测前测并记录 dB(A)（REW + UMIK-1 或声级计）；装修队开工的日子不测</td></tr>
+      </tbody>
+    </table>
+
+    <h2>四、流程 A：ERL（结构账）</h2>
+    <p>升级自第 3 课的最小脚本，加上了重复与报数格式：</p>
+    <table class="ref">
+      <thead>
+        <tr><th>步骤</th><th>做什么</th><th>为什么</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>算法全关，音量 = 对讲默认档，按口径表布好</td><td>量结构，不量算法</td></tr>
+        <tr><td>2</td><td>播 8 s 粉红噪声，同步抓<strong>播放参考</strong>（送功放那一路）与 <strong>raw mic</strong></td><td>参考必须取自真实功放路径（EQ / 限幅之后），否则数虚高且 AEC 对不齐</td></tr>
+        <tr><td>3</td><td>取中间 4 s 稳态窗，ERL = dBFS(参考) − dBFS(raw mic)</td><td>两个数字域电平一步相减，无隐藏换算</td></tr>
+        <tr><td>4</td><td>重复 5 次，报<strong>中位数 + 极差</strong></td><td>粉噪稳态下抖动很小，5 次足够暴露异常场</td></tr>
+        <tr><td>5</td><td>切最大驱离档再来一轮；重要改版加测分频带 ERL(f)</td><td>壳体共振峰会被全带平均数掩盖（第 3 课）</td></tr>
+      </tbody>
+    </table>
+    <p>
+      读数标尺沿用第 3 课档位表：+6～+15 dB 可干活，+15～+30 dB 好结构；改结构（分腔、密封、出音孔错位）的收益直接从这个数上看。
+    </p>
+
+    <h2>五、流程 B：ERLE（算法账）</h2>
+    <p>
+      基线用<strong>同机 bypass</strong>（测法绑定定案：感知/算法族一律差值，基线 = 同机 bypass）——同一台机器、同一场，AEC 开 / 关各录一次：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr><th>步骤</th><th>做什么</th><th>为什么</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>场景：<strong>远端单讲</strong>——远端播 P.501 语音，本地全程无人说话，房间安静</td><td>ERLE 只在这个边界内有意义（AEC Challenge 原句，见第二节）</td></tr>
+        <tr><td>2</td><td>AEC <strong>bypass</strong>，在送出端（send output）录残余 → 这就是「消除前」</td><td>同机 bypass 基线；没有 bypass 开关就录 raw mic，并在条件行写明取点不同</td></tr>
+        <tr><td>3</td><td>AEC <strong>开</strong>，同素材再录一次 → 「消除后」</td><td>唯一变量是 AEC 开关</td></tr>
+        <tr><td>4</td><td>用对齐脚本在两段录音里截<strong>同一句话</strong>（用法见第六节），各算 dBFS</td><td>不同句子本身响度不同，那是新变量</td></tr>
+        <tr><td>5</td><td>ERLE = dBFS(bypass 窗) − dBFS(AEC on 窗)；换 3 个不同窗各算一次，报中位数 + 极差</td><td>一步相减；多窗防止刚好选中收敛前的段落</td></tr>
+        <tr><td>6</td><td>把窗挪到录音<strong>前 2 s</strong> 单独算一个数，标注「收敛期」</td><td>AEC Challenge 的远端单讲素材特意放两遍，就是为了把「收敛中」和「收敛后」分开看</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <span class="label">读数标尺</span>
+      收敛后 20–30 dB 摸到免提行业「好体验」锚点；顶不上去先查喇叭 THD 天花板（第 9 课：ERLE ≤ −20·log₁₀(THD)，10 % THD 就是 20 dB 封顶），再怪算法。
+      收敛期明显低于稳态属正常，两个数分开报即可。
+    </div>
+
+    <h2>六、流程 C：双讲衰减 a<sub>H,S,DT</sub>（行为账）——对齐交给脚本</h2>
+    <p>
+      流程沿用第 8 课六步（本地喇叭单讲录一次、加远端素材双讲录一次、同一句相减查表）。
+      过去卡脖子的是第 5 步「截出同一句话」：<strong>手工对齐的窗口错位估计带来 3–5 dB 误差（经验值，未系统实测），而 P.340 一档只有 3 dB</strong>——误差棒比要判定的量还大，这正是双讲条款「暂不可测」的直接原因。
+    </p>
+    <p>
+      现在这一步交给 <code>assets/align-dt.mjs</code>（零依赖，node 直接跑）：它用互相关找到参考素材在每段录音里的样本级偏移，同一参考窗在两段录音里各截一刀，RMS 相减：
+    </p>
+    <pre class="code">node assets/align-dt.mjs 参考素材.wav 单讲录音.wav 双讲录音.wav --window 0.5,2.5
+
+单讲窗电平  -16.78 dBFS（偏移 5000 样本）
+双讲窗电平  -24.24 dBFS（偏移 11000 样本）
+a_H,S,DT = 7.47 dB（查 P.340 表定档；本数仅供同场成对比较）</pre>
+    <p>
+      自检（合成数据）：植入已知 7.5 dB 压制 + 底噪，脚本测得 7.47 dB、偏移样本级命中——对齐这一项的误差从「手工 3–5 dB」压到 <strong>0.1 dB 以内</strong>。
+      测试套件在 <code>assets/align-dt.test.mjs</code>（<code>node --test</code>），改脚本前先跑绿。
+    </p>
+    <p>误差账现在长这样——哪项多大、谁除得动，一目了然：</p>
+    <table class="ref">
+      <thead>
+        <tr><th>误差项</th><th>量级</th><th>怎么压</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>窗口错位（手工对齐）</td><td>3–5 dB<span class="meta">（经验值，标注待实测）</span></td><td><strong>脚本对齐后 ≤0.1 dB</strong>（合成自检实测）——从账上划掉</td></tr>
+        <tr><td>单次抖动</td><td>随素材与房间，配对测下按第 8 课公式：误差棒半宽 = 1.96 × 单次抖动 × √(2/次数)</td><td>加次数除得动；先跑 5 次算出你自己的抖动值再定次数</td></tr>
+        <tr><td>场次偏置</td><td>整场一起偏</td><td>配对（同场、同素材、增益锁死）消掉；分开测有地板 1.96×√2×偏置，次数除不动</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>判定标准</strong>（可复现性三问的第三问）：误差棒 &lt; 3 dB 档宽，测出的档位才算数；
+      误差棒跨档就老实报「介于 2a/2b，本次分不开」。
+    </p>
+
+    <h2>七、交叉标定：从「暂不可测」到「能自测」</h2>
+    <p>
+      红线重述：<strong>内部轨结果在交叉标定完成前不得写进对外文件</strong>。标定路径两条，一条已走完：
+    </p>
+    <table class="ref">
+      <thead>
+        <tr><th>路径</th><th>覆盖</th><th>状态</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>同行印证</td>
+          <td>ERLE 能量比法</td>
+          <td><strong>已完成</strong>（本课第二节：G.168 定义 + AEC Challenge 在真实设备录音上沿用 + 边界原文）</td>
+        </tr>
+        <tr>
+          <td>第三方实验室一次性标定</td>
+          <td>双讲衰减 a<sub>H,S,DT</sub> 流程</td>
+          <td><strong>待执行</strong>：送一台样机按 P.340 §8 做双讲测试（消声室 + 人工嘴 + CSS 信号），同一台机、同一固件、同一音量档在内部轨复测；实验室值 − 内部轨值 = 定标偏移，多次差值的波动 = 内部轨对外误差棒</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      标定完成后：双讲条款测法等级<strong>对内</strong>升「能自测」（拿标定偏移修正后可判档）；
+      <strong>对外</strong>仍写举证或实验室报告——内部轨永远不出现在对外文件里，这不因标定而改变。
+      实验室送样是人工待办（选实验室、要报价、寄样机），清单在工单里。
+    </p>
+
+    <h2>练习 1 · 排出一次双讲测量</h2>
+    <div class="order-drill"
+         data-order-drill
+         data-title="练习 · 从零跑一次 a_H,S,DT"
+         data-prompt="按执行的正确顺序点选。"
+         data-items='["测房间底噪并填口径记录表","布几何、锁增益、备好 P.501 素材","单讲：只放本地素材，远端录音","双讲：加放远端素材，远端再录","脚本对齐截同一句，电平相减","对照误差棒下结论或宣布分不开"]'
+         data-why='[
+           "口径表是这场数据的身份证：底噪、音量档、安装面、增益，缺一行就和别的场比不了。",
+           "几何抄 P.340（0.5 m / 65 dB SPL），素材用 P.501——能抄标准的绝不自己发明，抄来的都是免费的可复现性。",
+           "单讲是参照。录完这次，增益从此不许动。",
+           "唯一变量是「远端有没有在说话」。远端素材必须逐字节不变，否则双讲重合时刻会变。",
+           "对齐交给脚本：互相关找偏移，同一参考窗各截一刀。手工对齐的 3–5 dB 误差项从账上划掉。",
+           "误差棒小于 3 dB 档宽才准报档位；跨档就写「本次分不开」——这是合法结论，不是失败。"
+         ]'
+         data-done="全对。注意新旧变化：六步里只有第 5 步换了工具，其余全是第 8 课的配对纪律。工具压掉的是对齐误差，纪律压掉的才是场次偏置——两个都缺不得。">
+    </div>
+
+    <h2>练习 2 · 判断题</h2>
+    <div class="quiz"
+         data-quiz
+         data-title="练习 2 / 3"
+         data-prompt="内部轨测出本机双讲衰减 5.2 dB（误差棒 ±0.8 dB）。下面哪句话可以写？"
+         data-options='["对内回归报告：本版相对上版恶化一点二分贝","对外规格书：本机达到 P.340 Category 2a","对外规格书：本机双讲衰减五点二分贝","内外通用：本机全双工能力优于主流竞品"]'
+         data-answer="0"
+         data-explain-correct="正确。内部轨在交叉标定完成前只做排序与回归——同场配对的差值（恶化 1.2 dB）正是它的射程。后三个都是对外声称：档位、绝对数、竞品比较，全都要等标定或走举证/实验室。"
+         data-explain-wrong="再想：双轨测法的红线是「内部轨结果不得写进对外文件」。5.2 dB 这个绝对数没经过定标，档位结论（2a）建立在这个数上，竞品比较更是连对方的数都没有。唯一在射程内的是同机同场的差值。">
+    </div>
+    <div class="quiz"
+         data-quiz
+         data-title="练习 3 / 3"
+         data-prompt="ERLE 实测只有 14 dB，规格要 20 dB。按本课与第 9 课，先查什么？"
+         data-options='["喇叭当前音量档下的实际 THD 是多少","把 AEC 尾长再加长一倍看收敛残余","换一颗信噪比更高的麦克风再测一次","把噪声抑制的强度档往上调一档再测"]'
+         data-answer="0"
+         data-explain-correct="正确。第 9 课：喇叭 THD 给 ERLE 设硬天花板 ERLE ≤ −20·log₁₀(THD)。若当前音量档 THD 到了 10 %，天花板就是 20 dB，实测 14 dB 里有多少是算法差、有多少是物理上限，先分开再花钱。非线性回声没有参考信号，AEC 加尾长救不了它。"
+         data-explain-wrong="再想：ERLE 上不去有两种病因——算法没做好（线性部分）和喇叭失真（非线性部分）。后者是物理天花板，加尾长、换麦、调 NS 都治不了。先查 THD 把两种病因分开，这是「先撞的是哪面墙」在回声账上的翻版。">
+    </div>
+
+    <section class="further">
+      <h2>本课引用</h2>
+      <p>
+        <a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2021/06/0000151.pdf" target="_blank" rel="noopener">ICASSP 2021 AEC Challenge（Microsoft，一手 PDF）</a>
+        ·
+        <a href="https://www.itu.int/rec/T-REC-P.340-200005-I" target="_blank" rel="noopener">ITU-T P.340</a>
+        ·
+        <a href="https://www.itu.int/rec/T-REC-G.168" target="_blank" rel="noopener">ITU-T G.168（ERLE 定义出处）</a>
+        ·
+        <a href="../reference/measurement-cheatsheet.html">评测方法速查</a>
+        ·
+        <a href="../reference/aec-cheatsheet.html">AEC 速查</a>
+      </p>
+    </section>
+
+    <nav class="footer-nav">
+      <p>
+        上一课：<a href="0010-compute-and-bom-budget.html">算力与预算</a>
+        · 下一课候选：AV 同步与唇音对齐
+      </p>
+      <p><a href="../MISSION.md">MISSION.md</a> · <a href="../RESOURCES.md">RESOURCES.md</a></p>
+    </nav>
+  </div>
+  <script defer src="../assets/quiz.js"></script>
+  <script defer src="../assets/order-drill.js"></script>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

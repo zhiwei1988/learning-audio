@@ -102,6 +102,8 @@
   开源全参考客观指标，输出 MOS-LQO（1–5）。需时间对齐的干净参考信号。Use for: 编码与丢包的自动化评估；不适合带房间声学的录音。
 - [ITU-T Rec. P.501: Test signals for use in telephony and other speech-based applications](https://www.itu.int/rec/T-REC-P.501)
   标准测试信号（语音素材、噪声序列、CSS 复合信号、扫频），**电子附件免费下载**。P.340 §5.5 规定免提测试必须用它。Use for: 统一全项目测试素材——实验室那几条昂贵要求里唯一零成本就能满足的一条。
+- [ICASSP 2021 AEC Challenge — Datasets, Testing Framework, and Results (Microsoft, PDF)](https://www.microsoft.com/en-us/research/wp-content/uploads/2021/06/0000151.pdf)
+  **内部轨 ERLE 能量比法的同行印证**（第 11 课主文献之一）。原文：ERLE ≈ 10 log₁₀(E[y²]/E[e²])，公式出处标注为 **ITU-T G.168** 与 Enzner 等《Acoustic Echo Control》（Academic Press 2014）——两功率取对数相减即 dBFS 相减，与内部轨同构。同时钉死边界：**「ERLE is only appropriate when measured in a quiet room with no background noise and only for single talk scenarios (not double talk)」**，且实测 ERLE/PESQ 与主观分相关性低（Pearson ≈0.3）——「内部轨仅排序回归」的一手依据。双讲段他们放弃客观指标改用 P.808 主观听音——即 a_H,S,DT 差值流程仍无公开等价先例。Use for: ERLE 测法的可信度背书、内部轨射程的出处。
 - [REW — Room EQ Wizard](https://www.roomeqwizard.com/) · [miniDSP UMIK-1 + REW 声学测量指南](https://www.minidsp.com/applications/acoustic-measurements/acoustic-measurements)
   免费声学测量软件 + 逐支校准的 USB 测量麦（约 ¥600）。测房间本底噪声、频响、冲激响应与 **RT60 混响时间**。Use for: 把「环境噪声 45 dB(A)」这句话变成可写进报告的实测值；第 7 课混响半径的实测入口。二手源，但工具本身是行业通用。
 
@@ -170,9 +172,9 @@
   - **仍缺（且是行业空白，不是调研不够深）**：① **端到端口对耳时延**——无任何评测机构公开过跨品牌仪器测量，唯一可引的是 The Register 2015 年对第一代 Ring 的秒表式记者实测（弱网 10 s / 优化后 1–2 s），架构早已过时；② **对讲喇叭 SPL**——厂商公开的 dB **几乎全是警报器 SPL 而非对讲喇叭 SPL**，无第三方声级计实测，拆解只拿到 Ring Pro 喇叭的 1 W / 8 Ω / 15×11×3.5 mm 物理规格，无灵敏度、反推不出响度。**这两项要拿锚点只能自测**
   - **附带发现一条比第 9 课更前置的 datasheet 陷阱**：拿到任何 dB 数，**先问「测的是不是同一个信号源」**，再问「在什么距离量的」——警报音多为持续单频/方波，声学效率远高于语音，警报器 dB 不能当对讲响度用
 - 国内主流方案商（海思/安凯/君正等）音频算法 SDK 公开文档深度不一，需结合具体 SoC 再补
-- ~~客观评测流程的可复现实验手册~~ — **第 8 课已补**：P.340 给了实验室条件与双讲分级刻度，Naderi & Cutler 给了「绝对分 vs 差值」的复现性实证，P.501 / REW / DNSMOS / P.808 工具包构成低成本替代路径。**仍缺**：回声路径（ERL / ERLE）的低成本测量手册——第 3 课给了 dBFS 相减的思路但没给完整流程；以及双讲用例中「同一句话对齐截取」的具体工程做法（目前只能手工对齐，缺自动化脚本）
+- ~~客观评测流程的可复现实验手册~~ — **第 8 课已补**：P.340 给了实验室条件与双讲分级刻度，Naderi & Cutler 给了「绝对分 vs 差值」的复现性实证，P.501 / REW / DNSMOS / P.808 工具包构成低成本替代路径。~~仍缺：回声路径（ERL / ERLE）的低成本测量手册；双讲「同一句话对齐截取」自动化~~ — **第 11 课已补**：完整流程（口径表 + 三流程 + 误差账）落 `lessons/0011-erl-erle-field-manual.html`；对齐自动化落 `assets/align-dt.mjs`（互相关样本级对齐，合成自检误差 ≤0.1 dB，测试 `node --test assets/align-dt.test.mjs`）
 - 时延侧「声学环回法 + 第三方录音设备」的 ±5 ms 近似做法（第 6 课）仍缺一手出处，目前是工程惯例而非标准
-- 上面那套低成本双讲测法是**依据 P.340 定义自行推导的近似**，未见有人公开发表过等价流程。可用于排序与回归，但若要写进对外文件需先找到同行印证或送一次第三方实验室做交叉标定
+- 低成本双讲测法的可信度**已拆成两半**（第 11 课）：**ERLE 能量比法已有同行印证**（G.168 定义 + AEC Challenge 在 2500+ 台真实设备录音上沿用，见上方条目），在「安静房间 + 远端单讲 + 只做排序回归」边界内可放心用；**a_H,S,DT 喇叭+录音笔流程仍是自行推导的近似**（AEC Challenge 双讲段放弃客观指标改用主观听音，即无公开等价先例），写进对外文件前需送一次第三方实验室按 P.340 §8 做交叉标定（同机同固件对照，差值 = 定标偏移，波动 = 对外误差棒）——送样是 [#12](https://github.com/zhiwei1988/learning-audio/issues/12) 留下的人工待办
 - ~~ETSI EG 202 396-3 / TS 103 106 原文需付费；目前只能通过 HEAD acoustics 应用笔记间接引用~~ — **这条记错了，已更正**：三份 ETSI 文档均可从 etsi.org **免费下载全文**（已独立核实三个 URL 全部返回 `application/pdf`，无付费墙、无登录跳转）。付费的是 **ITU-T 的现行版本**，但其**被取代的旧版通常免费**（P.1100 (10/2008)、P.1110 (01/2015) 均经此途径拿到全文）。详见 `reference/research-handsfree-spec-standards.md` §0 核实范围表
   - ETSI TS 103 106 V1.6.1 (2021-07)：<https://www.etsi.org/deliver/etsi_ts/103100_103199/103106/01.06.01_60/ts_103106v010601p.pdf>——注意其 Scope 明确**排除 AI 类语音增强终端**的验证范围（"devices employing such techniques were not available for training and validation"），摄像机若用 AI 降噪，不能直接拿它的分数当金标准
   - ETSI EG 202 396-3：<https://www.etsi.org/deliver/etsi_eg/202300_202399/20239603/01.06.01_60/eg_20239603v010601p.pdf>
