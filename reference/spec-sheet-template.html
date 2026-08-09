@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查 · 规格文档与提问清单样张</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+  <style>
+    /* 纸面样张的版面框架（与课文风格区分：样张模拟的是打印页） */
+    .sheet {
+      max-width: 794px; margin: 1.2rem 0; padding: 34px 40px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 4px;
+      font-family: var(--sans); font-size: 12px; line-height: 1.5; position: relative;
+    }
+    .sheet .pageno { position: absolute; top: 6px; right: 10px; font-size: .68rem; color: var(--muted); font-family: var(--mono); }
+    .sheet h1 { font-family: var(--serif); font-size: 20px; margin: 0 0 2px; }
+    .sheet h2 { font-size: 13.5px; margin: 16px 0 6px; border-bottom: 2px solid var(--ink); padding-bottom: 3px; }
+    .sheet h3 { font-size: 12px; margin: 10px 0 4px; }
+    .sheet .doc-meta { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+    .sheet table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 6px 0; }
+    .sheet th, .sheet td { border: 1px solid #bbb; padding: 3px 6px; text-align: left; vertical-align: top; }
+    .sheet th { background: #f0ede8; font-weight: 600; }
+    .sheet .note { font-size: 10px; color: var(--muted); margin: 2px 0 8px; }
+    .badge { display: inline-block; border-radius: 3px; padding: 0 4px; font-size: 9.5px; font-family: var(--mono); }
+    .b-basis { background: var(--accent-soft); color: var(--accent); }
+    .b-meas  { background: var(--good-bg); color: var(--good); }
+    .b-lab   { background: var(--warn-bg); color: var(--warn); }
+    .b-shape { background: #eee6f7; color: #5b3a8e; }
+    .ph { background: var(--warn-bg); }
+    .ph::after { content: " ⚠占位"; font-size: 9px; color: var(--warn); }
+    .sup { font-size: 9px; vertical-align: super; color: var(--accent); font-family: var(--mono); }
+    .card { border: 1px solid #bbb; border-radius: 6px; padding: 10px 12px; margin: 10px 0; page-break-inside: avoid; }
+    .card h3 { margin: 0 0 4px; }
+    .grid-fill td:empty { background: var(--bg); min-width: 3.5rem; height: 1.3rem; }
+    .tmpl td, .tmpl th { color: var(--muted); }
+    .tmpl .slot { font-family: var(--mono); font-size: 10px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference</p>
+      <h1>规格文档与提问清单样张</h1>
+      <p class="lede">推导走完之后，评审桌上到底交什么。上半部分是示范机型（室内筒机 · 店铺）的填好样张，下半部分是可照抄的空白模板。形态决议见工单 #14：规格文档取「主表 + 附录」，提问清单取「逐条网格卡」。</p>
+    </header>
+
+    <h2>一句话</h2>
+    <p><strong>评审桌上只发一页：承诺了什么、凭什么。前提、测法、台账全在附录，答疑时才翻；发给方案商的是另一份投影——每条一张空白网格，「此格无数据」无处可藏。</strong></p>
+
+    <h2>结构总览</h2>
+    <table>
+      <thead><tr><th>交付物</th><th>页</th><th>装什么</th><th>发给谁</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3">规格文档</td><td>第 1 页（主表）</td><td>场景摘要一段 + 分层承诺表 + 双讲组表，只留承诺与<span class="term">依据标注</span>，前提用编号上标引用</td><td>评审桌</td></tr>
+        <tr><td>附录 A/B</td><td>前提清单（<span class="term">验证状态</span>四件套 + 喂给哪条）、<span class="term">测法等级</span>绑定表</td><td>答疑备查</td></tr>
+        <tr><td>附录 C</td><td>墙余量表（全量结算输出）+ 退让台账（空是常态）</td><td>答疑备查</td></tr>
+        <tr><td>提问清单（选型版）</td><td>独立成页</td><td>回答规则前言 + <span class="term">背景段</span> + 逐条卡片：问题、<span class="term">回答形状</span>、空白<span class="term">测量网格</span>、口径。<strong>不印阈值</strong></td><td>方案商</td></tr>
+      </tbody>
+    </table>
+    <p>为什么主表要瘦：一页塞下全部信息（条款+前提+测法+台账）技术上放得下，但评审的问题是「承诺是否成立」，不是「前提何时验证」——细节上桌反而把讨论拖进执行层。为什么清单要逐条网格：一张总表里「测不了」可以含糊带过，空白格子摆在眼前时，「此格无数据」是显性劣势。</p>
+
+    <!-- ══════════════ 样张 · 规格文档 ══════════════ -->
+    <h2>样张 · 规格文档（示范机型：室内筒机 · 店铺）</h2>
+    <p>数据全部来自真实推导（场景参数向量 v1 + 双讲结算拍板）。带 ⚠占位 的格是 SoC 型号未定、预算墙层尚未结算的层——样张如实保留空档，不编数。</p>
+
+    <div class="sheet">
+      <span class="pageno">第 1 页 —— 评审桌上只发这一页</span>
+      <h1>音频规格 · 室内筒机（店铺）</h1>
+      <div class="doc-meta">场景参数向量 v1 · 规格 v0（评审稿）· 2026-08</div>
+      <p style="font-size:11.5px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--muted);">
+        店铺 · 底噪 ≤56 dB SPL · 正常说话 60 dB SPL @1 m · 海思 · 12 V/PoE · ~300 元 · Φ30 mm/2 W 喇叭。<br>
+        前提 P1–P8、测法与退让台账全部在附录——本页只回答「承诺了什么、凭什么」。
+      </p>
+      <h2>分层承诺</h2>
+      <table style="font-size:12.5px">
+        <tr><th style="width:8rem">档</th><th>承诺</th><th style="width:11rem">依据</th></tr>
+        <tr><td>监听</td><td><b>8 m</b>（声源 ≥ 大声 80 dB SPL @1 m）<span class="sup">P8</span></td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
+        <tr><td>对讲</td><td><b>1.5 m</b>（正常交谈）—— 双讲质量以此验收 ↓</td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
+        <tr><td>提示音</td><td><b>5 m</b></td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
+        <tr><td>语音放音</td><td>保底 <b>3.5 m</b> ／ 目标 <b>5 m</b><span class="sup">P1–P4</span></td><td><span class="badge b-basis">物理推导·未校准</span></td></tr>
+      </table>
+      <h2>双讲组（@1.5 m）</h2>
+      <table style="font-size:12.5px">
+        <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
+        <tr><td>插话效果</td><td>保底 <b>Cat 2b</b> ／ 目标 <b>2a</b><span class="sup">P5 P6</span></td><td><span class="badge b-basis">标准限值 P.340</span></td></tr>
+        <tr><td>设备侧时延</td><td>≤ <b>50 ms</b></td><td><span class="badge b-basis">感知文献 AES 6998</span></td></tr>
+        <tr><td>口对耳时延</td><td>≤ <b>150 ms</b> 目标 ／ 400 ms 知情上限<span class="sup">P7</span></td><td><span class="badge b-basis">标准限值 G.114</span></td></tr>
+      </table>
+      <div style="margin-top: 20px; font-size: 11px; color: var(--muted); border-top: 1px solid #ccc; padding-top: 8px;">
+        附录 A · 前提清单（P1–P8 四件套）　附录 B · 测法绑定　附录 C · 墙余量与退让台账
+      </div>
+    </div>
+
+    <div class="sheet">
+      <span class="pageno">第 2 页 —— 附录 A/B（评审可不带，答疑时翻）</span>
+      <h2 style="margin-top:0">附录 A · 前提清单</h2>
+      <table>
+        <tr><th style="width:2rem">#</th><th>前提</th><th style="width:4.5rem">状态</th><th style="width:8rem">最早可验证时机</th><th style="width:7rem">执行方</th><th style="width:6rem">喂给哪条</th></tr>
+        <tr><td>P1</td><td>Smart Amp 表征实得 ≥ +9 dB</td><td>待验证</td><td>功放样片+喇叭表征</td><td>方案商（转举证）</td><td>放音 5 m</td></tr>
+        <tr><td>P2</td><td>1 W 持续热账实测通过</td><td>待验证</td><td>手板到位</td><td>我方</td><td>放音 5 m</td></tr>
+        <tr><td>P3</td><td>腔内 Fo 抬升表征通过</td><td>待验证</td><td>结构打样</td><td>我方+结构</td><td>放音 5 m</td></tr>
+        <tr><td>P4</td><td>喇叭 103 dB @1W/@2W 核实（@1W 则放音全线 +3 dB）</td><td>待验证</td><td>立即（问供应商）</td><td>我方</td><td>放音全档</td></tr>
+        <tr><td>P5</td><td>喇叭 THD 中段曲线实测（当前按 10 % 档占位 → ERLE ≤20 dB）</td><td>待验证</td><td>手板到位</td><td>方案商/我方</td><td>插话效果 2a</td></tr>
+        <tr><td>P6</td><td>ERL 结构条款落实（出音孔、腔体隔离、软安装）</td><td>待验证</td><td>结构打样</td><td>我方+结构</td><td>插话效果 2a</td></tr>
+        <tr><td>P7</td><td>网络单向 ≤100 ms<span class="ph"></span>（由缓冲账反推，数值待结算）</td><td>待验证</td><td>现网实测</td><td>我方</td><td>口对耳时延</td></tr>
+        <tr><td>P8</td><td>店内 RT60 ≤0.8 s（唯一同体量实测 2.11 s，假设偏乐观）</td><td>待验证</td><td>到店实测</td><td>我方</td><td>监听 8 m</td></tr>
+      </table>
+      <div class="note">已证伪 → 触发退让程序（<a href="retreat-program.md">retreat-program.md</a>），不删条款。</div>
+      <h2>附录 B · 测法绑定</h2>
+      <table>
+        <tr><th>条款</th><th style="width:5.5rem">等级</th><th>判定形式</th><th>指针</th></tr>
+        <tr><td>四档距离</td><td><span class="badge b-meas">能自测</span></td><td>绝对值（物理量族）</td><td><a href="measurement-cheatsheet.html">评测方法速查</a> · 第 8 课</td></tr>
+        <tr><td>插话效果</td><td><span class="badge b-lab">双轨</span></td><td>内部轨仅排序；对外转举证/实验室</td><td>第 11 课三流程 + align-dt.mjs</td></tr>
+        <tr><td>设备侧时延</td><td><span class="badge b-meas">能自测</span></td><td>绝对值</td><td>第 6 课九行账</td></tr>
+        <tr><td>口对耳时延</td><td><span class="badge b-lab">需现网</span></td><td>绝对值 + 前提行 P7</td><td>第 6 课</td></tr>
+      </table>
+    </div>
+
+    <div class="sheet">
+      <span class="pageno">第 3 页 —— 附录 C</span>
+      <h2 style="margin-top:0">附录 C · 墙余量与退让台账</h2>
+      <table>
+        <tr><th>墙</th><th>占用</th><th>上限</th><th>余量</th></tr>
+        <tr><td>算力（峰值）/ 内存 / 功耗 / BOM / 结构腔体</td><td class="ph" colspan="3">SoC 型号未定，预算墙层未跑；定型号后全量结算回填</td></tr>
+      </table>
+      <table>
+        <tr><th>轮次</th><th>触发的墙（余量数）</th><th>动作（①无痛/②移墙/③退意图）</th><th>重结算后先撞的墙</th><th>激活/松动的耦合行</th></tr>
+        <tr><td colspan="5" style="text-align:center;color:var(--muted)">（空）双讲对撞通过，未触发退让程序</td></tr>
+      </table>
+      <div class="note">台账为空是常态——它记录的是「为了可行退掉了什么」，没退过就该是空的。</div>
+    </div>
+
+    <!-- ══════════════ 样张 · 提问清单 ══════════════ -->
+    <h2>样张 · 提问清单选型版（发方案商）</h2>
+    <p>规格的机械投影：条目只来自转举证条款与执行方=方案商的前提行。<span class="term">够用线</span>阈值、退让顺序、保底值不出门——要数不给线，判定权留我方。</p>
+
+    <div class="sheet">
+      <span class="pageno">独立成页 —— 逐条卡片 + 可直接填的网格</span>
+      <h1>音频方案选型 · 报数清单</h1>
+      <div class="doc-meta">室内筒机（店铺）· 2026-08 · 规则：按形状交数，测不了的格明写「此格无数据」；一轮定向追问后仍不合格按空白记。</div>
+      <p style="font-size:11px"><b>背景</b>：店铺，噪声上界 56 dB SPL；对讲 1.5 m，说话人 60 dB SPL @1 m；放音 92 dB SPL @1 m 峰值目标；喇叭 Φ30 mm/2 W/103 dB @0.1 m，密闭腔，回声路径固定。</p>
+
+      <div class="card">
+        <h3>1 · AEC 尾长开销 <span class="badge b-shape">曲线 ≥3 点</span></h3>
+        <table class="grid-fill">
+          <tr><th style="width:9rem">尾长</th><th>32 ms</th><th>64 ms</th><th>128 ms</th><th>192 ms</th></tr>
+          <tr><td>峰值算力（MIPS）</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>内存（KB）</td><td></td><td></td><td></td><td></td></tr>
+        </table>
+        <div class="note">口径：16 kHz 单通道；框架/驱动开销另起一行单报，不并入模块数。</div>
+      </div>
+      <div class="card">
+        <h3>2 · 喇叭 THD-电平曲线 <span class="badge b-shape">曲线 ≥3 点</span></h3>
+        <table class="grid-fill">
+          <tr><th style="width:9rem">驱动功率</th><th>1/10 额定</th><th>1/2 额定</th><th>满额定</th></tr>
+          <tr><td>THD @1 kHz（%）</td><td></td><td></td><td></td></tr>
+          <tr><td>THD 语音带宽（%）</td><td></td><td></td><td></td></tr>
+        </table>
+        <div class="note">口径：@0.1 m，注明测量腔体；无数据的格写「此格无数据」。</div>
+      </div>
+      <div class="card">
+        <h3>3 · Smart Amp SOA 表征 <span class="badge b-shape">表征报告</span></h3>
+        <div class="note" style="font-size:10.5px">交报告：用<b>我方喇叭 + 密闭腔</b>表征，报峰值放开量（dB）与表征条件（激励、温度、保护阈值）。「支持 Smart Amp」四个字不构成回答。</div>
+      </div>
+      <div class="card">
+        <h3>4 · ERLE 改善 <span class="badge b-shape">成对差值</span></h3>
+        <table class="grid-fill">
+          <tr><th style="width:9rem">场景（我方素材）</th><th>bypass（dB）</th><th>processed（dB）</th><th>差值（dB）</th></tr>
+          <tr><td>单讲远端</td><td></td><td></td><td></td></tr>
+          <tr><td>双讲</td><td></td><td></td><td></td></tr>
+        </table>
+        <div class="note">同场、同素材、成对；素材与流程口径我方提供（第 11 课流程表随附）。</div>
+      </div>
+      <div class="card">
+        <h3>5 · SoC 电压频率档位 <span class="badge b-shape">档位表格</span></h3>
+        <table class="grid-fill">
+          <tr><th style="width:9rem">档位（全部列出）</th><th>峰值可用 MIPS</th><th>典型功耗（mW）</th><th>音频可独占份额</th></tr>
+          <tr><td>档 1</td><td></td><td></td><td></td></tr>
+          <tr><td>档 2</td><td></td><td></td><td></td></tr>
+          <tr><td>档 …</td><td></td><td></td><td></td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>6 · 去混响（如有） <span class="badge b-shape">表征报告</span></h3>
+        <table class="grid-fill">
+          <tr><th style="width:9rem">条件</th><th>RT60 = 0.8 s</th><th>RT60 = 2.0 s</th></tr>
+          <tr><td>STI 改善（成对差值）</td><td></td><td></td></tr>
+          <tr><td>额外算力/内存</td><td></td><td></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════ 空白模板 ══════════════ -->
+    <h2>空白模板（推新机型时照抄）</h2>
+    <p>槽位名用《》标出。填法顺序：先跑完三层推导（物理包络 → 双讲结算 → 预算墙），再回来填表——这套模板只是推导结果的落纸格式，倒过来先填表就是跳步。</p>
+
+    <div class="sheet tmpl">
+      <span class="pageno">主表模板（第 1 页）</span>
+      <h1>音频规格 · 《机型》</h1>
+      <div class="doc-meta">场景参数向量 v《n》 · 规格 v《n》 · 《日期》</div>
+      <p style="font-size:11.5px; border-left: 3px solid var(--accent); padding-left: 10px;">
+        <span class="slot">《场景一句话：场景 · 底噪口径 · 说话音量口径 · 平台 · 供电 · 售价 · 喇叭》</span><br>
+        前提 P1–P《n》、测法与退让台账全部在附录——本页只回答「承诺了什么、凭什么」。
+      </p>
+      <h2>分层承诺</h2>
+      <table>
+        <tr><th style="width:8rem">档</th><th>承诺</th><th style="width:11rem">依据</th></tr>
+        <tr><td>监听</td><td><span class="slot">《距离》（《成立条件，含声源口径》）《前提上标》</span></td><td><span class="slot">《依据标注五选一》</span></td></tr>
+        <tr><td>对讲</td><td><span class="slot">《= min(拾音, 放音)》—— 双讲质量以此验收 ↓</span></td><td><span class="slot">《依据标注》</span></td></tr>
+        <tr><td>提示音</td><td><span class="slot">《距离》</span></td><td><span class="slot">《依据标注》</span></td></tr>
+        <tr><td>语音放音</td><td><span class="slot">《保底》／《目标+前提上标》（无保底可空，不得编造）</span></td><td><span class="slot">《依据标注》</span></td></tr>
+      </table>
+      <div class="note">机型缺档留空占位，不重新拟名（CONTEXT「分层承诺」）。</div>
+      <h2>双讲组（@对讲档距离）</h2>
+      <table>
+        <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
+        <tr><td>插话效果</td><td><span class="slot">《保底 Category》／《目标 Category+前提上标》（查 duplex-dictionary）</span></td><td><span class="slot">标准限值 P.340（TELR_DT 用严版，注两版并存）</span></td></tr>
+        <tr><td>设备侧时延</td><td><span class="slot">《ms》</span></td><td><span class="slot">感知文献 AES 6998</span></td></tr>
+        <tr><td>口对耳时延</td><td><span class="slot">《目标》／《知情上限》《网络前提上标》</span></td><td><span class="slot">标准限值 G.114（附迁移前提）</span></td></tr>
+      </table>
+    </div>
+
+    <div class="sheet tmpl">
+      <span class="pageno">附录模板（第 2–3 页）</span>
+      <h2 style="margin-top:0">附录 A · 前提清单</h2>
+      <table>
+        <tr><th>#</th><th>前提</th><th>状态</th><th>最早可验证时机</th><th>执行方</th><th>喂给哪条</th></tr>
+        <tr><td>P1</td><td class="slot">《前提。必要性×可得性 =「必填×只能拍范围」的维度必然在这里出现》</td><td class="slot">《待验证/已验证/已证伪》</td><td class="slot">《时机》</td><td class="slot">《我方/方案商（转举证）/…》</td><td class="slot">《条款》</td></tr>
+      </table>
+      <h2>附录 B · 测法绑定</h2>
+      <table>
+        <tr><th>条款</th><th>等级</th><th>判定形式</th><th>指针</th></tr>
+        <tr><td class="slot">《条款》</td><td class="slot">《能自测/需实验室/暂不可测（可复现性三问推导）》</td><td class="slot">《绝对值（物理量族）/差值（感知算法族：同场同素材成对）》</td><td class="slot">《测法卡或课号》</td></tr>
+      </table>
+      <h2>附录 C · 墙余量与退让台账</h2>
+      <table>
+        <tr><th>墙</th><th>占用</th><th>上限</th><th>余量</th></tr>
+        <tr><td class="slot">《算力（峰值）/内存/功耗/BOM/结构腔体，机型可增删》</td><td class="slot">《》</td><td class="slot">《》</td><td class="slot">《余量最小者 = 先撞的墙》</td></tr>
+      </table>
+      <table>
+        <tr><th>轮次</th><th>触发的墙（余量数）</th><th>动作（①/②/③）</th><th>重结算后先撞的墙</th><th>激活/松动的耦合行</th></tr>
+        <tr><td colspan="5" class="slot" style="text-align:center">《没退过就是空——空是常态》</td></tr>
+      </table>
+    </div>
+
+    <div class="sheet tmpl">
+      <span class="pageno">清单条目卡模板（选型版）</span>
+      <h1>音频方案选型 · 报数清单</h1>
+      <div class="doc-meta">《机型》 · 《日期》 · 规则：按形状交数，测不了的格明写「此格无数据」；一轮定向追问后仍不合格按空白记。</div>
+      <p style="font-size:11px"><b>背景</b>：<span class="slot">《场景事实 + 物理包络输出。准入判据：缺了它方案商无法正确回答。退让顺序/竞争线/保底值/阈值不出门》</span></p>
+      <div class="card">
+        <h3><span class="slot">《n》 · 《问题措辞：报数/报档，不印阈值》</span> <span class="badge b-shape">《回答形状四选一》</span></h3>
+        <table class="grid-fill">
+          <tr><th class="slot">《测量网格：行列全由我方指定》</th><th></th><th></th><th></th></tr>
+          <tr><td class="slot">《量（峰值不要平均）》</td><td></td><td></td><td></td></tr>
+        </table>
+        <div class="note"><span class="slot">《口径：继承源条款（位置/信号源/加权/带宽）。回链：规格条款号或前提行号——无根不准入》</span></div>
+      </div>
+      <div class="note">条目六槽位与形状表见 <a href="answer-shapes.md">answer-shapes.md</a>；验收版（含阈值、交报告）签约后由同一条目库另行渲染。</div>
+    </div>
+
+    <h2>与其他资产的关系</h2>
+    <p>
+      本页只管「落纸长什么样」。条款怎么来：三层推导骨架见 CONTEXT「推导骨架」；档/值两槽见 ADR 0002；测法等级与四出路见 ADR 0003；目标值两线见 ADR 0004；清单投影规则见 ADR 0005 与 <a href="answer-shapes.md">answer-shapes.md</a>；撞墙后怎么退见 <a href="retreat-program.md">retreat-program.md</a>（ADR 0006）。
+    </p>
+
+    <p class="footnote">
+      相关：
+      <a href="../lessons/0008-measurement-that-holds-up.html">第 8 课 · 评测方法</a>
+      · <a href="../lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课 · 放音侧</a>
+      · <a href="../lessons/0011-erl-erle-field-manual.html">第 11 课 · ERL/ERLE 实测手册</a>
+      · <a href="measurement-cheatsheet.html">评测方法速查</a>
+      · <a href="duplex-dictionary.md">双讲组翻译字典</a>
+      · <a href="coupling-inventory.md">耦合清单</a>
+      · <a href="glossary.html">术语表</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>
