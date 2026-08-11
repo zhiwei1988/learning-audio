@@ -46,19 +46,42 @@
     </header>
 
     <h2>一句话</h2>
-    <p><strong>评审桌上只发一页：承诺了什么、凭什么。前提、测法、台账全在附录，答疑时才翻；发给方案商的是另一份投影——每条一张空白网格，「此格无数据」无处可藏。</strong></p>
+    <p><strong>评审桌上只发一页：承诺了什么、凭什么。前提、测法全在附录，答疑时才翻；发给方案商的是另一份投影——每条一张空白网格，「此格无数据」无处可藏。</strong></p>
 
     <h2>结构总览</h2>
-    <table>
+    <table class="ref">
       <thead><tr><th>交付物</th><th>页</th><th>装什么</th><th>发给谁</th></tr></thead>
       <tbody>
-        <tr><td rowspan="3">规格文档</td><td>第 1 页（主表）</td><td>场景摘要一段 + 分层承诺表（含判据列）+ 双讲组表 + 拾音/放音两个音质节，只留承诺与<span class="term">依据标注</span>，前提用编号上标引用</td><td>评审桌</td></tr>
+        <tr><td rowspan="2">规格文档</td><td>第 1 页（主表）</td><td>场景摘要一段 + 分层承诺表（含判据列）+ 双讲组表 + 拾音/放音两个音质节，只留承诺与<span class="term">依据标注</span>，前提用编号上标引用</td><td>评审桌</td></tr>
         <tr><td>附录 A/B</td><td>前提清单（<span class="term">验证状态</span>四件套 + 喂给哪条）、<span class="term">测法等级</span>绑定表</td><td>答疑备查</td></tr>
-        <tr><td>附录 C</td><td>墙余量表（全量结算输出）+ 退让台账（空是常态）</td><td>答疑备查</td></tr>
         <tr><td>提问清单（选型版）</td><td>独立成页</td><td>回答规则前言 + <span class="term">背景段</span> + 逐条卡片：问题、<span class="term">回答形状</span>、空白<span class="term">测量网格</span>、口径。<strong>不印阈值</strong></td><td>方案商</td></tr>
       </tbody>
     </table>
-    <p>为什么主表要瘦：一页塞下全部信息（条款+前提+测法+台账）技术上放得下，但评审的问题是「承诺是否成立」，不是「前提何时验证」——细节上桌反而把讨论拖进执行层。为什么清单要逐条网格：一张总表里「测不了」可以含糊带过，空白格子摆在眼前时，「此格无数据」是显性劣势。</p>
+    <p>为什么主表要瘦：一页塞下全部信息（条款+前提+测法）技术上放得下，但评审的问题是「承诺是否成立」，不是「前提何时验证」——细节上桌反而把讨论拖进执行层。为什么清单要逐条网格：一张总表里「测不了」可以含糊带过，空白格子摆在眼前时，「此格无数据」是显性劣势。</p>
+    <p>墙余量表与退让台账<b>不随规格出门</b>（2026-08-11 对 #14 形态的修订）：它们是推导工作区的产物——退让程序照旧运行（<a href="retreat-program.html">retreat-program.html</a>），清单条目 1/5 报回的数落在结算工作区，规格文档不再设对应附录。</p>
+
+    <h2>附录 A/B 怎么用</h2>
+    <p>分工一句话：<strong>主表说承诺了什么，附录 A 说凭什么敢承诺，附录 B 说到时候怎么验。</strong></p>
+    <h3>附录 A · 前提清单——承诺的风险燃尽表</h3>
+    <p>主表上带上标的承诺（如「放音目标 5 m<span class="sup">P1–P4</span>」）都不是无条件的：它成立当且仅当那几行前提验证为真。附录 A 在三个时刻被使用：</p>
+    <table class="ref">
+      <thead><tr><th style="width:8rem">时刻</th><th>用法</th></tr></thead>
+      <tbody>
+        <tr><td>写规格时</td><td>强制入口——凡「必填 × 只能拍范围」的维度，规格必须写成<span class="term">带前提的承诺</span>，前提自动落进本表。写不出前提行 = 裸承诺</td></tr>
+        <tr><td>评审桌上</td><td>答疑——被问「这个数凭什么敢写」时翻到对应 P 行：评审判断的是「这组前提靠谱吗」，不是空对空吵数字</td></tr>
+        <tr><td>立项之后</td><td>驱动执行——「最早可验证时机 + 执行方」就是排期依据；前提逐行翻绿，承诺逐步变硬。翻成<b>已证伪</b>不删条款，触发退让程序</td></tr>
+      </tbody>
+    </table>
+    <h3>附录 B · 测法绑定——每条承诺「到时候拿什么判过没过」</h3>
+    <p>写作硬规则要求「每条验收条款必须附这个数怎么测」，本表就是落点。每行三个槽：</p>
+    <table class="ref">
+      <thead><tr><th style="width:8rem">槽位</th><th>回答的问题</th></tr></thead>
+      <tbody>
+        <tr><td>等级</td><td>验收时找谁、花不花钱——能自测／需实验室／转举证，由<span class="term">可复现性三问</span>推导（尤其三问③：误差棒大于要判定的量时，能测出数也不准拿来判档）</td></tr>
+        <tr><td>判定形式</td><td>拿哪把尺子——物理量族用绝对值，感知/算法族一律同场同素材成对差值；有人拿一次绝对分来验收时，这一格就是驳回依据</td></tr>
+        <tr><td>指针</td><td>照着哪个流程做——指到测法卡或课号，验收的人不用回来问</td></tr>
+      </tbody>
+    </table>
 
     <!-- ══════════════ 样张 · 规格文档 ══════════════ -->
     <h2>样张 · 规格文档（示范机型：室内筒机 · 店铺）</h2>
@@ -70,7 +93,7 @@
       <div class="doc-meta">场景参数向量 v1 · 规格 v0（评审稿）· 2026-08</div>
       <p style="font-size:11.5px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--muted);">
         店铺 · 底噪 ≤56 dB SPL · 正常说话 60 dB SPL @1 m · 海思 · 12 V/PoE · ~300 元 · Φ30 mm/2 W 喇叭。<br>
-        前提 P1–P8、测法与退让台账全部在附录——本页只回答「承诺了什么、凭什么」。
+        前提 P1–P8 与测法绑定全部在附录——本页只回答「承诺了什么、凭什么」。
       </p>
       <h2>分层承诺</h2>
       <table style="font-size:12.5px">
@@ -80,7 +103,7 @@
         <tr><td>提示音</td><td><b>5 m</b></td><td><span class="tbd">《待拍板：听得见／分得清类型》</span></td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
         <tr><td>语音放音</td><td>保底 <b>3.5 m</b> ／ 目标 <b>5 m</b><span class="sup">P1–P4</span></td><td><span class="tbd">《待拍板：①／②／③》</span></td><td><span class="badge b-basis">物理推导·未校准</span></td></tr>
       </table>
-      <div class="note">判据 = 这个距离上承诺「听到什么程度」——距离数字由它推出，不写明它 8 m 就是悬空数。语音档取值于三级判据阶梯（①检出：听出有人说话；②逐字：逐字听懂；③辨识：听声认人），见 <a href="quality-dictionary.html">音质组翻译字典</a>；配哪级是意图册拍板，样张如实留待拍板。</div>
+      <div class="note">判据 = 这个距离上承诺「听到什么程度」——距离数字由它推出，不写明它 8 m 就是悬空数。语音档取值于三级判据阶梯（①检出：听出有人说话，无外部刻度，条款改差值/参考期望；②逐字：逐字听懂，STI 刻度；③辨识：听声认人，ENFSI 软门槛——不产距离只产前提），见 <a href="quality-dictionary.html">音质组翻译字典</a>；配哪级是意图册拍板（工单 #31）。<b>表内距离是判据列诞生前（#2）的临时值</b>——配级后用物理包络距离计算器（工单 #30）按场景参数重推替换。</div>
       <h2>双讲组（@1.5 m）</h2>
       <table style="font-size:12.5px">
         <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
@@ -91,19 +114,20 @@
       <h2>拾音组 · 音质</h2>
       <table style="font-size:12.5px">
         <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
-        <tr><td>说话自然度</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 条款形式已定：对关闭降噪的 bypass 同场同素材成对差值（P.835 三分），差值门槛待 #28</td><td><span class="badge b-basis">感知文献 P.835（差值）</span></td></tr>
-        <tr><td>安静干净度（录音底噪）</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 限值待 #28</td><td><span class="badge b-basis">物理量·口径借 P.1100 §11.6</span></td></tr>
-        <tr><td>大声不破音</td><td><span class="tbd">《待拍板：高／中／低》</span>—— AOP 下限由场景事实反推，待 #28</td><td><span class="badge b-basis">物理推导·未校准</span></td></tr>
+        <tr><td>说话自然度</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 形式定稿：对关闭降噪的 bypass 同场同素材成对差值（P.835 三分 SIG/BAK/OVRL），判定 = 差值 95 % 置信区间下界 ≥ 0（显著不劣化；P.800.2 明文不给 JND 数）</td><td><span class="badge b-basis">感知文献 P.835（差值·统计判定）</span></td></tr>
+        <tr><td>安静干净度（录音底噪）</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 形式定稿：绝对值合法（物理量族），限值按选档重推；天然差值判据可选（低于安装场景夜间底噪即不可闻）</td><td><span class="badge b-basis">物理量·口径借 P.1100 §11.6</span></td></tr>
+        <tr><td>大声不破音</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 形式定稿：AOP 下限 = 声源 SPL@1 m + 20·log₁₀(1 m ÷ 最近距离) + 峰均比裕量 ≈12 dB（换算式见字典维度三）</td><td><span class="badge b-basis">物理推导·未校准</span></td></tr>
+        <tr><td>送话频响（判据支撑）</td><td>转举证：方案商交算法 bypass 链频响报告，口径我方指定（清单条目 7）——逐字级判据（STI）依赖链路带宽</td><td><span class="badge b-basis">形状借 P.1100 §11.4（数值不借）</span></td></tr>
       </table>
       <h2>放音组 · 音质</h2>
       <table style="font-size:12.5px">
         <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
-        <tr><td>安静干净度（喇叭底噪）</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 限值待 #28</td><td><span class="badge b-basis">物理量·口径借 P.1100 §11.6</span></td></tr>
-        <tr><td>放音音色</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 频响模板形状借 P.1100，数值待 #28；「闷/尖」对照空白则差值化（#27 核查）</td><td><span class="badge b-basis">感知文献·疑似空白</span></td></tr>
+        <tr><td>安静干净度（喇叭底噪）</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 形式定稿：绝对值合法（物理量族），限值按选档重推；天然差值判据可选（同上）</td><td><span class="badge b-basis">物理量·口径借 P.1100 §11.6</span></td></tr>
+        <tr><td>放音音色</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 形式定稿：频响容差形状借 P.1100 Table 11-2 数值重推；「闷/尖」同场 A/B 成对差值（「尖」可加 DIN 45692 锐度差值旁证，「闷」查无标准量——#27 核查）</td><td><span class="badge b-basis">感知文献·差值（#27 核查后）</span></td></tr>
       </table>
-      <div class="note">音质条款不按距离分档——档槽为空（#6 模板允许），值槽等意图册拍板选档后按两线框架定值。四维取值域与刻度见 <a href="quality-dictionary.html">音质组翻译字典</a>（结构决议 ADR 0007）。</div>
+      <div class="note">音质条款不按距离分档——档槽为空（#6 模板允许），条款形式已全部定稿（#28）；值槽等意图册拍板选档（工单 #31）后按两线框架定值。四维取值域与刻度见 <a href="quality-dictionary.html">音质组翻译字典</a>（结构决议 ADR 0007）。</div>
       <div style="margin-top: 20px; font-size: 11px; color: var(--muted); border-top: 1px solid #ccc; padding-top: 8px;">
-        附录 A · 前提清单（P1–P8 四件套）　附录 B · 测法绑定　附录 C · 墙余量与退让台账
+        附录 A · 前提清单（P1–P8 四件套）　附录 B · 测法绑定
       </div>
     </div>
 
@@ -129,21 +153,14 @@
         <tr><td>插话效果</td><td><span class="badge b-lab">双轨</span></td><td>内部轨仅排序；对外转举证/实验室</td><td>第 11 课三流程 + align-dt.mjs</td></tr>
         <tr><td>设备侧时延</td><td><span class="badge b-meas">能自测</span></td><td>绝对值</td><td>第 6 课九行账</td></tr>
         <tr><td>口对耳时延</td><td><span class="badge b-lab">需现网</span></td><td>绝对值 + 前提行 P7</td><td>第 6 课</td></tr>
+        <tr><td>说话自然度</td><td><span class="badge b-meas">能自测</span></td><td>差值（同场同素材成对，P.835 三分；判定 = 95 % CI 下界 ≥ 0）。成对盲听走 P.808 开源实现；DNSMOS 只作回归哨兵（射程：降噪场景，不适用回声/时延）</td><td><a href="quality-dictionary.html">字典·维度一</a> · 第 8 课</td></tr>
+        <tr><td>安静干净度（两条）</td><td><span class="badge b-meas">能自测</span></td><td>绝对值（口径借 P.1100 §11.6 测点与加权；测量麦自噪声须低于被测值——三问③）</td><td>REW + 测量麦 · <a href="measurement-cheatsheet.html">评测速查</a></td></tr>
+        <tr><td>大声不破音</td><td><span class="badge b-meas">能自测</span></td><td>绝对值（AOP 下限式见字典维度三；验收 = 标称最恶声源 SPL 下录音无削波）</td><td>第 2 课 AOP · <a href="quality-dictionary.html">字典·维度三</a></td></tr>
+        <tr><td>放音音色（频响容差）</td><td><span class="badge b-lab">需实验室</span></td><td>绝对形状（容差模板借 P.1100 Table 11-2 形状；近场 gated 测量可自测粗判，判档不够格——三问③）</td><td>第 9 课</td></tr>
+        <tr><td>放音音色（闷/尖）</td><td><span class="badge b-meas">能自测</span></td><td>差值（同场 A/B 成对主观；DIN 45692 锐度差值旁证）</td><td><a href="quality-dictionary.html">字典·维度四</a></td></tr>
+        <tr><td>送话频响</td><td><span class="badge b-lab">转举证</span></td><td>报告（口径我方指定：算法 bypass 链、参考 1 kHz、注明测距与入射角）</td><td>清单条目 7</td></tr>
+        <tr><td>带外信号抑制</td><td><span class="badge b-lab">转举证</span></td><td>报数（形状借 P.1100 §11.7 口径，阈值不外发）</td><td>清单条目 8</td></tr>
       </table>
-    </div>
-
-    <div class="sheet">
-      <span class="pageno">第 3 页 —— 附录 C</span>
-      <h2 style="margin-top:0">附录 C · 墙余量与退让台账</h2>
-      <table>
-        <tr><th>墙</th><th>占用</th><th>上限</th><th>余量</th></tr>
-        <tr><td>算力（峰值）/ 内存 / 功耗 / BOM / 结构腔体</td><td class="ph" colspan="3">SoC 型号未定，预算墙层未跑；定型号后全量结算回填</td></tr>
-      </table>
-      <table>
-        <tr><th>轮次</th><th>触发的墙（余量数）</th><th>动作（①无痛/②移墙/③退意图）</th><th>重结算后先撞的墙</th><th>激活/松动的耦合行</th></tr>
-        <tr><td colspan="5" style="text-align:center;color:var(--muted)">（空）双讲对撞通过，未触发退让程序</td></tr>
-      </table>
-      <div class="note">台账为空是常态——它记录的是「为了可行退掉了什么」，没退过就该是空的。</div>
     </div>
 
     <!-- ══════════════ 样张 · 提问清单 ══════════════ -->
@@ -204,6 +221,22 @@
           <tr><td>额外算力/内存</td><td></td><td></td></tr>
         </table>
       </div>
+      <div class="card">
+        <h3>7 · 送话链频响（算法 bypass） <span class="badge b-shape">曲线 ≥3 点</span></h3>
+        <table class="grid-fill">
+          <tr><th style="width:9rem">频点</th><th>200 Hz</th><th>500 Hz</th><th>1 kHz</th><th>2 kHz</th><th>4 kHz</th><th>8 kHz</th></tr>
+          <tr><td>相对 1 kHz（dB）</td><td></td><td></td><td>0</td><td></td><td></td><td></td></tr>
+        </table>
+        <div class="note">口径：自由场、正入射、注明测距；算法一律 bypass（含降噪/AGC）。回链：拾音组·音质「送话频响」条款。</div>
+      </div>
+      <div class="card">
+        <h3>8 · 送话链带外抑制 <span class="badge b-shape">档位表格</span></h3>
+        <table class="grid-fill">
+          <tr><th style="width:9rem">采样率档</th><th>8 kHz</th><th>16 kHz</th><th>48 kHz</th></tr>
+          <tr><td>带外抑制（dB）</td><td></td><td></td><td></td></tr>
+        </table>
+        <div class="note">口径：测法形状借 P.1100 §11.7（奈奎斯特以上单频激励、量带内混叠残余）；测不了的档写「此格无数据」。回链：拾音组·音质附属（映射表见 quality-dictionary）。</div>
+      </div>
     </div>
 
     <!-- ══════════════ 空白模板 ══════════════ -->
@@ -216,7 +249,7 @@
       <div class="doc-meta">场景参数向量 v《n》 · 规格 v《n》 · 《日期》</div>
       <p style="font-size:11.5px; border-left: 3px solid var(--accent); padding-left: 10px;">
         <span class="slot">《场景一句话：场景 · 底噪口径 · 说话音量口径 · 平台 · 供电 · 售价 · 喇叭》</span><br>
-        前提 P1–P《n》、测法与退让台账全部在附录——本页只回答「承诺了什么、凭什么」。
+        前提 P1–P《n》与测法绑定全部在附录——本页只回答「承诺了什么、凭什么」。
       </p>
       <h2>分层承诺</h2>
       <table>
@@ -244,7 +277,7 @@
     </div>
 
     <div class="sheet tmpl">
-      <span class="pageno">附录模板（第 2–3 页）</span>
+      <span class="pageno">附录模板（第 2 页）</span>
       <h2 style="margin-top:0">附录 A · 前提清单</h2>
       <table>
         <tr><th>#</th><th>前提</th><th>状态</th><th>最早可验证时机</th><th>执行方</th><th>喂给哪条</th></tr>
@@ -254,15 +287,6 @@
       <table>
         <tr><th>条款</th><th>等级</th><th>判定形式</th><th>指针</th></tr>
         <tr><td class="slot">《条款》</td><td class="slot">《能自测/需实验室/暂不可测（可复现性三问推导）》</td><td class="slot">《绝对值（物理量族）/差值（感知算法族：同场同素材成对）》</td><td class="slot">《测法卡或课号》</td></tr>
-      </table>
-      <h2>附录 C · 墙余量与退让台账</h2>
-      <table>
-        <tr><th>墙</th><th>占用</th><th>上限</th><th>余量</th></tr>
-        <tr><td class="slot">《算力（峰值）/内存/功耗/BOM/结构腔体，机型可增删》</td><td class="slot">《》</td><td class="slot">《》</td><td class="slot">《余量最小者 = 先撞的墙》</td></tr>
-      </table>
-      <table>
-        <tr><th>轮次</th><th>触发的墙（余量数）</th><th>动作（①/②/③）</th><th>重结算后先撞的墙</th><th>激活/松动的耦合行</th></tr>
-        <tr><td colspan="5" class="slot" style="text-align:center">《没退过就是空——空是常态》</td></tr>
       </table>
     </div>
 
@@ -284,7 +308,7 @@
 
     <h2>与其他资产的关系</h2>
     <p>
-      本页只管「落纸长什么样」。条款怎么来：三层推导骨架见 CONTEXT「推导骨架」；档/值两槽见 ADR 0002；测法等级与四出路见 ADR 0003；目标值两线见 ADR 0004；清单投影规则见 ADR 0005 与 <a href="answer-shapes.html">answer-shapes.html</a>；撞墙后怎么退见 <a href="retreat-program.html">retreat-program.html</a>（ADR 0006）；判据列与音质节的挂靠见 ADR 0007 与 <a href="quality-dictionary.html">quality-dictionary.html</a>。
+      本页只管「落纸长什么样」。条款怎么来：三层推导骨架见 CONTEXT「推导骨架」；档/值两槽见 ADR 0002；测法等级与四出路见 ADR 0003；目标值两线见 ADR 0004；清单投影规则见 ADR 0005 与 <a href="answer-shapes.html">answer-shapes.html</a>；撞墙后怎么退见 <a href="retreat-program.html">retreat-program.html</a>（ADR 0006）；判据列与音质节的挂靠见 ADR 0007 与 <a href="quality-dictionary.html">quality-dictionary.html</a>。距离数字的参数化推导工具（判据级选项带出处回链）在工单 #30，实现后挂此处；示范机型的判据配级与选档拍板在工单 #31。
     </p>
 
     <p class="footnote">
