@@ -34,6 +34,7 @@
     .grid-fill td:empty { background: var(--bg); min-width: 3.5rem; height: 1.3rem; }
     .tmpl td, .tmpl th { color: var(--muted); }
     .tmpl .slot { font-family: var(--mono); font-size: 10px; }
+    .tbd { font-family: var(--mono); font-size: 10px; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -51,7 +52,7 @@
     <table>
       <thead><tr><th>交付物</th><th>页</th><th>装什么</th><th>发给谁</th></tr></thead>
       <tbody>
-        <tr><td rowspan="3">规格文档</td><td>第 1 页（主表）</td><td>场景摘要一段 + 分层承诺表 + 双讲组表，只留承诺与<span class="term">依据标注</span>，前提用编号上标引用</td><td>评审桌</td></tr>
+        <tr><td rowspan="3">规格文档</td><td>第 1 页（主表）</td><td>场景摘要一段 + 分层承诺表（含判据列）+ 双讲组表 + 拾音/放音两个音质节，只留承诺与<span class="term">依据标注</span>，前提用编号上标引用</td><td>评审桌</td></tr>
         <tr><td>附录 A/B</td><td>前提清单（<span class="term">验证状态</span>四件套 + 喂给哪条）、<span class="term">测法等级</span>绑定表</td><td>答疑备查</td></tr>
         <tr><td>附录 C</td><td>墙余量表（全量结算输出）+ 退让台账（空是常态）</td><td>答疑备查</td></tr>
         <tr><td>提问清单（选型版）</td><td>独立成页</td><td>回答规则前言 + <span class="term">背景段</span> + 逐条卡片：问题、<span class="term">回答形状</span>、空白<span class="term">测量网格</span>、口径。<strong>不印阈值</strong></td><td>方案商</td></tr>
@@ -73,12 +74,13 @@
       </p>
       <h2>分层承诺</h2>
       <table style="font-size:12.5px">
-        <tr><th style="width:8rem">档</th><th>承诺</th><th style="width:11rem">依据</th></tr>
-        <tr><td>监听</td><td><b>8 m</b>（声源 ≥ 大声 80 dB SPL @1 m）<span class="sup">P8</span></td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
-        <tr><td>对讲</td><td><b>1.5 m</b>（正常交谈）—— 双讲质量以此验收 ↓</td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
-        <tr><td>提示音</td><td><b>5 m</b></td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
-        <tr><td>语音放音</td><td>保底 <b>3.5 m</b> ／ 目标 <b>5 m</b><span class="sup">P1–P4</span></td><td><span class="badge b-basis">物理推导·未校准</span></td></tr>
+        <tr><th style="width:8rem">档</th><th>承诺</th><th style="width:10rem">判据</th><th style="width:11rem">依据</th></tr>
+        <tr><td>监听</td><td><b>8 m</b>（声源 ≥ 大声 80 dB SPL @1 m）<span class="sup">P8</span></td><td><span class="tbd">《待拍板：①检出／②逐字／③辨识》</span></td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
+        <tr><td>对讲</td><td><b>1.5 m</b>（正常交谈）—— 双讲质量以此验收 ↓</td><td><span class="tbd">《待拍板：①／②／③》</span></td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
+        <tr><td>提示音</td><td><b>5 m</b></td><td><span class="tbd">《待拍板：听得见／分得清类型》</span></td><td><span class="badge b-basis">物理推导·已校准</span></td></tr>
+        <tr><td>语音放音</td><td>保底 <b>3.5 m</b> ／ 目标 <b>5 m</b><span class="sup">P1–P4</span></td><td><span class="tbd">《待拍板：①／②／③》</span></td><td><span class="badge b-basis">物理推导·未校准</span></td></tr>
       </table>
+      <div class="note">判据 = 这个距离上承诺「听到什么程度」——距离数字由它推出，不写明它 8 m 就是悬空数。语音档取值于三级判据阶梯（①检出：听出有人说话；②逐字：逐字听懂；③辨识：听声认人），见 <a href="quality-dictionary.md">音质组翻译字典</a>；配哪级是意图册拍板，样张如实留待拍板。</div>
       <h2>双讲组（@1.5 m）</h2>
       <table style="font-size:12.5px">
         <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
@@ -86,6 +88,20 @@
         <tr><td>设备侧时延</td><td>≤ <b>50 ms</b></td><td><span class="badge b-basis">感知文献 AES 6998</span></td></tr>
         <tr><td>口对耳时延</td><td>≤ <b>150 ms</b> 目标 ／ 400 ms 知情上限<span class="sup">P7</span></td><td><span class="badge b-basis">标准限值 G.114</span></td></tr>
       </table>
+      <h2>拾音组 · 音质</h2>
+      <table style="font-size:12.5px">
+        <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
+        <tr><td>说话自然度</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 条款形式已定：对关闭降噪的 bypass 同场同素材成对差值（P.835 三分），差值门槛待 #28</td><td><span class="badge b-basis">感知文献 P.835（差值）</span></td></tr>
+        <tr><td>安静干净度（录音底噪）</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 限值待 #28</td><td><span class="badge b-basis">物理量·口径借 P.1100 §11.6</span></td></tr>
+        <tr><td>大声不破音</td><td><span class="tbd">《待拍板：高／中／低》</span>—— AOP 下限由场景事实反推，待 #28</td><td><span class="badge b-basis">物理推导·未校准</span></td></tr>
+      </table>
+      <h2>放音组 · 音质</h2>
+      <table style="font-size:12.5px">
+        <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
+        <tr><td>安静干净度（喇叭底噪）</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 限值待 #28</td><td><span class="badge b-basis">物理量·口径借 P.1100 §11.6</span></td></tr>
+        <tr><td>放音音色</td><td><span class="tbd">《待拍板：高／中／低》</span>—— 频响模板形状借 P.1100，数值待 #28；「闷/尖」对照空白则差值化（#27 核查）</td><td><span class="badge b-basis">感知文献·疑似空白</span></td></tr>
+      </table>
+      <div class="note">音质条款不按距离分档——档槽为空（#6 模板允许），值槽等意图册拍板选档后按两线框架定值。四维取值域与刻度见 <a href="quality-dictionary.md">音质组翻译字典</a>（结构决议 ADR 0007）。</div>
       <div style="margin-top: 20px; font-size: 11px; color: var(--muted); border-top: 1px solid #ccc; padding-top: 8px;">
         附录 A · 前提清单（P1–P8 四件套）　附录 B · 测法绑定　附录 C · 墙余量与退让台账
       </div>
@@ -204,13 +220,20 @@
       </p>
       <h2>分层承诺</h2>
       <table>
-        <tr><th style="width:8rem">档</th><th>承诺</th><th style="width:11rem">依据</th></tr>
-        <tr><td>监听</td><td><span class="slot">《距离》（《成立条件，含声源口径》）《前提上标》</span></td><td><span class="slot">《依据标注五选一》</span></td></tr>
-        <tr><td>对讲</td><td><span class="slot">《= min(拾音, 放音)》—— 双讲质量以此验收 ↓</span></td><td><span class="slot">《依据标注》</span></td></tr>
-        <tr><td>提示音</td><td><span class="slot">《距离》</span></td><td><span class="slot">《依据标注》</span></td></tr>
-        <tr><td>语音放音</td><td><span class="slot">《保底》／《目标+前提上标》（无保底可空，不得编造）</span></td><td><span class="slot">《依据标注》</span></td></tr>
+        <tr><th style="width:8rem">档</th><th>承诺</th><th style="width:10rem">判据</th><th style="width:11rem">依据</th></tr>
+        <tr><td>监听</td><td><span class="slot">《距离》（《成立条件，含声源口径》）《前提上标》</span></td><td><span class="slot">《判据阶梯选级：①检出／②逐字／③辨识》</span></td><td><span class="slot">《依据标注五选一》</span></td></tr>
+        <tr><td>对讲</td><td><span class="slot">《= min(拾音, 放音)》—— 双讲质量以此验收 ↓</span></td><td><span class="slot">《①／②／③》</span></td><td><span class="slot">《依据标注》</span></td></tr>
+        <tr><td>提示音</td><td><span class="slot">《距离》</span></td><td><span class="slot">《听得见／分得清类型》</span></td><td><span class="slot">《依据标注》</span></td></tr>
+        <tr><td>语音放音</td><td><span class="slot">《保底》／《目标+前提上标》（无保底可空，不得编造）</span></td><td><span class="slot">《①／②／③》</span></td><td><span class="slot">《依据标注》</span></td></tr>
       </table>
-      <div class="note">机型缺档留空占位，不重新拟名（CONTEXT「分层承诺」）。</div>
+      <div class="note">机型缺档留空占位，不重新拟名（CONTEXT「分层承诺」）。判据取值域见 quality-dictionary；配级归意图册。</div>
+      <h2>拾音组 · 音质／放音组 · 音质</h2>
+      <table>
+        <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
+        <tr><td class="slot">《拾音向：说话自然度／安静干净度（录音底噪）／大声不破音》</td><td class="slot">《意图册选档（高/中/低）＋ 值：带前提承诺或差值形式（感知族一律同场成对）》</td><td class="slot">《依据标注》</td></tr>
+        <tr><td class="slot">《放音向：安静干净度（喇叭底噪）／放音音色》</td><td class="slot">《同上；维度不适用留空占位，不删行》</td><td class="slot">《依据标注》</td></tr>
+      </table>
+      <div class="note">音质条款档槽为空（不按距离分档）；四维取值域见 quality-dictionary（ADR 0007）。</div>
       <h2>双讲组（@对讲档距离）</h2>
       <table>
         <tr><th style="width:8rem">条款</th><th>承诺</th><th style="width:11rem">依据</th></tr>
@@ -261,7 +284,7 @@
 
     <h2>与其他资产的关系</h2>
     <p>
-      本页只管「落纸长什么样」。条款怎么来：三层推导骨架见 CONTEXT「推导骨架」；档/值两槽见 ADR 0002；测法等级与四出路见 ADR 0003；目标值两线见 ADR 0004；清单投影规则见 ADR 0005 与 <a href="answer-shapes.md">answer-shapes.md</a>；撞墙后怎么退见 <a href="retreat-program.md">retreat-program.md</a>（ADR 0006）。
+      本页只管「落纸长什么样」。条款怎么来：三层推导骨架见 CONTEXT「推导骨架」；档/值两槽见 ADR 0002；测法等级与四出路见 ADR 0003；目标值两线见 ADR 0004；清单投影规则见 ADR 0005 与 <a href="answer-shapes.md">answer-shapes.md</a>；撞墙后怎么退见 <a href="retreat-program.md">retreat-program.md</a>（ADR 0006）；判据列与音质节的挂靠见 ADR 0007 与 <a href="quality-dictionary.md">quality-dictionary.md</a>。
     </p>
 
     <p class="footnote">
@@ -271,6 +294,7 @@
       · <a href="../lessons/0011-erl-erle-field-manual.html">第 11 课 · ERL/ERLE 实测手册</a>
       · <a href="measurement-cheatsheet.html">评测方法速查</a>
       · <a href="duplex-dictionary.md">双讲组翻译字典</a>
+      · <a href="quality-dictionary.md">音质组翻译字典</a>
       · <a href="coupling-inventory.md">耦合清单</a>
       · <a href="glossary.html">术语表</a>
     </p>
