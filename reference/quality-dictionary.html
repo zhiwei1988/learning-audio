@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>音质组翻译字典</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference · 方法固定资产</p>
+      <h1>音质组翻译字典</h1>
+      <p class="lede">对应 GitHub issue <a href="https://github.com/zhiwei1988/learning-audio/issues/15" target="_blank" rel="noopener">#15</a>。音质意图四维度与距离档判据的翻译字典（翻译字典：「意图措辞 → 数值档」的外部可引查表，见 CONTEXT.md「目标值来源」）。</p>
+    </header>
+
+    <p><strong>本字典只收措辞与刻度出处。</strong> 具体目标值/限值属 <a href="https://github.com/zhiwei1988/learning-audio/issues/28" target="_blank" rel="noopener">#28</a>（目标值与测法），空白处明标；五处疑似空白的外部核查在 <a href="https://github.com/zhiwei1988/learning-audio/issues/27" target="_blank" rel="noopener">#27</a>。目标档、地板档、判据配级、退让序号由意图册拍板——<strong>字典给选项，选档权归意图册</strong>（2026-08-11 边界决议）。</p><h2>判据阶梯（距离档「判据」列的取值域）</h2><p>判据：分层承诺表每个距离档承诺的「听到什么程度」。距离数字由它推出——判据不写明，距离就是悬空数（#15 的根因之一：「8 m」承诺的是检出还是逐字，差好几 dB）。</p><p>语音类距离档（监听／对讲／语音放音）共用三级：</p><table class="ref"><thead><tr><th>级</th><th>用户可观察措辞</th><th>刻度与出处</th><th>状态</th></tr></thead><tbody><tr><td>① 检出级</td><td>听得出有人说话，判断得出情绪与大致意图，逐字听不全</td><td>无现成公开刻度</td><td>空白，待 #27 核查</td></tr><tr><td>② 逐字级</td><td>能逐字听懂说了什么</td><td>STI（Speech Transmission Index，语音传输指数：量语音的调制细节被噪声/混响抹掉多少，0–1 打分；0.45 上下勉强能懂，0.60 以上良好）。出处：IEC 60268-16</td><td>可引</td></tr><tr><td>③ 辨识级</td><td>能辨认是谁在说，回放可当纠纷证据</td><td>「听声认人」无现成公开刻度</td><td>空白，待 #27 核查</td></tr></tbody></table><p>STI 迁移前提：源自广播/会场可懂度验收，假设听的是自然语音——摄像机监听/回放场景成立；对经过重度降噪/编码的语音，STI 的适用性在 #28 定测法时复核。</p><p>提示音档（非语音）不用这套阶梯，单独两级：<strong>听得见 ／ 立刻分得清是哪类提示音</strong>。「听得见」可由提示音 SPL 对环境底噪的裕量物理推导；「分得清类型」暂无外部刻度（待 #27，线索：告警声学标准）。</p><h2>维度一：说话自然度（拾音向）</h2><p>降噪（NS）与自动增益（AGC）副作用的家：吃字、「水下咕噜声」（音乐噪声）、背景噪声忽强忽弱（pumping）。</p><table class="ref"><thead><tr><th>档</th><th>用户可观察措辞</th></tr></thead><tbody><tr><td>高</td><td>听不出加工痕迹：不吃字、无水声、背景噪声平稳</td></tr><tr><td>中</td><td>有痕迹不碍事：偶尔字头轻、噪声轻微起伏，内容和语气完整</td></tr><tr><td>低</td><td>痕迹明显：吃字/水声常见，能懂但费劲</td></tr></tbody></table><p>刻度：P.835（ITU-T 主观听音打分标准：对同一段带噪语音分别打语音失真 SIG、背景噪声 BAK、总体 OVRL 三个 1–5 分——拆三分才看得见「降噪按下葫芦浮起瓢」）。</p><p>条款形式（#8 规则，感知族）：<strong>同场、同素材、成对差值</strong>——与关闭降噪的 bypass 对照报三分差值，绝对分不进条款。「可感知差距」的差值门槛待 #27（JND 核查）→ #28 定值。</p><h2>维度二：安静干净度（双向，投影两条条款）</h2><p>设备自噪声的家。拾音向 = 录音底噪；放音向 = 喇叭待机嘶声（idle noise，空闲信道噪声：通话建立但无人说话时链路里残留的噪声）。</p><table class="ref"><thead><tr><th>档</th><th>用户可观察措辞</th></tr></thead><tbody><tr><td>高</td><td>夜深人静时，半米内听不出设备嘶声；回放安静时段同样干净</td></tr><tr><td>中</td><td>凑近能听到轻微嘶声，正常距离注意不到</td></tr><tr><td>低</td><td>明显可闻</td></tr></tbody></table><p>刻度：物理量族，绝对值合法（#8）。测量口径借 P.1100 §11.6（送话 &lt;−64 dBm0(P)、受话 &lt;−53 dBPa(A) 是<strong>车载限值，数字不借</strong>——#4 已证限值几乎全要重推，只借「在哪测、什么加权」）。另有天然差值判据：设备自噪声低于安装场景夜间底噪，即「听不出」。</p><h2>维度三：大声不破音（拾音向）</h2><p>麦克风声学过载点（AOP，Acoustic Overload Point：麦克风开始削波的声压级，第 2 课）与增益链削波的家。</p><table class="ref"><thead><tr><th>档</th><th>用户可观察措辞</th></tr></thead><tbody><tr><td>高</td><td>贴着设备喊叫，录音不劈不炸</td></tr><tr><td>中</td><td>收银台前的大声争执，录音完整可辨</td></tr><tr><td>低</td><td>正常说话不破即可</td></tr></tbody></table><p>刻度：物理推导——场景事实册「最近可能声源的距离与类型」→「SPL @ 麦克风位置」（口径规则：任何输入 SPL 必须带测量位置）→ AOP 下限。dB 换算表待 #28；措辞里不出现数（意图册入口无 dB 自检）。</p><h2>维度四：放音音色（放音向）</h2><p>频响与腔体谐振频率的家（Fo：喇叭低频下限，Fo 以下不出声，装进小腔体还会抬升——第 9 课）。</p><table class="ref"><thead><tr><th>档</th><th>用户可观察措辞</th></tr></thead><tbody><tr><td>高</td><td>语音自然饱满，听得出是「一个人」不是「一台设备」</td></tr><tr><td>中</td><td>清晰不闷，电话听筒的水准</td></tr><tr><td>低</td><td>能懂，但明显发闷或发尖</td></tr></tbody></table><p>刻度：频响容差模板<strong>形状</strong>借 P.1100 Table 11-2（受话频响，数值重推）。「闷/尖」措辞 ↔ 频响特征的外部对照疑似空白（待 #27）；空白则按 #9 走差值化（同场 A/B）。</p><h2>与其他资产的关系</h2><ul><li>意图册拍板选档后，条款套 #6 模板：音质条款<strong>档槽为空</strong>（不按距离分档），值槽为带前提的承诺或差值形式</li><li>判据阶梯填进 <code>spec-sheet-template.html</code> 分层承诺表的「判据」列；四维条款进「拾音组·音质」「放音组·音质」节（结构决议见 ADR 0007）</li><li>测法逐条定级走 #8（可复现性三问），投影提问清单走 #13——都在 #28 执行</li></ul>
+
+    <p class="meta">
+      <a href="../index.html">全库入口</a>
+      · <a href="glossary.html">术语表</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

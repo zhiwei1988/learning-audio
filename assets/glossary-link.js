@@ -19,7 +19,9 @@ const GL_SKIP_IN =
   ".quiz, .order-drill, .budget, .beam, .band-limit, .calc-wrap, .crossover, .abrep, .pbspl, .mledger, .no-gloss";
 
 function glGlossaryHref() {
-  return /\/lessons\//.test(location.pathname) ? "../reference/glossary.html" : "glossary.html";
+  if (/\/lessons\//.test(location.pathname)) return "../reference/glossary.html";
+  if (/\/reference\//.test(location.pathname)) return "glossary.html";
+  return "reference/glossary.html";
 }
 
 function glTextNodes(root) {

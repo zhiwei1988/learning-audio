@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>全库入口 · 网络摄像机音频学习工作区</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">全库索引</p>
+      <h1>网络摄像机音频学习工作区 · 全库入口</h1>
+      <p class="lede">11 课 + reference 下的方法固定资产、课程速查、research findings 全部收在这一页——按用户 2026-08-11 反馈「要么利用不起来，要么检索费劲」立的工单（<a href="https://github.com/zhiwei1988/learning-audio/issues/26" target="_blank" rel="noopener">#26</a>）。目标与范围见根目录 <code>MISSION.md</code>，学习者画像与写作规则见 <code>NOTES.md</code>，方法术语表见 <code>CONTEXT.md</code>。</p>
+    </header>
+
+    <h2>课程（按顺序）</h2>
+    <ul class="tight">
+      <li><a href="lessons/0001-ip-camera-audio-signal-chain.html">第 1 课 · 网络摄像机音频信号链</a> — 先建立一张信号链地图，后续所有硬件选型、算法卖点、用户投诉都落到某一环。</li>
+      <li><a href="lessons/0002-read-mems-microphone-datasheet.html">第 2 课 · 读 MEMS 麦克风 Datasheet</a> — 把 SNR、AOP、灵敏度从参数表翻译成产品决策。（速查：<a href="reference/mems-datasheet-cheatsheet.html">MEMS 麦克风 Datasheet</a>）</li>
+      <li><a href="lessons/0003-aec-full-duplex-essentials.html">第 3 课 · AEC 与全双工对讲</a> — 把「有回音」从模糊投诉翻译成可验收的问题：参考信号、声学耦合、残差抑制、半双工妥协。（速查：<a href="reference/aec-cheatsheet.html">AEC 与全双工</a>）</li>
+      <li><a href="lessons/0004-ns-agc-and-chain-order.html">第 4 课 · NS 与 AGC：处理链顺序</a> — 拆开「AI 降噪」与「自动增益」两个最容易被一个数字糊弄过去的规格项。（速查：<a href="reference/ns-agc-cheatsheet.html">NS / AGC 与处理链顺序</a>）</li>
+      <li><a href="lessons/0005-codec-bandwidth-and-latency.html">第 5 课 · 编码、带宽与时延</a> — 采样率是一堵墙，编码时延是另一堵；判断音质卖点真假。（速查：<a href="reference/codec-cheatsheet.html">编码、带宽与时延</a>）</li>
+      <li><a href="lessons/0006-latency-budget.html">第 6 课 · 时延预算</a> — 把 mouth-to-ear 拆成九项逐项填数，找出最大项该找谁改。（速查：<a href="reference/latency-cheatsheet.html">时延预算</a>）</li>
+      <li><a href="lessons/0007-far-field-and-beamforming.html">第 7 课 · 远场与波束成形</a> — 拆开「四麦阵列 + AI 波束成形，10 米远场拾音」里能算的数与不能算的数。（速查：<a href="reference/beamforming-cheatsheet.html">远场与波束成形</a>）</li>
+      <li><a href="lessons/0008-measurement-that-holds-up.html">第 8 课 · 把听感变成站得住的数</a> — 前七课留下的验收条款，自己怎么测；可复现性四规则。（速查：<a href="reference/measurement-cheatsheet.html">评测方法</a>）</li>
+      <li><a href="lessons/0009-loudspeaker-amp-and-smart-amp.html">第 9 课 · 放音侧：喇叭、功放与 Smart Amp</a> — 下行链的四个 SPL 天花板取最小；喇叭 THD 给 ERLE 设硬上限。（速查：<a href="reference/playback-cheatsheet.html">放音侧：喇叭、功放与 Smart Amp</a>）</li>
+      <li><a href="lessons/0010-compute-and-bom-budget.html">第 10 课 · 算力、内存与钱：同一套算法的四张账单</a> — 同一套算法同时记算力/内存/功耗/BOM 四本账，先撞的墙不一定是算力。（速查：<a href="reference/compute-budget-cheatsheet.html">算力、内存与 BOM 预算</a>）</li>
+      <li><a href="lessons/0011-erl-erle-field-manual.html">第 11 课 · ERL / ERLE / 双讲衰减低成本实测手册</a> — 把第 3 课的思路与第 8 课的可复现性框架合成一份可照做的实测流程。</li>
+    </ul>
+
+    <h2>Reference · 方法固定资产</h2>
+    <p class="meta">推导方法本身的可复用产物——独立于任何具体机型，改一次全库都受益。</p>
+    <ul class="tight">
+      <li><a href="reference/spec-sheet-template.html">规格文档与提问清单样张</a> — 评审桌上交什么：规格文档主表+附录、提问清单逐条网格卡，样张与空白模板并列（工单 #14）。</li>
+      <li><a href="reference/coupling-inventory.html">耦合清单（共享旋钮总表）</a> — 拾音/放音/双讲之间已证实的耦合：谁动谁、代价记在哪本账（工单 #3）。</li>
+      <li><a href="reference/duplex-dictionary.html">双讲组翻译字典</a> — 插话效果措辞 ↔ P.340 Category 分级表，选档权归意图册（工单 #10）。</li>
+      <li><a href="reference/quality-dictionary.html">音质组翻译字典</a> — 距离无关的四个音质意图维度 + 判据阶梯的取值域（工单 #15）。</li>
+      <li><a href="reference/retreat-program.html">退让程序</a> — 撞预算墙之后的可执行五步循环：验墙 → 无痛行 → 移墙 → 退意图 → 赎回（工单 #7）。</li>
+      <li><a href="reference/answer-shapes.html">回答形状库</a> — 向方案商提问清单该配哪种数据形态：曲线/档位表格/表征报告/成对差值（工单 #13）。</li>
+    </ul>
+
+    <h2>Reference · 课程 cheatsheet</h2>
+    <p class="meta">评审或实测前扫一眼的单页速查，逐课对应，可打印。</p>
+    <ul class="tight">
+      <li><a href="reference/mems-datasheet-cheatsheet.html">速查 · MEMS 麦克风 Datasheet</a> — 配第 2 课，选型时对齐 ADI / Infineon 应用笔记用语。</li>
+      <li><a href="reference/aec-cheatsheet.html">速查 · AEC 与全双工</a> — 配第 3 课，对讲评审时的信号角色与验收最小集。</li>
+      <li><a href="reference/ns-agc-cheatsheet.html">速查 · NS / AGC 与处理链顺序</a> — 配第 4 课，降噪/增益卖点评审用语。</li>
+      <li><a href="reference/codec-cheatsheet.html">速查 · 编码、带宽与时延</a> — 配第 5 课，选编码或拆音质卖点。</li>
+      <li><a href="reference/latency-cheatsheet.html">速查 · 时延预算</a> — 配第 6 课，mouth-to-ear 九行账速查。</li>
+      <li><a href="reference/beamforming-cheatsheet.html">速查 · 远场与波束成形</a> — 配第 7 课，孔径/间距/DI/WNG 速查表。</li>
+      <li><a href="reference/measurement-cheatsheet.html">速查 · 评测方法</a> — 配第 8 课，开测前的可复现性四规则。</li>
+      <li><a href="reference/playback-cheatsheet.html">速查 · 放音侧：喇叭、功放与 Smart Amp</a> — 配第 9 课，SPL 天花板与 Smart Amp 速查。</li>
+      <li><a href="reference/compute-budget-cheatsheet.html">速查 · 算力、内存与 BOM 预算</a> — 配第 10 课，四本账取最紧速查。</li>
+    </ul>
+
+    <h2>Reference · Research findings</h2>
+    <p class="meta">为某个工单做的一手资料调研，findings 落盘存档；供后续引用，不建议当教程通读。</p>
+    <ul class="tight">
+      <li><a href="reference/research-handsfree-spec-standards.html">免提终端规格标准核查</a> — P.340/P.1100/P.1110/P.1130/ETSI TS 103 740/106/ONVIF 逐条对照，哪些能整表照抄、哪些限值必须重推（工单 #4）。</li>
+      <li><a href="reference/research-consumer-intercom-benchmarks.html">消费级摄像机与门铃对讲竞品基准数</a> — 拾音距离/双工方式/时延/对讲喇叭 SPL 四项调研，哪些是行业空白（工单 #5）。</li>
+      <li><a href="reference/research-store-reverberation.html">店铺混响这本账</a> — RT60 量级、直达/混响比可懂度刻度、去混响能买回多少（工单 #11）。</li>
+      <li><a href="reference/research-quality-dictionary-gaps.html">音质字典空白核查</a> — 检出级/辨识级/提示音可辨/音色对照/P.835 可感知差距五处空白逐一核查（工单 #27）。</li>
+    </ul>
+
+    <h2>术语与知识地图</h2>
+    <ul class="tight">
+      <li><a href="reference/glossary.html">术语表</a> — 全库 76 条术语，双向链接（课文提及自动可点；每条定义标注出现在哪几课/哪几份 reference）。</li>
+      <li><a href="reference/audio-mindmap.md">知识地图</a> — 术语表自动生成的六支分类导图；同一内容另存 <code>reference/audio-mindmap.mm</code>（FreeMind）与 <code>reference/audio-mindmap.opml</code>（大纲工具），三者中 <code>.md</code> 版本可直接双击预览文字版，思维导图软件建议打开 <code>.mm</code>。</li>
+    </ul>
+
+    <p class="meta">
+      载体格式与检索入口决议见工单 <a href="https://github.com/zhiwei1988/learning-audio/issues/26" target="_blank" rel="noopener">#26</a>；方法叙事与端到端合订本见 <a href="https://github.com/zhiwei1988/learning-audio/issues/24" target="_blank" rel="noopener">#24</a>（本页不重复方法推导，只做索引）。
+    </p>
+  </div>
+  <script defer src="assets/glossary-terms.js"></script>
+  <script defer src="assets/glossary-link.js"></script>
+</body>
+</html>

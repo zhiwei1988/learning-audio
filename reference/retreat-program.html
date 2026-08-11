@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>退让程序</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference · 方法固定资产</p>
+      <h1>退让程序</h1>
+      <p class="lede">对应 GitHub issue <a href="https://github.com/zhiwei1988/learning-audio/issues/7" target="_blank" rel="noopener">#7</a>。方法三层骨架的末端执行件（骨架见 CONTEXT.md「推导骨架」节，回验骨架见 <code>coupling-inventory.md</code>）。<strong>两处调用同一程序</strong>：双讲结算撞不上意图下限（物理冲突）、末端全量结算出现负余量墙（资源冲突）。</p>
+    </header>
+
+    <h2>程序五步</h2><ol><li><strong>全量结算</strong>：所有墙一次算完，先撞的墙 = 余量最小者——每轮的<strong>输出</strong>，不是假设。程序对「哪面墙先撞」零假设（L10「先撞内存不是算力」是一个 TI 样本，不推广也不需要推广——墙随输入迁移，零假设正是对迁移免疫的原因）</li><li><strong>吃无痛行</strong>：耦合清单同赚行（#17 喇叭灵敏度/腔体选型、#18 出音孔面积），一次性收割，不算退让</li><li><strong>选动作</strong>：②移墙——准入 = 代价落在有余量的墙上（由重结算判定，不是原则之争）；不准入则 ③退意图——退让顺序里第一个未触地的维度降一档</li><li><strong>重结算</strong>：回到 1 重问先撞的墙。移墙动作先<strong>显式反写平台约束册</strong>再重跑（「每改一个输入都重问先撞哪面墙」在程序内也成立）。循环内<strong>单向棘轮</strong>——退了不回头</li><li><strong>停机</strong>：可行 → 单遍赎回扫描 → 输出三件；全部可退维度触地仍不可行 → 输出<strong>无解</strong></li></ol><h2>墙清单（默认五面，机型可增删）</h2><p>算力（<strong>峰值不按平均</strong>）、内存、功耗、BOM、结构/腔体。机型可增：EMC、散热。</p><h2>三类动作</h2><table class="ref"><thead><tr><th>类</th><th>动作</th><th>规则</th></tr></thead><tbody><tr><td>① 无痛</td><td>吃同赚行</td><td>多本账同赚不算退让，程序第一步先吃</td></tr><tr><td>② 移墙</td><td>选项库的一次性架构决策，或耦合清单中代价落在资源墙的旋钮（#21 跨电压频率档、#17 换喇叭、#19 供电电压）</td><td>准入 = 代价落在有余量的墙上；<strong>无免费行</strong>——写不出代价的选项不准入库；执行前显式反写平台约束册</td></tr><tr><td>③ 退意图</td><td>退让顺序第一个未触地维度降一档</td><td>原子步 = 降一档（档 = 字典档或目标/保底台阶——意图维度取值域必须离散成档，不存在连续微调）；<strong>只动目标档，保底档即地板</strong>；目标退到与保底重合，条款退化为单一门槛（#6 模板允许）</td></tr></tbody></table><p>②先于③的理由：方法服务产品竞争力决策，预算内花钱保竞争力优先于砍竞争力；②撑爆代价墙时自动不准入，自然落到③。</p><h2>选项库（移墙的一次性架构决策）</h2><table class="ref"><thead><tr><th>选项</th><th>救哪面墙</th><th>代价落哪面墙</th><th>一次性/可逆</th><th>出处</th></tr></thead><tbody><tr><td>协处理器（独立 DSP/NPU）</td><td>算力、内存</td><td>BOM、板面积、功耗</td><td>一次性</td><td>coupling-inventory 清单外说明</td></tr><tr><td>借主 SoC 空闲算力</td><td>算力</td><td>与视频/ISP 的<strong>峰值</strong>冲突风险（按峰值重结算，不看平均）</td><td>一次性</td><td>第 10 课「按峰值配」</td></tr><tr><td>换 SoC / 内存档位</td><td>算力、内存</td><td>BOM</td><td>一次性</td><td>第 10 课</td></tr><tr><td>ONVIF backchannel → 私有协议</td><td>编码时延账（松绑编码枚举，可上 AAC-LD/Opus）</td><td>生态兼容性</td><td>一次性</td><td>coupling-inventory 清单外说明</td></tr></tbody></table><h2>赎回规则</h2><p>循环内不赎回（棘轮）。可行停机后<strong>单遍扫描</strong>：按退让顺序从<strong>最不愿退</strong>的已退维度开始，试升一档 + 全量重结算——撑得住保留，撑不住回退；每维度只试一次，扫完即终止，不开第二轮循环。退让过程中耦合松动白捡的余量（如退放音音量 → THD 降 → ERLE 天花板松）由这一遍收割。</p><h2>停机保证</h2><p>同赚行有限（2 行）+ 选项库每项至多用一次 + 每维度档位有限且棘轮不回头 + 赎回单遍 ⇒ 程序必然停机。</p><h2>输出</h2><ul><li><strong>条款档位更新</strong>：退掉的维度按新档改写条款（只动目标档）</li><li><strong>退让台账</strong>：进规格文档附录（表现层归「规格文档排版」雾）</li><li><strong>平台约束册修订</strong>：移墙动作的显式反写</li><li><strong>无解</strong>：合法输出——宣告该场景参数向量 × 平台约束不成立，这是立项期最有价值的结论之一（花钱之前知道不成立）。后续动作（换平台/重拍场景/砍功能/调价）是<strong>重开入口向量</strong>的立项级决策，回到人的桌上，程序不越权</li></ul><h2>退让台账模板</h2><table class="ref"><thead><tr><th>轮次</th><th>触发的墙（余量数）</th><th>动作（①/②/③ + 内容：维度 从档→到档，或移墙选项）</th><th>重结算后先撞的墙</th><th>激活/松动的耦合行</th></tr></thead><tbody></tbody></table>
+
+    <p class="meta">
+      <a href="../index.html">全库入口</a>
+      · <a href="glossary.html">术语表</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>回答形状库</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="lesson-head">
+      <p class="eyebrow">Reference · 方法固定资产</p>
+      <h1>回答形状库</h1>
+      <p class="lede">对应 GitHub issue <a href="https://github.com/zhiwei1988/learning-audio/issues/13" target="_blank" rel="noopener">#13</a>。回答形状：清单条目要求方案商交数的数据形态（见 CONTEXT.md「清单投影」节）。方法固定资产——形状由数据的物理形态决定（资源占用天然是曲线、能力宣称天然是表征、感知量天然是成对差值），不随机型变；今后新的「别被单点骗」教训往先例表落行。</p>
+    </header>
+
+    <h2>全局规则（写进清单前言，不逐条重复）</h2><p>不符合条目回答形状的回答（宣传语、单点数、自选条件的数），允许<strong>一轮定向追问</strong>——追问措辞就是把该条目的回答形状再念一遍；二轮仍不合格即<strong>记空白</strong>，空白直接进对比表（「此家无数据」是显性劣势）。</p><h2>形状表</h2><table class="ref"><thead><tr><th>形状</th><th>适用的数据</th><th>测量网格（我方指定的参数）</th></tr></thead><tbody><tr><td>曲线（≥3 点）</td><td>资源占用随可调量连续变化（尾长-MIPS、尾长-内存、THD-电平）</td><td>取数点列表（如尾长 32/64/128/192 ms；电平 1/10、1/2、满额定）</td></tr><tr><td>档位表格</td><td>按档交易的资源（电压频率档、采样率档、算法开关组合）</td><td>行 = 我方档位表；列 = 我方指定的量（峰值不要平均）</td></tr><tr><td>表征报告</td><td>「支持 X」类能力宣称（Smart Amp、AEC 尾长上限、去混响）</td><td>表征条件（喇叭/腔体/激励信号/口径），按指定测法交报告</td></tr><tr><td>成对差值</td><td>感知/算法族指标（降噪量、ERLE 改善、MOS 类）</td><td>同场、同素材、成对（processed vs bypass），基线由我方指定</td></tr></tbody></table><h2>先例表（形状库的出处，初始四行）</h2><table class="ref"><thead><tr><th>教训</th><th>形状</th><th>一手出处</th></tr></thead><tbody><tr><td>尾长-MIPS/内存只给 128 ms 一个点，其余全靠外推</td><td>曲线（≥3 点）</td><td>TI TIDUE77 Table 5；RESOURCES Gap「应优先向方案商索要三个点以上」</td></tr><tr><td>Smart Amp 能放开多少 dB，公开资料一律只说 "significant increases"</td><td>表征报告</td><td>TI SLAA625D：SOA 由表征产出，且表征常反过来改喇叭/腔体</td></tr><tr><td>喇叭 THD 表按经验填占位值（1/10 额定 ≈2 %、1/2 额定 ≈5 %），必须实测替换</td><td>曲线（≥3 点）</td><td>第 9 课 THD 表就地标注；THD 锁 ERLE 天花板（−20·log₁₀(THD)）</td></tr><tr><td>降噪指标只量噪声不量语音，单边报数会藏失真</td><td>成对差值</td><td>ITU-T P.340 Appendix II（SNRI/NPLR 要求成对报数）；#8 感知/算法族一律差值</td></tr></tbody></table><h2>清单条目模板（六槽位）</h2><p>每条清单条目 = 规格的机械投影，槽位如下。六个槽位里五个是既有资产的引用，新造的只有「回答形状 + 测量网格」这一对。</p><table class="ref"><thead><tr><th>槽位</th><th>内容</th><th>来源</th></tr></thead><tbody><tr><td>回链</td><td>源规格条款，或执行方=方案商的前提行</td><td>投影两来源，无根不准入</td></tr><tr><td>问题措辞</td><td>选型版（报数/报档，<strong>不印阈值</strong>）｜验收版（交报告证明，含阈值）</td><td>同一条目两个渲染</td></tr><tr><td>回答形状</td><td>本库形状表选一</td><td>#13</td></tr><tr><td>测量网格</td><td>我方指定的取数点；测不了某格明写「此格无数据」</td><td>#13——事后归一化不可行，换算条件恰恰是对方不写的</td></tr><tr><td>口径</td><td>继承源条款（位置/信号源/加权/带宽）</td><td>口径钉死规则</td></tr><tr><td>判定</td><td>继承源条款的判定形式 + 够用线阈值（<strong>留在我方视图</strong>）</td><td>#8 测法槽位、#9 够用线</td></tr></tbody></table><h2>背景段（发出清单携带的上下文）</h2><p>只含<strong>场景事实 + 物理包络输出</strong>（工作点、对讲距离、ERL 假设、放音 SPL 目标）。准入判据一句话：<strong>缺了它方案商无法正确回答</strong>——而不是「有助于对方理解产品」。退让顺序、竞争线、保底值、够用线阈值是我方决策信息，不出门。</p><h2>多家对比的结论形状</h2><p>不造加权评分表——权重就是意图册的「退让顺序」，再造一套是同一信息记两遍。对比结论 = 每家一张「不达标/空白条目清单」，谁优谁劣看各自不达标条目落在退让顺序的什么位置：砍在退让顺序尾部的输给砍在头部的。选方案商本质上是「选哪家逼我退得最少、退的都是本来就愿意退的」。</p>
+
+    <p class="meta">
+      <a href="../index.html">全库入口</a>
+      · <a href="glossary.html">术语表</a>
+    </p>
+  </div>
+  <script defer src="../assets/glossary-terms.js"></script>
+  <script defer src="../assets/glossary-link.js"></script>
+</body>
+</html>
